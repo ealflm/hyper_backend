@@ -6,7 +6,7 @@
 ## Infomation
 
 - WebApi: https://tourism-smart-transportation.azurewebsites.net
-- WebApp: null
+- WebApp: https://red-field-0f2c8b700.azurestaticapps.net/
 - Database: 
     + Server name: tourism-smart-transportation.database.windows.net
     + Login: uni03_cp
