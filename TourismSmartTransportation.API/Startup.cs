@@ -99,7 +99,7 @@ namespace TourismSmartTransportation.API
                     }
                 });
 
-                c.DocumentFilter<KebabCaseDocumentFilter>();
+               // c.DocumentFilter<KebabCaseDocumentFilter>();
 
                 c.TagActionsBy(api =>
                 {
