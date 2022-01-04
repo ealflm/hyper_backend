@@ -13,8 +13,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 {
     [Route(AdminRoute)]
     [ApiController]
-    [Authorize]
-    [ApiExplorerSettings(GroupName = Role)]
+
     public class AuthorizationController : BaseAdminController
     {
         private readonly Business.Interfaces.Admin.IAuthorizationService _authorizationService;
