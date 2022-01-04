@@ -31,9 +31,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             string result = null;
             string message= null;
 
-            if (!string.IsNullOrEmpty(loginModel.EmailAddress) && !string.IsNullOrEmpty(loginModel.Password))
+            if (!string.IsNullOrEmpty(loginModel.Email) && !string.IsNullOrEmpty(loginModel.Password))
             {
-                model = await LoginEmailPassword(loginModel.EmailAddress, loginModel.Password);
+                model = await LoginEmailPassword(loginModel.Email, loginModel.Password);
             }
 
             if (model != null && model.Data != null)

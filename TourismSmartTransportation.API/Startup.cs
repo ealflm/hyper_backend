@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +15,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using TourismSmartTransportation.API.Utilities.Response;
+using TourismSmartTransportation.API.Utilities.Swagger;
 using TourismSmartTransportation.Business.Implements;
 using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Interfaces;
@@ -95,7 +99,7 @@ namespace TourismSmartTransportation.API
                     }
                 });
 
-                //c.DocumentFilter<KebabCaseDocumentFilter>();
+                c.DocumentFilter<KebabCaseDocumentFilter>();
 
                 c.TagActionsBy(api =>
                 {
@@ -147,6 +151,16 @@ namespace TourismSmartTransportation.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            // Handle Exceptions
+            app.UseExceptionHandler(c => c.Run(async context =>
+            {
+                var exception = context.Features
+                    .Get<IExceptionHandlerPathFeature>()
+                    .Error;
+                var response = new ErrorModel() { Error= exception.Message };
+                await context.Response.WriteAsJsonAsync(response);
+            }));
 
             app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 

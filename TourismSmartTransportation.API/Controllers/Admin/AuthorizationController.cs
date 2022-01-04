@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TourismSmartTransportation.API.Utilities.Response;
 using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 
@@ -30,7 +31,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
             if (result.Data == null)
             {
-                return ValidationProblem(result.Message);
+                return Problem(result.Message,"Unauthorization",401);  
             }
             var loginViewModel = new LoginViewModel(result.Data.ToString());
             return Ok(loginViewModel);
