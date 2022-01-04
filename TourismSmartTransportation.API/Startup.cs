@@ -68,7 +68,10 @@ namespace TourismSmartTransportation.API
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "TourismSmartTransportation.API", Version = "v1" });
+                c.SwaggerDoc("admin", new OpenApiInfo { Title = "TourismSmartTransportation.API Admin", Version = "admin" });
+                c.SwaggerDoc("company", new OpenApiInfo { Title = "TourismSmartTransportation.API Company", Version = "company" });
+                c.SwaggerDoc("driver", new OpenApiInfo { Title = "TourismSmartTransportation.API Driver", Version = "driver" });
+                c.SwaggerDoc("customer", new OpenApiInfo { Title = "TourismSmartTransportation.API Customer", Version = "customer" });
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -99,7 +102,7 @@ namespace TourismSmartTransportation.API
                     }
                 });
 
-               // c.DocumentFilter<KebabCaseDocumentFilter>();
+                c.DocumentFilter<CustomSwaggerFilter>();
 
                 c.TagActionsBy(api =>
                 {
@@ -144,7 +147,10 @@ namespace TourismSmartTransportation.API
 
             app.UseSwagger();
             app.UseSwaggerUI(c => {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TourismSmartTransportation.API v1");
+                c.SwaggerEndpoint("/swagger/admin/swagger.json", "TourismSmartTransportation.API Admin");
+                c.SwaggerEndpoint("/swagger/company/swagger.json", "TourismSmartTransportation.API Company");
+                c.SwaggerEndpoint("/swagger/driver/swagger.json", "TourismSmartTransportation.API Driver");
+                c.SwaggerEndpoint("/swagger/customer/swagger.json", "TourismSmartTransportation.API Customer");
                 c.RoutePrefix = "";
             });
 
