@@ -11,7 +11,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
     {
         Task<List<VehicleTypeViewModel>> GetListVehicleTypes();
         Task<VehicleTypeViewModel> GetVehicleType(Guid id);
-        Task<VehicleTypeViewModel> CreateVehicleType(VehicleTypeSearchModel model);
+        Task<bool> CreateVehicleType(VehicleTypeSearchModel model);
         Task<bool> UpdateVehicleType(Guid id, VehicleTypeSearchModel model);
         Task<bool> DeleteVehicleType(Guid id);
     }

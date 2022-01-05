@@ -19,7 +19,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<List<VehicleTypeViewModel>> GetListVehicleTypes()
         {
-            var list = await _unitOfWork.VehicleTypeRepository.Query()
+            var list = await _unitOfWork.VehicleTypeRepository
+                        .Query()
                         .Select(item => new VehicleTypeViewModel()
                         {
                             Id = item.Id,
@@ -35,7 +36,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<VehicleTypeViewModel> GetVehicleType(Guid id)
         {
-            var result = await _unitOfWork.VehicleTypeRepository.Query()
+            var result = await _unitOfWork.VehicleTypeRepository
+                            .Query()
                             .Where(item => item.Id == id)
                             .Select(item => new VehicleTypeViewModel()
                             {
@@ -50,27 +52,30 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return result;
         }
 
-        public async Task<VehicleTypeViewModel> CreateVehicleType(VehicleTypeSearchModel model)
+        public async Task<bool> CreateVehicleType(VehicleTypeSearchModel model)
         {
-            var result = _unitOfWork.VehicleTypeRepository.Query()
-                            .Add(new VehicleType()
-                            {
-                                Id = Guid.NewGuid(),
-                                Name = model.Name,
-                                Seats = model.Seats,
-                                Fuel = model.Fuel,
-                                Status = model.Status
-                            });
-            await _unitOfWork.SaveChangesAsync();
-
-            return new VehicleTypeViewModel()
+            try
             {
-                Id = result.Entity.Id,
-                Name = result.Entity.Name,
-                Seats = result.Entity.Seats,
-                Fuel = result.Entity.Fuel,
-                Status = result.Entity.Status
-            };
+                if (model.Name == null)
+                    return false;
+
+                var entity = new VehicleType()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = model.Name,
+                    Seats = model.Seats != null ? model.Seats.Value : 0,
+                    Fuel = model.Fuel != null ? model.Fuel.Value : 0,
+                    Status = model.Status != null ? model.Status.Value : 0
+                };
+                await _unitOfWork.VehicleTypeRepository.Add(entity);
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
         }
 
         public async Task<bool> UpdateVehicleType(Guid id, VehicleTypeSearchModel model)
@@ -79,10 +84,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             if (entity is null)
                 return false;
 
-            entity.Name = model.Name;
-            entity.Seats = model.Seats;
-            entity.Fuel = model.Fuel;
-            entity.Status = model.Status;
+            entity.Name = model.Name != null && model.Name != entity.Name ? model.Name : entity.Name;
+            entity.Seats = model.Seats != null && model.Seats != entity.Seats ? model.Seats.Value : entity.Seats;
+            entity.Fuel = model.Fuel != null && model.Fuel != entity.Fuel ? model.Fuel.Value : entity.Fuel;
+            entity.Status = model.Status != null && model.Status != entity.Status ? model.Status.Value : entity.Status;
+
             _unitOfWork.VehicleTypeRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
 
