@@ -59,6 +59,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<StationViewModel> GetStation(Guid id)
         {
             var station = await _unitOfWork.StationRepository.GetById(id);
+            if (station == null)
+            {
+                return null;
+            }
             StationViewModel model = new StationViewModel()
             {
                 Id = station.Id,
@@ -116,7 +120,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 _unitOfWork.StationRepository.Update(station);
                 await _unitOfWork.SaveChangesAsync();
             }
-            catch (Exception e)
+            catch
             {
                 return false;
             }

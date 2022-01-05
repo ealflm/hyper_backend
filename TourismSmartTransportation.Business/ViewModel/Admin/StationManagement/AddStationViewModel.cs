@@ -10,12 +10,13 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.StationManagement
 {
     public class AddStationViewModel
     {
-        [NullAndEmptyAndWhiteSpaceValidator]
+        [NotAllowedEmptyStringValidator]
         public string Name { get; set; }
-        [NullAndEmptyAndWhiteSpaceValidator]
+        [NotAllowedEmptyStringValidator]
         public string Address { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
+        [Range(1,2)]
         public int? Status { get; set; }
     }
 }
