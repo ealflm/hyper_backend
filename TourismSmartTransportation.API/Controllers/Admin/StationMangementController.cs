@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 {
     [Route(ApiVer1Url.Admin.Station)]
     [ApiController]
+    [Authorize]
     public class StationMangementController : ControllerBase
     {
 
