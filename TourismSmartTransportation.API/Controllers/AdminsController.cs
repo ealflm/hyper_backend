@@ -1,5 +1,4 @@
-﻿using BookingYacht.API.Controllers;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -7,10 +6,10 @@ using TourismSmartTransportation.Business.Interfaces;
 
 namespace TourismSmartTransportation.API.Controllers
 {
-    [Route("api/" + Version + "/driver/abc")]
+    [Route("api/v1.0/admin/admins")]
     [ApiController]
     [Authorize]
-    public class AdminsController : BaseController
+    public class AdminsController : ControllerBase
     {
         private readonly IAdminService _service;
 

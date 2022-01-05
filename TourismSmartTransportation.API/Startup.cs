@@ -146,7 +146,8 @@ namespace TourismSmartTransportation.API
             }
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => {
+            app.UseSwaggerUI(c =>
+            {
                 c.SwaggerEndpoint("/swagger/admin/swagger.json", "TourismSmartTransportation.API Admin");
                 c.SwaggerEndpoint("/swagger/company/swagger.json", "TourismSmartTransportation.API Company");
                 c.SwaggerEndpoint("/swagger/driver/swagger.json", "TourismSmartTransportation.API Driver");
@@ -164,7 +165,7 @@ namespace TourismSmartTransportation.API
                 var exception = context.Features
                     .Get<IExceptionHandlerPathFeature>()
                     .Error;
-                var response = new ErrorModel() { Error= exception.Message };
+                var response = new ErrorModel() { Error = exception.Message };
                 await context.Response.WriteAsJsonAsync(response);
             }));
 

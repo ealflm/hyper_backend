@@ -11,10 +11,8 @@ using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 
 namespace TourismSmartTransportation.API.Controllers.Admin
 {
-    [Route(AdminRoute)]
     [ApiController]
-
-    public class AuthorizationController : BaseAdminController
+    public class AuthorizationController : ControllerBase
     {
         private readonly Business.Interfaces.Admin.IAuthorizationService _authorizationService;
 
@@ -23,20 +21,22 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             this._authorizationService = authorizationService;
         }
 
-        [HttpPost("login")]
+        [HttpPost]
+        [Route(ApiVer1Url.Admin.Login)]
         public async Task<IActionResult> Login([FromBody] LoginSearchModel model)
         {
             var result = await _authorizationService.Login(model);
 
             if (result.Data == null)
             {
-                return Problem(result.Message,"Unauthorization",401);  
+                return Problem(result.Message, "Unauthorization", 401);
             }
             var loginViewModel = new LoginViewModel(result.Data.ToString());
             return Ok(loginViewModel);
         }
 
-        [HttpPost("register")]
+        [HttpPost]
+        [Route(ApiVer1Url.Admin.Register)]
         public async Task<IActionResult> Register([FromBody] RegisterSearchModel model)
         {
             var result = await _authorizationService.Register(model);
