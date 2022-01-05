@@ -42,14 +42,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         public async Task<IActionResult> CreateVehicleType(VehicleTypeSearchModel model)
         {
             var result = await _service.CreateVehicleType(model);
+            if (result)
+                return StatusCode(201);
 
-            if (result is null)
-                return BadRequest();
-
-            return StatusCode(201, result);
+            return BadRequest();
         }
 
         [HttpPut("id")]
+        [Authorize]
         public async Task<IActionResult> UpdateVehicleType(Guid id, VehicleTypeSearchModel model)
         {
             var result = await _service.UpdateVehicleType(id, model);
@@ -60,6 +60,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpDelete("id")]
+        [Authorize]
         public async Task<IActionResult> DeleteVehicleType(Guid id)
         {
             var result = await _service.DeleteVehicleType(id);
