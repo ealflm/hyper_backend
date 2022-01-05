@@ -14,5 +14,8 @@ namespace ApiVer1Url
 
         // Vehicle
         public const string VehicleType = BaseApiUrl + "/vehicles/types";
+
+        // Station
+        public const string Station = BaseApiUrl + "/stations";
     }
 }

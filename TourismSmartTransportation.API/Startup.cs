@@ -20,6 +20,7 @@ using TourismSmartTransportation.API.Utilities.Swagger;
 using TourismSmartTransportation.Business.Implements;
 using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Interfaces;
+using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Data.Context;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Repositories;
@@ -134,6 +135,7 @@ namespace TourismSmartTransportation.API
 
             services.AddTransient<IAdminService, AdminService>();
             services.AddTransient<Business.Interfaces.Admin.IAuthorizationService, AuthorizationService>();
+            services.AddTransient<IStationManagementService, StationManagementService>();
 
         }
 
