@@ -7,18 +7,16 @@ using System.Threading.Tasks;
 
 namespace TourismSmartTransportation.Business.Validate
 {
-    public class NullAndEmptyAndWhiteSpaceValidator : ValidationAttribute
+    public class NotAllowedEmptyStringValidator : ValidationAttribute
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            if (value != null)
+                
+            if ( value !=null  &&string.IsNullOrWhiteSpace((string)value))
             {
-                string str = value.ToString();
-                if (string.IsNullOrEmpty(str) || string.IsNullOrWhiteSpace(str))
-                {
-                    return new ValidationResult("" + validationContext.DisplayName + " is required");
-                }
-            }            
+                return new ValidationResult("" + validationContext.DisplayName + " is required");
+            }
+                     
             return ValidationResult.Success;
         }
     }

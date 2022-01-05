@@ -35,14 +35,15 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            return Ok(await _service.GetStation(id));
+            var result = await _service.GetStation(id);
+            return result !=null ? Ok(result): NotFound();
         }
 
         // POST api/<StationMangementController>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] AddStationViewModel model) 
         {
-            return (await _service.AddStation(model)) ? Ok() : ValidationProblem();
+            return (await _service.AddStation(model)) ? StatusCode(201) : ValidationProblem();
         }
         
 

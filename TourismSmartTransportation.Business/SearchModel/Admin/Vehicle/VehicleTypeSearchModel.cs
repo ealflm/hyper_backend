@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using TourismSmartTransportation.Business.Validator;
+using TourismSmartTransportation.Business.Validate;
 
 namespace TourismSmartTransportation.Business.SearchModel.Vehicle
 {
     public class VehicleTypeSearchModel
     {
-        [NotAllowedEmptyString]
+        [NotAllowedEmptyStringValidator]
         [StringLength(100)]
         public string Name { get; set; }
 
