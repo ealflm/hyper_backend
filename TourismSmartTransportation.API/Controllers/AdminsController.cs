@@ -7,7 +7,7 @@ using TourismSmartTransportation.Business.Interfaces;
 
 namespace TourismSmartTransportation.API.Controllers
 {
-    [Route("api/" + Version + "/admins")]
+    [Route("api/" + Version + "/driver/abc")]
     [ApiController]
     [Authorize]
     public class AdminsController : BaseController
