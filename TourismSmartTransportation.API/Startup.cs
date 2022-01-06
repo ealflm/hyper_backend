@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -137,6 +138,9 @@ namespace TourismSmartTransportation.API
             services.AddScoped<Business.Interfaces.Admin.IAuthorizationService, AuthorizationService>();
             services.AddScoped<IStationManagementService, StationManagementService>();
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
+            services.AddScoped<IUploadFileService, UploadFileService>();
+            // Azure blob
+            services.AddScoped(_ => new BlobServiceClient(Configuration.GetConnectionString("AzureBlobStorage")));
 
         }
 
