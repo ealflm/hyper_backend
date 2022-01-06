@@ -48,7 +48,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             return BadRequest();
         }
 
-        [HttpPut("id")]
+        [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> UpdateVehicleType(Guid id, VehicleTypeSearchModel model)
         {
@@ -59,7 +59,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             return BadRequest();
         }
 
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteVehicleType(Guid id)
         {
