@@ -17,5 +17,8 @@ namespace ApiVer1Url
 
         // Station
         public const string Station = BaseApiUrl + "/stations";
+
+        // Upload
+        public const string UploadFile = BaseApiUrl + "/upload";
     }
 }
