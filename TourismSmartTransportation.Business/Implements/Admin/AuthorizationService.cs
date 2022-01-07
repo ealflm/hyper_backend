@@ -17,7 +17,7 @@ using AdminModel = TourismSmartTransportation.Data.Models.Admin;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
-    public class AuthorizationService : BaseService, IAuthorizationService
+    public class AuthorizationService : AccountService, IAuthorizationService
     {
         private readonly IConfiguration _configuration;
         public AuthorizationService(IUnitOfWork unitOfWork, IConfiguration configuration) : base(unitOfWork)
@@ -149,11 +149,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return resultViewModel;
         }
 
-        private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using var hmac = new System.Security.Cryptography.HMACSHA512();
-            passwordSalt = hmac.Key;
-            passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-        }
+        
     }
 }

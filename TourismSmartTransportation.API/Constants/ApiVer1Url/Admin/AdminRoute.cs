@@ -23,5 +23,8 @@ namespace ApiVer1Url
 
         // Discount
         public const string Discount = BaseApiUrl + "/discounts";
+
+        // Company
+        public const string Company = BaseApiUrl + "/companies";
     }
 }

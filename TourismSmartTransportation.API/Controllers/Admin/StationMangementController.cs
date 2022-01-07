@@ -51,7 +51,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromBody] AddStationViewModel model)
         {
-            return (await _service.UpdateStation(id, model)) ? Ok() : ValidationProblem();
+            return (await _service.UpdateStation(id, model)) ? NoContent() : ValidationProblem();
         }
 
         // DELETE api/<StationMangementController>/5

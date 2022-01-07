@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 using TourismSmartTransportation.Business.SearchModel.Common;
 using TourismSmartTransportation.Business.Validation;
 
-namespace TourismSmartTransportation.Business.SearchModel.Admin.StationManagement
+namespace TourismSmartTransportation.Business.SearchModel.Admin.CompanyManagement
 {
-    public class StationSearchModel: PagingSearchModel
+    public class CompanySearchModel : PagingSearchModel
     {
         [NotAllowedEmptyStringValidator]
         public string Name { get; set; }
         [NotAllowedEmptyStringValidator]
+        public string UserName { get; set; }
+        [NotAllowedEmptyStringValidator]
         public string Address { get; set; }
-        [Range(1,2)]
+        [Range(1, 2)]
         public int? Status { get; set; }
     }
 }
