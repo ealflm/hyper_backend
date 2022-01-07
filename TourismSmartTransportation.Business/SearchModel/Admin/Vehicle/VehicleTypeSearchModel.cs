@@ -15,7 +15,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Vehicle
         [Range(0, 2)]
         public int? Fuel { get; set; }
 
-        [Range(0, 1)]
+        [Range(1, 2)]
         public int? Status { get; set; }
     }
 }
