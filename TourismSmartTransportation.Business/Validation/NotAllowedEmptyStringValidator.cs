@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 
-namespace TourismSmartTransportation.Business.Validate
+namespace TourismSmartTransportation.Business.Validation
 {
     public class NotAllowedEmptyStringValidator : ValidationAttribute
     {
