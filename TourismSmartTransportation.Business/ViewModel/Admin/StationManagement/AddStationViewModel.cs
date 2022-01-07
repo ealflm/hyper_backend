@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TourismSmartTransportation.Business.Validate;
+using TourismSmartTransportation.Business.Validation;
 
 namespace TourismSmartTransportation.Business.ViewModel.Admin.StationManagement
 {

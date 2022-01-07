@@ -1,6 +1,6 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
-using TourismSmartTransportation.Business.Validate;
+using TourismSmartTransportation.Business.Validation;
 
 namespace TourismSmartTransportation.Business.SearchModel.Admin.Authorization
 {
