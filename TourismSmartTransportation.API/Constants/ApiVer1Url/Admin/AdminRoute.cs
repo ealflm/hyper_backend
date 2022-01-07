@@ -21,6 +21,9 @@ namespace ApiVer1Url
         // Upload
         public const string UploadFile = BaseApiUrl + "/upload";
 
+        // Company
+        public const string Company = BaseApiUrl + "/companies";
+
         // Discount
         public const string Discount = BaseApiUrl + "/discounts";
     }
