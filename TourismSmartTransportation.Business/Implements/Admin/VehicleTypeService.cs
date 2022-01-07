@@ -84,10 +84,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             if (entity is null)
                 return false;
 
-            entity.Name = model.Name != null && model.Name != entity.Name ? model.Name : entity.Name;
-            entity.Seats = model.Seats != null && model.Seats != entity.Seats ? model.Seats.Value : entity.Seats;
-            entity.Fuel = model.Fuel != null && model.Fuel != entity.Fuel ? model.Fuel.Value : entity.Fuel;
-            entity.Status = model.Status != null && model.Status != entity.Status ? model.Status.Value : entity.Status;
+            entity.Name = model.Name != null ? model.Name : entity.Name;
+            entity.Seats = model.Seats != null ? model.Seats.Value : entity.Seats;
+            entity.Fuel = model.Fuel != null ? model.Fuel.Value : entity.Fuel;
+            entity.Status = model.Status != null ? model.Status.Value : entity.Status;
 
             _unitOfWork.VehicleTypeRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -101,7 +101,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             if (entity is null)
                 return false;
 
-            entity.Status = 0;
+            entity.Status = 2;
             _unitOfWork.VehicleTypeRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
 
