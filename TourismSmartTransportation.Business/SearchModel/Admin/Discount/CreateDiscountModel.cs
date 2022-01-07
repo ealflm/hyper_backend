@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using TourismSmartTransportation.Business.Validation;
 
-namespace TourismSmartTransportation.Business.ViewModel.Admin.Discount
+namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
 {
     public class CreateDiscountModel
     {
