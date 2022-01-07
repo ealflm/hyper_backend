@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
-using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 
@@ -76,7 +75,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return  model;
         }
 
-        public async Task<SearchResultViewModel> SearchStation(StationSearchModel model)
+        public async Task<SearchStationResultViewModel> SearchStation(StationSearchModel model)
         {   
             int stationCount = _unitOfWork.StationRepository.Query().Count();
             var stations = await _unitOfWork.StationRepository.Query()
@@ -96,12 +95,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Status = x.Status
                 })
                 .ToListAsync();
-            SearchResultViewModel result = null;
+            SearchStationResultViewModel result = null;
             if (stations.Count>0)
             {
-                result = new SearchResultViewModel()
+                result = new SearchStationResultViewModel()
                 {
-                    Items = stations.ToList<object>(),
+                    Items = stations,
                     PageSize = model.TotalItem == 0 ? 1 : ((stationCount / model.TotalItem) + (stationCount % model.TotalItem > 0 ? 1 : 0))
                 };
             }
@@ -113,11 +112,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             try
             {
                 var station = await _unitOfWork.StationRepository.GetById(id);
-                station.Name = UpdateStringFilter<string>(station.Name, model.Name);
-                station.Address = UpdateStringFilter<string>(station.Address, model.Address);
-                station.Latitude = UpdateNumberFilter<decimal>(station.Latitude, model.Latitude);
-                station.Longitude = UpdateNumberFilter<decimal>(station.Longitude, model.Longitude);
-                station.Status = UpdateNumberFilter<int>(station.Status, model.Status);
+                station.Name = (model.Name!=null) ? model.Name: station.Name;
+                station.Address = (model.Address!=null)? model.Address: station.Address;
+                station.Latitude = (model.Latitude != null)? model.Latitude.Value: station.Latitude;
+                station.Longitude = (model.Longitude != null)?  model.Longitude.Value: station.Longitude;
+                station.Status = (model.Status != null)? model.Status.Value: station.Status;
                 _unitOfWork.StationRepository.Update(station);
                 await _unitOfWork.SaveChangesAsync();
             }
