@@ -148,12 +148,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 if (entity is null)
                     return new DataModel(404, null, "Not Found");
 
-                entity.Title = model.Title != null ? model.Title : entity.Title;
-                entity.Code = model.Code != null ? model.Code : entity.Code;
-                entity.TimeStart = model.TimeStart != null ? model.TimeStart.Value : entity.TimeStart;
-                entity.TimeEnd = model.TimeEnd != null ? model.TimeEnd.Value : entity.TimeEnd;
-                entity.Value = model.Value != null ? model.Value.Value : entity.Value;
-                entity.Status = model.Status != null ? model.Status.Value : entity.Status;
+                entity.Title = UpdateTypeOfNullAbleObject<string>(entity.Title, model.Title);
+                entity.Code = UpdateTypeOfNullAbleObject<string>(entity.Code, model.Code);
+                entity.TimeStart = UpdateTypeOfNotNullAbleObject<DateTime>(entity.TimeStart, model.TimeStart);
+                entity.TimeEnd = UpdateTypeOfNotNullAbleObject<DateTime>(entity.TimeEnd, model.TimeEnd);
+                entity.Value = UpdateTypeOfNotNullAbleObject<decimal>(entity.Value, model.Value);
+                entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
 
                 _unitOfWork.DiscountRepository.Update(entity);
                 await _unitOfWork.SaveChangesAsync();

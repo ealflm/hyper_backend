@@ -13,7 +13,7 @@ using TourismSmartTransportation.Data.Models;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
-    public class StationManagementService : BaseService,IStationManagementService
+    public class StationManagementService : BaseService, IStationManagementService
     {
         public StationManagementService(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
@@ -73,11 +73,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Name = station.Name,
                 Status = station.Status
             };
-            return  model;
+            return model;
         }
 
         public async Task<SearchResultViewModel> SearchStation(StationSearchModel model)
-        {   
+        {
             int stationCount = _unitOfWork.StationRepository.Query().Count();
             var stations = await _unitOfWork.StationRepository.Query()
                 .Where(x => model.Name == null || x.Name.Contains(model.Name))
@@ -97,7 +97,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 })
                 .ToListAsync();
             SearchResultViewModel result = null;
-            if (stations.Count>0)
+            if (stations.Count > 0)
             {
                 result = new SearchResultViewModel()
                 {
@@ -113,11 +113,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             try
             {
                 var station = await _unitOfWork.StationRepository.GetById(id);
-                station.Name = UpdateStringFilter<string>(station.Name, model.Name);
-                station.Address = UpdateStringFilter<string>(station.Address, model.Address);
-                station.Latitude = UpdateNumberFilter<decimal>(station.Latitude, model.Latitude);
-                station.Longitude = UpdateNumberFilter<decimal>(station.Longitude, model.Longitude);
-                station.Status = UpdateNumberFilter<int>(station.Status, model.Status);
+                station.Name = UpdateTypeOfNullAbleObject<string>(station.Name, model.Name);
+                station.Address = UpdateTypeOfNullAbleObject<string>(station.Address, model.Address);
+                station.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Latitude, model.Latitude);
+                station.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Longitude, model.Longitude);
+                station.Status = UpdateTypeOfNotNullAbleObject<int>(station.Status, model.Status);
                 _unitOfWork.StationRepository.Update(station);
                 await _unitOfWork.SaveChangesAsync();
             }

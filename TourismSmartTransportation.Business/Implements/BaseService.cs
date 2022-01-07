@@ -13,13 +13,13 @@ namespace TourismSmartTransportation.Business.Implements
             _unitOfWork = unitOfWork;
         }
 
-        public static T UpdateStringFilter<T>(T oldValue, T newValue)
+        public static T UpdateTypeOfNullAbleObject<T>(T oldValue, T newValue)
         {
-            return (newValue != null && !newValue.Equals(oldValue)) ? newValue : oldValue;
+            return newValue != null ? newValue : oldValue;
         }
-        public static T UpdateNumberFilter<T>(T oldValue, T? newValue) where T : struct
+        public static T UpdateTypeOfNotNullAbleObject<T>(T oldValue, T? newValue) where T : struct
         {
-            return (newValue != null && !newValue.Value.Equals(oldValue)) ? newValue.Value : oldValue;
+            return newValue != null ? newValue.Value : oldValue;
         }
     }
 }

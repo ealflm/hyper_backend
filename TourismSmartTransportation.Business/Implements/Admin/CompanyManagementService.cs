@@ -126,14 +126,14 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 if (model.Password != null)
                 {
                     CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
-                    company.Password = UpdateStringFilter<byte[]>(company.Password, passwordHash);
-                    company.Salt = UpdateStringFilter<byte[]>(company.Salt, passwordSalt);
+                    company.Password = UpdateTypeOfNullAbleObject<byte[]>(company.Password, passwordHash);
+                    company.Salt = UpdateTypeOfNullAbleObject<byte[]>(company.Salt, passwordSalt);
                 }
-                company.Name = UpdateStringFilter<string>(company.Name, model.Name);
-                company.Address = UpdateStringFilter<string>(company.Address, model.Address);
-                company.UserName = UpdateStringFilter<string>(company.UserName, model.UserName);
-                company.PhotoUrl = UpdateStringFilter<string>(company.PhotoUrl, model.PhotoUrl);
-                company.Status = UpdateNumberFilter<int>(company.Status, model.Status);
+                company.Name = UpdateTypeOfNullAbleObject<string>(company.Name, model.Name);
+                company.Address = UpdateTypeOfNullAbleObject<string>(company.Address, model.Address);
+                company.UserName = UpdateTypeOfNullAbleObject<string>(company.UserName, model.UserName);
+                company.PhotoUrl = UpdateTypeOfNullAbleObject<string>(company.PhotoUrl, model.PhotoUrl);
+                company.Status = UpdateTypeOfNotNullAbleObject<int>(company.Status, model.Status);
                 _unitOfWork.CompanyRepository.Update(company);
                 await _unitOfWork.SaveChangesAsync();
             }
