@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TourismSmartTransportation.Business.SearchModel.Vehicle;
+using TourismSmartTransportation.Business.CommonModel;
+using TourismSmartTransportation.Business.SearchModel.Admin.Vehicle;
 using TourismSmartTransportation.Business.ViewModel.Admin.Vehicle;
-using TourismSmartTransportation.Data.Models;
 
 namespace TourismSmartTransportation.Business.Interfaces.Admin
 {
@@ -11,8 +11,8 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
     {
         Task<List<VehicleTypeViewModel>> GetListVehicleTypes();
         Task<VehicleTypeViewModel> GetVehicleType(Guid id);
-        Task<bool> CreateVehicleType(VehicleTypeSearchModel model);
-        Task<bool> UpdateVehicleType(Guid id, VehicleTypeSearchModel model);
-        Task<bool> DeleteVehicleType(Guid id);
+        Task<Response> CreateVehicleType(CreateVehicleModel model);
+        Task<Response> UpdateVehicleType(Guid id, VehicleTypeSearchModel model);
+        Task<Response> DeleteVehicleType(Guid id);
     }
 }

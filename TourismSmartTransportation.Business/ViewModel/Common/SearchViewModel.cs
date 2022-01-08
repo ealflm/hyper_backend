@@ -6,5 +6,6 @@ namespace TourismSmartTransportation.Business.ViewModel.Common
     {
         public List<T> Items { get; set; }
         public int PageSize { get; set; }
+        public int TotalItems { get; set; }
     }
 }

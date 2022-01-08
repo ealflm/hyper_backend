@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Interfaces.Admin;
-using TourismSmartTransportation.Business.SearchModel.Vehicle;
+using TourismSmartTransportation.Business.SearchModel.Admin.Vehicle;
 
 namespace TourismSmartTransportation.API.Controllers.Admin
 {
@@ -22,8 +23,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> GetListVehicleType()
         {
-            var list = await _service.GetListVehicleTypes();
-            return Ok(list);
+            return Ok(await _service.GetListVehicleTypes());
         }
 
         [HttpGet("{id}")]
@@ -39,13 +39,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> CreateVehicleType(VehicleTypeSearchModel model)
+        [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+        public async Task<IActionResult> CreateVehicleType(CreateVehicleModel model)
         {
             var result = await _service.CreateVehicleType(model);
-            if (result)
+            if (result.StatusCode == 201)
                 return StatusCode(201);
 
-            return BadRequest();
+            return Problem(result.Message, "", 500);
         }
 
         [HttpPut("{id}")]
@@ -53,10 +54,13 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         public async Task<IActionResult> UpdateVehicleType(Guid id, VehicleTypeSearchModel model)
         {
             var result = await _service.UpdateVehicleType(id, model);
-            if (result)
+            if (result.StatusCode == 204)
                 return NoContent();
 
-            return BadRequest();
+            if (result.StatusCode == 404)
+                return NotFound();
+
+            return Problem(result.Message, "", 500);
         }
 
         [HttpDelete("{id}")]
@@ -64,10 +68,13 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         public async Task<IActionResult> DeleteVehicleType(Guid id)
         {
             var result = await _service.DeleteVehicleType(id);
-            if (result)
-                return StatusCode(200);
+            if (result.StatusCode == 200)
+                return Ok();
 
-            return BadRequest();
+            if (result.StatusCode == 404)
+                return NotFound();
+
+            return Problem(result.Message, "", 500);
         }
     }
 }

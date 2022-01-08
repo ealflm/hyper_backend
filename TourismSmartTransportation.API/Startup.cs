@@ -18,6 +18,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using TourismSmartTransportation.API.Utilities.Response;
 using TourismSmartTransportation.API.Utilities.Swagger;
+using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Implements;
 using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Interfaces;
@@ -60,6 +61,8 @@ namespace TourismSmartTransportation.API
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
                 };
             });
+
+            services.AddScoped<NotAllowedNullPropertiesAttribute>();
 
             services.AddControllers();
 
