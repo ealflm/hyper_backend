@@ -29,6 +29,9 @@ namespace TourismSmartTransportation.Business.Validation
                 if (property == null)
                     throw new ArgumentException("Property with this name not found");
 
+                if (property.GetValue(validationContext.ObjectInstance) == null)
+                    return ValidationResult.Success;
+
                 var comparisonValue = (DateTime)property.GetValue(validationContext.ObjectInstance);
 
                 if (currentValue > comparisonValue)

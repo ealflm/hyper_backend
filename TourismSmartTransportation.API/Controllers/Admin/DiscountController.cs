@@ -27,7 +27,11 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> SearchDiscount([FromQuery] DiscountSearchModel model)
         {
-            return Ok(await _service.SearchDiscount(model));
+            var result = await _service.SearchDiscount(model);
+            if (result is null)
+                return StatusCode(200, Array.Empty<Object>());
+
+            return Ok(result);
         }
 
         [HttpGet("{id}")]

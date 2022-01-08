@@ -103,20 +103,15 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<SearchDiscountResultViewModel> SearchDiscount(DiscountSearchModel model)
         {
-            int totalRecord = _unitOfWork.DiscountRepository.Query().Count();
-            if (totalRecord == 0)
-                return null;
-
             var entity = await _unitOfWork.DiscountRepository
                             .Query()
                             .Where(item => model.Title == null || item.Title.Contains(model.Title))
                             .Where(item => model.Code == null || item.Code.Contains(model.Code))
-                            .Where(item => model.Value == null || item.Value.ToString().Contains(model.Value.ToString()))
-                            .Where(item => model.TimeStart == null || item.TimeStart.ToString().Contains(model.TimeStart.ToString()))
-                            .Where(item => model.TimeEnd == null || item.TimeEnd.ToString().Contains(model.TimeEnd.ToString()))
+                            .Where(item => model.Value == null || item.Value.ToString().Contains(model.Value.Value.ToString()))
+                            .Where(item => model.TimeStart == null || item.TimeStart >= model.TimeStart.Value)
+                            .Where(item => model.TimeEnd == null || item.TimeEnd <= model.TimeEnd.Value.AddDays(1))
+                            .Where(item => model.Status == null || item.Status == model.Status.Value)
                             .OrderBy(item => item.TimeStart)
-                            .Skip(model.TotalItem * Math.Max(model.PageIndex - 1, 0))
-                            .Take(model.TotalItem > 0 ? model.TotalItem : totalRecord)
                             .Select(item => new DiscountViewModel()
                             {
                                 Id = item.Id,
@@ -129,9 +124,18 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             })
                             .ToListAsync();
 
+            var totalRecord = entity.Count();
+            if (totalRecord == 0)
+                return null;
+
+            var entityAfterPaing = entity.AsQueryable()
+                            .Skip(model.TotalItem * Math.Max(model.PageIndex - 1, 0))
+                            .Take(model.TotalItem > 0 ? model.TotalItem : totalRecord)
+                            .ToList();
+
             SearchDiscountResultViewModel searchResult = new()
             {
-                Items = entity,
+                Items = entityAfterPaing,
                 PageSize = model.TotalItem == 0
                                         ? 1
                                         : (totalRecord / model.TotalItem) + (totalRecord % model.TotalItem > 0 ? 1 : 0)
