@@ -9,6 +9,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Common
     public class PagingSearchModel
     {
         public int PageIndex { get; set; }
-        public int TotalItem { get; set; }
+        public int ItemsPerPage { get; set; }
     }
 }

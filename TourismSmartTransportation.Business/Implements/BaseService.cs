@@ -21,5 +21,20 @@ namespace TourismSmartTransportation.Business.Implements
         {
             return newValue != null ? newValue.Value : oldValue;
         }
+
+        public static int SkipItemsOfPagingFunc(int itemPerPage, int totalRecord, int pageIndex)
+        {
+            return itemPerPage < totalRecord ? itemPerPage * Math.Max(pageIndex - 1, 0) : 0;
+        }
+
+        public static int TakeItemsOfPagingFunc(int itemPerPage, int totalRecord)
+        {
+            return itemPerPage < totalRecord && itemPerPage > 0 ? itemPerPage : totalRecord;
+        }
+
+        public static int GetPageSize(int itemPerPage, int totalRecord)
+        {
+            return itemPerPage == 0 ? 1 : (totalRecord / itemPerPage) + (totalRecord % itemPerPage > 0 ? 1 : 0);
+        }
     }
 }

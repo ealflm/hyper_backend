@@ -94,8 +94,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 .Where(x => model.UserName == null || x.UserName.Contains(model.UserName))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .OrderBy(x => x.Name)
-                .Skip(model.TotalItem * Math.Min(model.PageIndex - 1, 0))
-                .Take(model.TotalItem > 0 ? model.TotalItem : companyCount)
+                .Skip(model.ItemsPerPage * Math.Min(model.PageIndex - 1, 0))
+                .Take(model.ItemsPerPage > 0 ? model.ItemsPerPage : companyCount)
                 .Select(x => new CompanyViewModel()
                 {
                     Id = x.Id,
@@ -112,7 +112,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 result = new SearchResultViewModel()
                 {
                     Items = companies.ToList<object>(),
-                    PageSize = model.TotalItem == 0 ? 1 : ((companyCount / model.TotalItem) + (companyCount % model.TotalItem > 0 ? 1 : 0))
+                    PageSize = model.ItemsPerPage == 0 ? 1 : ((companyCount / model.ItemsPerPage) + (companyCount % model.ItemsPerPage > 0 ? 1 : 0))
                 };
             }
             return result;

@@ -84,8 +84,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 .Where(x => model.Address == null || x.Address.Contains(model.Address))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .OrderBy(x => x.Name)
-                .Skip(model.TotalItem * Math.Min(model.PageIndex - 1, 0))
-                .Take(model.TotalItem > 0 ? model.TotalItem : stationCount)
+                .Skip(model.ItemsPerPage * Math.Min(model.PageIndex - 1, 0))
+                .Take(model.ItemsPerPage > 0 ? model.ItemsPerPage : stationCount)
                 .Select(x => new StationViewModel()
                 {
                     Id = x.Id,
@@ -102,7 +102,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 result = new SearchResultViewModel()
                 {
                     Items = stations.ToList<object>(),
-                    PageSize = model.TotalItem == 0 ? 1 : ((stationCount / model.TotalItem) + (stationCount % model.TotalItem > 0 ? 1 : 0))
+                    PageSize = model.ItemsPerPage == 0 ? 1 : ((stationCount / model.ItemsPerPage) + (stationCount % model.ItemsPerPage > 0 ? 1 : 0))
                 };
             }
             return result;

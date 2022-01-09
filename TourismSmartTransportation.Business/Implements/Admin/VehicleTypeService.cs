@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Interfaces.Admin;
-using TourismSmartTransportation.Business.SearchModel.Vehicle;
+using TourismSmartTransportation.Business.SearchModel.Admin.Vehicle;
 using TourismSmartTransportation.Business.ViewModel.Admin.Vehicle;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
@@ -36,76 +37,83 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<VehicleTypeViewModel> GetVehicleType(Guid id)
         {
-            var result = await _unitOfWork.VehicleTypeRepository
-                            .Query()
-                            .Where(item => item.Id == id)
-                            .Select(item => new VehicleTypeViewModel()
-                            {
-                                Id = item.Id,
-                                Name = item.Name,
-                                Fuel = item.Fuel,
-                                Seats = item.Seats,
-                                Status = item.Status
-                            })
-                            .SingleOrDefaultAsync();
+            var entity = await _unitOfWork.VehicleTypeRepository.GetById(id);
+            if (entity == null)
+                return null;
 
-            return result;
+            return new()
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Fuel = entity.Fuel,
+                Seats = entity.Seats,
+                Status = entity.Status
+            };
         }
 
-        public async Task<bool> CreateVehicleType(VehicleTypeSearchModel model)
+        public async Task<Response> CreateVehicleType(CreateVehicleModel model)
         {
             try
             {
-                if (model.Name == null)
-                    return false;
-
                 var entity = new VehicleType()
                 {
                     Id = Guid.NewGuid(),
                     Name = model.Name,
-                    Seats = model.Seats != null ? model.Seats.Value : 0,
+                    Seats = model.Seats,
                     Fuel = model.Fuel != null ? model.Fuel.Value : 0,
-                    Status = model.Status != null ? model.Status.Value : 0
+                    Status = model.Status != null ? model.Status.Value : 1
                 };
                 await _unitOfWork.VehicleTypeRepository.Add(entity);
                 await _unitOfWork.SaveChangesAsync();
-                return true;
+                return new Response(201);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return false;
+                return new Response(500, e.Message.ToString());
             }
 
         }
 
-        public async Task<bool> UpdateVehicleType(Guid id, VehicleTypeSearchModel model)
+        public async Task<Response> UpdateVehicleType(Guid id, VehicleTypeSearchModel model)
         {
-            var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
-            if (entity is null)
-                return false;
+            try
+            {
+                var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
+                if (entity is null)
+                    return new Response(404, "Not Found");
 
-            entity.Name = model.Name != null ? model.Name : entity.Name;
-            entity.Seats = model.Seats != null ? model.Seats.Value : entity.Seats;
-            entity.Fuel = model.Fuel != null ? model.Fuel.Value : entity.Fuel;
-            entity.Status = model.Status != null ? model.Status.Value : entity.Status;
+                entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
+                entity.Seats = UpdateTypeOfNotNullAbleObject<int>(entity.Seats, model.Seats);
+                entity.Fuel = UpdateTypeOfNotNullAbleObject<int>(entity.Fuel, model.Fuel);
+                entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
 
-            _unitOfWork.VehicleTypeRepository.Update(entity);
-            await _unitOfWork.SaveChangesAsync();
-
-            return true;
+                _unitOfWork.VehicleTypeRepository.Update(entity);
+                await _unitOfWork.SaveChangesAsync();
+                return new Response(204);
+            }
+            catch (Exception e)
+            {
+                return new Response(500, e.Message.ToString());
+            }
         }
 
-        public async Task<bool> DeleteVehicleType(Guid id)
+        public async Task<Response> DeleteVehicleType(Guid id)
         {
-            var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
-            if (entity is null)
-                return false;
+            try
+            {
+                var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
+                if (entity is null)
+                    return new Response(404, "Not found");
 
-            entity.Status = 2;
-            _unitOfWork.VehicleTypeRepository.Update(entity);
-            await _unitOfWork.SaveChangesAsync();
-
-            return true;
+                entity.Status = 2;
+                _unitOfWork.VehicleTypeRepository.Update(entity);
+                await _unitOfWork.SaveChangesAsync();
+                return new Response(200);
+            }
+            catch (Exception e)
+            {
+                return new Response(500, e.Message.ToString());
+            }
         }
     }
 }

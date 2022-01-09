@@ -19,7 +19,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
         }
 
-        public async Task<DataModel> CreateDiscount(CreateDiscountModel model)
+        public async Task<Response> CreateDiscount(CreateDiscountModel model)
         {
             try
             {
@@ -28,39 +28,39 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Id = Guid.NewGuid(),
                     Title = model.Title,
                     Code = model.Code,
-                    TimeStart = model.TimeStart,
-                    TimeEnd = model.TimeEnd,
-                    Value = model.Value,
+                    TimeStart = model.TimeStart.Value,
+                    TimeEnd = model.TimeEnd.Value,
+                    Value = model.Value.Value,
                     Status = model.Status != null ? model.Status.Value : 1
                 };
 
                 await _unitOfWork.DiscountRepository.Add(entity);
                 await _unitOfWork.SaveChangesAsync();
 
-                return new DataModel(201, entity, "");
+                return new Response(201);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return new DataModel(400, null, "");
+                return new Response(500, e.Message.ToString());
             }
         }
 
-        public async Task<DataModel> DeleteDiscount(Guid id)
+        public async Task<Response> DeleteDiscount(Guid id)
         {
             try
             {
                 var entity = await _unitOfWork.DiscountRepository.GetById(id);
                 if (entity is null)
-                    return new DataModel(404, null, "Not found");
+                    return new Response(404, "Not found");
 
                 entity.Status = 2;
                 _unitOfWork.DiscountRepository.Update(entity);
                 await _unitOfWork.SaveChangesAsync();
-                return new DataModel(200, null, "");
+                return new Response(200);
             }
             catch (Exception e)
             {
-                return new DataModel(400, null, e.Message.ToString());
+                return new Response(500, e.Message.ToString());
             }
         }
 
@@ -70,7 +70,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             if (entity == null)
                 return null;
 
-            return new DiscountViewModel()
+            return new()
             {
                 Id = entity.Id,
                 Title = entity.Title,
@@ -129,28 +129,29 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 return null;
 
             var entityAfterPaing = entity.AsQueryable()
-                            .Skip(model.TotalItem * Math.Max(model.PageIndex - 1, 0))
-                            .Take(model.TotalItem > 0 ? model.TotalItem : totalRecord)
+                            // .Skip(model.ItemsPerPage < totalRecord ? model.ItemsPerPage * Math.Max(model.PageIndex - 1, 0) : 0)
+                            // .Take(model.ItemsPerPage < totalRecord && model.ItemsPerPage > 0 ? model.ItemsPerPage : totalRecord)
+                            .Skip(SkipItemsOfPagingFunc(model.ItemsPerPage, totalRecord, model.PageIndex))
+                            .Take(TakeItemsOfPagingFunc(model.ItemsPerPage, totalRecord))
                             .ToList();
 
             SearchDiscountResultViewModel searchResult = new()
             {
                 Items = entityAfterPaing,
-                PageSize = model.TotalItem == 0
-                                        ? 1
-                                        : (totalRecord / model.TotalItem) + (totalRecord % model.TotalItem > 0 ? 1 : 0)
+                TotalItems = totalRecord,
+                PageSize = GetPageSize(model.ItemsPerPage, totalRecord)
             };
 
             return searchResult;
         }
 
-        public async Task<DataModel> UpdateDiscount(Guid id, DiscountSearchModel model)
+        public async Task<Response> UpdateDiscount(Guid id, CreateDiscountModel model)
         {
             try
             {
                 var entity = _unitOfWork.DiscountRepository.GetById(id).Result;
                 if (entity is null)
-                    return new DataModel(404, null, "Not Found");
+                    return new Response(404, "Not Found");
 
                 entity.Title = UpdateTypeOfNullAbleObject<string>(entity.Title, model.Title);
                 entity.Code = UpdateTypeOfNullAbleObject<string>(entity.Code, model.Code);
@@ -162,11 +163,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 _unitOfWork.DiscountRepository.Update(entity);
                 await _unitOfWork.SaveChangesAsync();
 
-                return new DataModel(204, null, "");
+                return new Response(204);
             }
             catch (Exception e)
             {
-                return new DataModel(500, null, e.Message.ToString());
+                return new Response(500, e.Message.ToString());
             }
         }
     }
