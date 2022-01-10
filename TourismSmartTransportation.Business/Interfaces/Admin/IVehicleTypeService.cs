@@ -10,9 +10,9 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
     public interface IVehicleTypeService
     {
         Task<List<VehicleTypeViewModel>> GetListVehicleTypes();
-        Task<VehicleTypeViewModel> GetVehicleType(Guid id);
+        Task<Response> GetVehicleType(Guid id);
         Task<Response> CreateVehicleType(CreateVehicleModel model);
-        Task<Response> UpdateVehicleType(Guid id, VehicleTypeSearchModel model);
+        Task<Response> UpdateVehicleType(Guid id, CreateVehicleModel model);
         Task<Response> DeleteVehicleType(Guid id);
     }
 }

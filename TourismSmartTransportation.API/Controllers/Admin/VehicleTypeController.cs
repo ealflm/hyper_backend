@@ -31,10 +31,13 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         {
             var result = await _service.GetVehicleType(id);
 
-            if (result is null)
+            if (result.StatusCode == 404)
                 return NotFound();
 
-            return Ok(result);
+            if (result.StatusCode == 200)
+                return Ok(result.Data);
+
+            return Problem(result.Message, "", 500);
         }
 
         [HttpPost]
@@ -51,7 +54,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> UpdateVehicleType(Guid id, VehicleTypeSearchModel model)
+        public async Task<IActionResult> UpdateVehicleType(Guid id, CreateVehicleModel model)
         {
             var result = await _service.UpdateVehicleType(id, model);
             if (result.StatusCode == 204)
