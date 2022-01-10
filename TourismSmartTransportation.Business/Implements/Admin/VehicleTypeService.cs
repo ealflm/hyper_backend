@@ -35,20 +35,29 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return list;
         }
 
-        public async Task<VehicleTypeViewModel> GetVehicleType(Guid id)
+        public async Task<Response> GetVehicleType(Guid id)
         {
-            var entity = await _unitOfWork.VehicleTypeRepository.GetById(id);
-            if (entity == null)
-                return null;
-
-            return new()
+            try
             {
-                Id = entity.Id,
-                Name = entity.Name,
-                Fuel = entity.Fuel,
-                Seats = entity.Seats,
-                Status = entity.Status
-            };
+                var entity = await _unitOfWork.VehicleTypeRepository.GetById(id);
+                if (entity == null)
+                    return new Response(404, "Not found");
+
+                var result = new VehicleTypeViewModel()
+                {
+                    Id = entity.Id,
+                    Name = entity.Name,
+                    Fuel = entity.Fuel,
+                    Seats = entity.Seats,
+                    Status = entity.Status
+                };
+
+                return new Response(200, result);
+            }
+            catch (Exception e)
+            {
+                return new Response(500, e.Message.ToString());
+            }
         }
 
         public async Task<Response> CreateVehicleType(CreateVehicleModel model)
@@ -74,7 +83,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         }
 
-        public async Task<Response> UpdateVehicleType(Guid id, VehicleTypeSearchModel model)
+        public async Task<Response> UpdateVehicleType(Guid id, CreateVehicleModel model)
         {
             try
             {

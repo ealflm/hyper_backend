@@ -9,7 +9,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Vehicle
         [StringLength(100)]
         public string Name { get; set; }
 
-        [Required]
         [Range(1, 70)]
         public int Seats { get; set; }
 
