@@ -26,5 +26,8 @@ namespace ApiVer1Url
 
         // Company
         public const string Company = BaseApiUrl + "/companies";
+
+        // Serivice
+        public const string Service = BaseApiUrl + "/service-management";
     }
 }

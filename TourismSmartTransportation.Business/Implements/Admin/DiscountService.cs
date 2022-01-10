@@ -103,7 +103,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<SearchDiscountResultViewModel> SearchDiscount(DiscountSearchModel model)
         {
-            var entity = await _unitOfWork.DiscountRepository
+            var listItemsAfterQuery = await _unitOfWork.DiscountRepository
                             .Query()
                             .Where(item => model.Title == null || item.Title.Contains(model.Title))
                             .Where(item => model.Code == null || item.Code.Contains(model.Code))
@@ -124,11 +124,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             })
                             .ToListAsync();
 
-            var totalRecord = entity.Count();
-            if (totalRecord == 0)
+            var totalRecord = listItemsAfterQuery.Count();
+            if (totalRecord == 0 || GetPageSize(model.ItemsPerPage, totalRecord) < model.PageIndex)
                 return null;
 
-            var entityAfterPaing = entity.AsQueryable()
+            var listItemsAfterPaging = listItemsAfterQuery.AsQueryable()
                             // .Skip(model.ItemsPerPage < totalRecord ? model.ItemsPerPage * Math.Max(model.PageIndex - 1, 0) : 0)
                             // .Take(model.ItemsPerPage < totalRecord && model.ItemsPerPage > 0 ? model.ItemsPerPage : totalRecord)
                             .Skip(SkipItemsOfPagingFunc(model.ItemsPerPage, totalRecord, model.PageIndex))
@@ -137,7 +137,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             SearchDiscountResultViewModel searchResult = new()
             {
-                Items = entityAfterPaing,
+                Items = listItemsAfterPaging,
                 TotalItems = totalRecord,
                 PageSize = GetPageSize(model.ItemsPerPage, totalRecord)
             };
