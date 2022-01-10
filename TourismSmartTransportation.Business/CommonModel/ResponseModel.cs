@@ -13,6 +13,12 @@ namespace TourismSmartTransportation.Business.CommonModel
             Message = message;
         }
 
+        public Response(int statusCode, object data)
+        {
+            StatusCode = statusCode;
+            Data = data;
+        }
+
         public Response(int statusCode, string message)
         {
             StatusCode = statusCode;

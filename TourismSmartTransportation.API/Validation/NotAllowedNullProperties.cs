@@ -29,6 +29,9 @@ namespace TourismSmartTransportation.API.Validation
 
             foreach (var p in objectModel.Value.GetType().GetProperties())
             {
+                if (p.Name == "PhotoUrls")
+                    continue;
+
                 if (p.GetValue(objectModel.Value) == null)
                 {
                     context.Result = new BadRequestObjectResult(new Response(400, $"{p.Name} is required property"));
