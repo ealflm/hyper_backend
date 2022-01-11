@@ -10,6 +10,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.Discount;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
+using TourismSmartTransportation.Business.Extensions;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -111,7 +112,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(item => model.TimeStart == null || item.TimeStart >= model.TimeStart.Value)
                             .Where(item => model.TimeEnd == null || item.TimeEnd <= model.TimeEnd.Value.AddDays(1))
                             .Where(item => model.Status == null || item.Status == model.Status.Value)
-                            .OrderBy(item => item.TimeStart)
+                            .OrderByDynamicProperty(SortBy(model.SortBy, "TimeStart"))
                             .Select(item => new DiscountViewModel()
                             {
                                 Id = item.Id,

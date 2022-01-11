@@ -9,6 +9,7 @@ using TourismSmartTransportation.Business.SearchModel.Admin.Service;
 using TourismSmartTransportation.Business.ViewModel.Admin.Service;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
+using TourismSmartTransportation.Business.Extensions;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -99,7 +100,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         .Where(item => model.Price == null || item.Price == model.Price.Value)
                         .Where(item => model.Time == null || model.Time.Value <= item.Time && item.Time < model.Time.Value.AddDays(1))
                         .Where(item => model.Status == null || item.Status == model.Status.Value)
-                        .OrderByDescending(item => item.Time)
+                        .OrderByDynamicProperty(SortBy(model.SortBy, "Time"))
                         .Select(item => new ServiceViewModel()
                         {
                             Id = item.Id,
