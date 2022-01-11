@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using TourismSmartTransportation.Business.Interfaces;
 using TourismSmartTransportation.Data.Interfaces;
 
@@ -35,6 +36,14 @@ namespace TourismSmartTransportation.Business.Implements
         public static int GetPageSize(int itemPerPage, int totalRecord)
         {
             return itemPerPage == 0 ? 1 : (totalRecord / itemPerPage) + (totalRecord % itemPerPage > 0 ? 1 : 0);
+        }
+
+        public static string SortBy(string sortByField, string defaultField)
+        {
+            if (sortByField == null || sortByField.Trim() == "")
+                sortByField = defaultField;
+
+            return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(sortByField.ToLower()); ;
         }
     }
 }
