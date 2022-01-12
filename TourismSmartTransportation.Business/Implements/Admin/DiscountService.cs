@@ -71,32 +71,14 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             if (entity == null)
                 return null;
 
-            return new()
-            {
-                Id = entity.Id,
-                Title = entity.Title,
-                Code = entity.Code,
-                TimeStart = entity.TimeStart,
-                TimeEnd = entity.TimeEnd,
-                Value = entity.Value,
-                Status = entity.Status
-            };
+            return entity.AsDiscountViewModel();
         }
 
         public async Task<List<DiscountViewModel>> GetListDiscounts()
         {
             var list = await _unitOfWork.DiscountRepository
                         .Query()
-                        .Select(item => new DiscountViewModel()
-                        {
-                            Id = item.Id,
-                            Title = item.Title,
-                            Code = item.Code,
-                            TimeStart = item.TimeStart,
-                            TimeEnd = item.TimeEnd,
-                            Value = item.Value,
-                            Status = item.Status
-                        })
+                        .Select(item => item.AsDiscountViewModel())
                         .ToListAsync();
 
             return list;
@@ -104,7 +86,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<SearchDiscountResultViewModel> SearchDiscount(DiscountSearchModel model)
         {
-            var listItemsAfterQuery = await _unitOfWork.DiscountRepository
+            var listItemsAfterSearching = await _unitOfWork.DiscountRepository
                             .Query()
                             .Where(item => model.Title == null || item.Title.Contains(model.Title))
                             .Where(item => model.Code == null || item.Code.Contains(model.Code))
@@ -112,29 +94,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(item => model.TimeStart == null || item.TimeStart >= model.TimeStart.Value)
                             .Where(item => model.TimeEnd == null || item.TimeEnd <= model.TimeEnd.Value.AddDays(1))
                             .Where(item => model.Status == null || item.Status == model.Status.Value)
-                            .OrderByDynamicProperty(SortBy(model.SortBy, "TimeStart"))
-                            .Select(item => new DiscountViewModel()
-                            {
-                                Id = item.Id,
-                                Title = item.Title,
-                                Code = item.Code,
-                                TimeStart = item.TimeStart,
-                                TimeEnd = item.TimeEnd,
-                                Value = item.Value,
-                                Status = item.Status
-                            })
+                            // .OrderBySingleField(SortBy(model.SortBy, "TimeStart"))
+                            .Select(item => item.AsDiscountViewModel())
                             .ToListAsync();
 
-            var totalRecord = listItemsAfterQuery.Count();
-            if (totalRecord == 0 || GetPageSize(model.ItemsPerPage, totalRecord) < model.PageIndex)
-                return null;
-
-            var listItemsAfterPaging = listItemsAfterQuery.AsQueryable()
-                            // .Skip(model.ItemsPerPage < totalRecord ? model.ItemsPerPage * Math.Max(model.PageIndex - 1, 0) : 0)
-                            // .Take(model.ItemsPerPage < totalRecord && model.ItemsPerPage > 0 ? model.ItemsPerPage : totalRecord)
-                            .Skip(SkipItemsOfPagingFunc(model.ItemsPerPage, totalRecord, model.PageIndex))
-                            .Take(TakeItemsOfPagingFunc(model.ItemsPerPage, totalRecord))
-                            .ToList();
+            var listAfterSorting = GetListAfterSorting(listItemsAfterSearching, model.SortBy);
+            var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
+            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
 
             SearchDiscountResultViewModel searchResult = new()
             {

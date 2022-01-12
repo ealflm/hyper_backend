@@ -9,6 +9,7 @@ using TourismSmartTransportation.Business.SearchModel.Admin.Vehicle;
 using TourismSmartTransportation.Business.ViewModel.Admin.Vehicle;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
+using TourismSmartTransportation.Business.Extensions;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -22,14 +23,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
             var list = await _unitOfWork.VehicleTypeRepository
                         .Query()
-                        .Select(item => new VehicleTypeViewModel()
-                        {
-                            Id = item.Id,
-                            Name = item.Name,
-                            Seats = item.Seats,
-                            Fuel = item.Fuel,
-                            Status = item.Status
-                        })
+                        .Select(item => item.AsVehicleTypeViewModel())
                         .ToListAsync();
 
             return list;
@@ -43,14 +37,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 if (entity == null)
                     return new Response(404, "Not found");
 
-                var result = new VehicleTypeViewModel()
-                {
-                    Id = entity.Id,
-                    Name = entity.Name,
-                    Fuel = entity.Fuel,
-                    Seats = entity.Seats,
-                    Status = entity.Status
-                };
+                var result = entity.AsVehicleTypeViewModel();
 
                 return new Response(200, result);
             }
