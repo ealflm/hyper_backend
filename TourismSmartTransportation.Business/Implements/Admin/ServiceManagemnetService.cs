@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -72,16 +71,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 if (entity is null)
                     return new Response(404, "Not found");
 
-                var result = new ServiceViewModel()
-                {
-                    Id = entity.Id,
-                    Title = entity.Title,
-                    Description = entity.Description,
-                    Price = entity.Price,
-                    Time = entity.Time,
-                    PhotoUrls = entity.PhotoUrls,
-                    Status = entity.Status
-                };
+                var result = entity.AsServiceViewModel();
 
                 return new Response(200, result);
             }
@@ -93,34 +83,23 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<SearchServiceResultViewModel> SearchServices(ServiceSearchModel model)
         {
-            var listItemsAfterQuery = await _unitOfWork.ServiceRepository
+            var listAfterSearching = await _unitOfWork.ServiceRepository
                         .Query()
                         .Where(item => model.Title == null || item.Title.Contains(model.Title))
                         .Where(item => model.Description == null || item.Description.Contains(model.Description))
                         .Where(item => model.Price == null || item.Price == model.Price.Value)
                         .Where(item => model.Time == null || model.Time.Value <= item.Time && item.Time < model.Time.Value.AddDays(1))
                         .Where(item => model.Status == null || item.Status == model.Status.Value)
-                        .OrderByDynamicProperty(SortBy(model.SortBy, "Time"))
-                        .Select(item => new ServiceViewModel()
-                        {
-                            Id = item.Id,
-                            Title = item.Title,
-                            Description = item.Description,
-                            Price = item.Price,
-                            Time = item.Time,
-                            PhotoUrls = item.PhotoUrls,
-                            Status = item.Status
-                        })
+                        // .OrderByDynamicProperty(SortBy(model.SortBy, "Time"))
+                        .Select(item => item.AsServiceViewModel())
                         .ToListAsync();
 
-            var totalRecord = listItemsAfterQuery.Count();
-            if (totalRecord == 0 || GetPageSize(model.ItemsPerPage, totalRecord) < model.PageIndex)
+            var listAfterQuery = GetListAfterSorting(listAfterSearching, model.SortBy);
+            var totalRecord = GetTotalRecord(listAfterSearching, model.ItemsPerPage, model.PageIndex);
+            if (totalRecord == 0)
                 return null;
 
-            var listItemsAfterPaging = listItemsAfterQuery.AsQueryable()
-                                        .Skip(SkipItemsOfPagingFunc(model.ItemsPerPage, totalRecord, model.PageIndex))
-                                        .Take(TakeItemsOfPagingFunc(model.ItemsPerPage, totalRecord))
-                                        .ToList();
+            var listItemsAfterPaging = GetListAfterPaging(listAfterQuery, model.ItemsPerPage, model.PageIndex, totalRecord);
 
             SearchServiceResultViewModel searchResult = new()
             {
