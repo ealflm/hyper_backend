@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace TourismSmartTransportation.Business.ViewModel.Common
 {
-    public class FileViewModel
+    public class FilesViewModel
     {
-        public string DeleteFile { get; set; }
-        public IFormFile UploadFile { get; set; }
+        public string[] DeleteFiles { get; set; }
+        public IFormFile[] UploadFiles {get; set;}
     }
 }

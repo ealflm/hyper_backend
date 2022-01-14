@@ -29,7 +29,7 @@ namespace TourismSmartTransportation.API.Validation
 
             foreach (var p in objectModel.Value.GetType().GetProperties())
             {
-                if (p.Name == "PhotoUrls" || p.Name == "DeleteFiles" || p.Name == "UploadFiles")
+                if (p.Name == "PhotoUrls" || p.Name.Contains("File"))
                     continue;
 
                 if (p.GetValue(objectModel.Value) == null)
