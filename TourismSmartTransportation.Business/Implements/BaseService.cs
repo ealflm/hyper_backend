@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces;
 using TourismSmartTransportation.Data.Interfaces;
@@ -11,10 +14,12 @@ namespace TourismSmartTransportation.Business.Implements
     public class BaseService : IBaseService
     {
         protected readonly IUnitOfWork _unitOfWork;
+        private readonly BlobServiceClient _blobServiceClient;
 
-        public BaseService(IUnitOfWork unitOfWork)
+        public BaseService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient)
         {
             _unitOfWork = unitOfWork;
+            _blobServiceClient = blobServiceClient;
         }
 
         public static T UpdateTypeOfNullAbleObject<T>(T oldValue, T newValue)
@@ -83,6 +88,52 @@ namespace TourismSmartTransportation.Business.Implements
                                         .ToList();
 
             return result;
+        }
+
+        public async Task<string> Upload(IFormFile[] files, string container)
+        {
+            var blobContainer = _blobServiceClient.GetBlobContainerClient(container);
+            if (blobContainer == null || files == null)
+            {
+                return null;
+            }
+            string result = string.Empty;
+            foreach(IFormFile file in files)
+            {
+                string fileName = Guid.NewGuid().ToString() + "." + file.ContentType.Substring(6);
+                var blobClient = blobContainer.GetBlobClient(fileName);
+                await blobClient.UploadAsync(file.OpenReadStream());
+                result += fileName + " ";
+            }
+            return result;
+        }
+
+        public async Task<string> Delete(string[] fileNames, string container, string photoUrl)
+        {
+            var blobContainer = _blobServiceClient.GetBlobContainerClient(container);
+            if (blobContainer == null || fileNames == null)
+            {
+                return photoUrl;
+            }
+
+            foreach (string fileName in fileNames)
+            {
+                    if (photoUrl.Contains(fileName))
+                    {
+                        try
+                        {
+                            var blobClient = blobContainer.GetBlobClient(fileName);
+                            await blobClient.DeleteAsync();
+                            photoUrl = photoUrl.Replace(fileName + " ", "");
+                        }
+                        catch
+                        {
+                        continue;
+                        }  
+                    }
+            }
+                    
+            return photoUrl;
         }
     }
 }

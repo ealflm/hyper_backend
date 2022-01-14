@@ -9,12 +9,13 @@ using TourismSmartTransportation.Business.ViewModel.Admin.Service;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.Extensions;
+using Azure.Storage.Blobs;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class ServiceManagement : BaseService, IServiceManagementService
     {
-        public ServiceManagement(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public ServiceManagement(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
         }
 

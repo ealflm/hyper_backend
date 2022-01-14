@@ -11,12 +11,13 @@ using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.Extensions;
+using Azure.Storage.Blobs;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class DiscountService : BaseService, IDiscountService
     {
-        public DiscountService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public DiscountService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
         }
 

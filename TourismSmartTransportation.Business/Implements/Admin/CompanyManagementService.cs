@@ -9,13 +9,15 @@ using TourismSmartTransportation.Business.SearchModel.Admin.CompanyManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.CompanyManagement;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Data.Interfaces;
+using TourismSmartTransportation.Business.Extensions;
 using CompanyModel = TourismSmartTransportation.Data.Models.Company;
+using Azure.Storage.Blobs;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class CompanyManagementService : AccountService, ICompanyManagementService
     {
-        public CompanyManagementService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public CompanyManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
         }
 
@@ -37,7 +39,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Password = passwordHash,
                     Salt = passwordSalt,
                     UserName = model.UserName,
-                    PhotoUrl = model.PhotoUrl,
+                    PhotoUrl = Upload(model.UploadFiles, "upload-file").Result,
                     Status = 1
                 };
                 await _unitOfWork.CompanyRepository.Add(company);
@@ -73,48 +75,31 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 return null;
             }
-            CompanyViewModel model = new CompanyViewModel()
-            {
-                Id = company.Id,
-                Address = company.Address,
-                Name = company.Name,
-                UserName = company.UserName,
-                PhotoUrl = company.PhotoUrl,
-                Status = company.Status
-            };
+
+            CompanyViewModel model = company.AsCompanyViewModel();
             return model;
         }
 
-        public async Task<SearchResultViewModel> SearchCompany(CompanySearchModel model)
+        public async Task<SearchResultViewModel<CompanyViewModel>> SearchCompany(CompanySearchModel model)
         {
-            int companyCount = _unitOfWork.CompanyRepository.Query().Count();
             var companies = await _unitOfWork.CompanyRepository.Query()
                 .Where(x => model.Name == null || x.Name.Contains(model.Name))
                 .Where(x => model.Address == null || x.Address.Contains(model.Address))
                 .Where(x => model.UserName == null || x.UserName.Contains(model.UserName))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .OrderBy(x => x.Name)
-                .Skip(model.ItemsPerPage * Math.Min(model.PageIndex - 1, 0))
-                .Take(model.ItemsPerPage > 0 ? model.ItemsPerPage : companyCount)
-                .Select(x => new CompanyViewModel()
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Address = x.Address,
-                    UserName = x.UserName,
-                    PhotoUrl = x.PhotoUrl,
-                    Status = x.Status
-                })
+                .Select(x => x.AsCompanyViewModel())
                 .ToListAsync();
-            SearchResultViewModel result = null;
-            if (companies.Count > 0)
+            var listAfterSorting = GetListAfterSorting(companies, model.SortBy);
+            var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
+            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
+            SearchResultViewModel<CompanyViewModel> result = null;
+            result = new SearchResultViewModel<CompanyViewModel>()
             {
-                result = new SearchResultViewModel()
-                {
-                    Items = companies.ToList<object>(),
-                    PageSize = model.ItemsPerPage == 0 ? 1 : ((companyCount / model.ItemsPerPage) + (companyCount % model.ItemsPerPage > 0 ? 1 : 0))
-                };
-            }
+                Items = listItemsAfterPaging,
+                PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
+                TotalItems=totalRecord
+            };
             return result;
         }
 
@@ -129,10 +114,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     company.Password = UpdateTypeOfNullAbleObject<byte[]>(company.Password, passwordHash);
                     company.Salt = UpdateTypeOfNullAbleObject<byte[]>(company.Salt, passwordSalt);
                 }
+                company.PhotoUrl = await Delete(model.DeleteFiles, "upload-file", company.PhotoUrl);
+                company.PhotoUrl += await Upload(model.UploadFiles, "upload-file");
                 company.Name = UpdateTypeOfNullAbleObject<string>(company.Name, model.Name);
                 company.Address = UpdateTypeOfNullAbleObject<string>(company.Address, model.Address);
                 company.UserName = UpdateTypeOfNullAbleObject<string>(company.UserName, model.UserName);
-                company.PhotoUrl = UpdateTypeOfNullAbleObject<string>(company.PhotoUrl, model.PhotoUrl);
                 company.Status = UpdateTypeOfNotNullAbleObject<int>(company.Status, model.Status);
                 _unitOfWork.CompanyRepository.Update(company);
                 await _unitOfWork.SaveChangesAsync();

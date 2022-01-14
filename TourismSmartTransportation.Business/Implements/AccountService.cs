@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Azure.Storage.Blobs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,7 @@ namespace TourismSmartTransportation.Business.Implements
 {
     public class AccountService : BaseService
     {
-        public AccountService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public AccountService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
         }
 

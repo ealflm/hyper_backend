@@ -8,14 +8,16 @@ using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Common;
+using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
+using Azure.Storage.Blobs;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class StationManagementService : BaseService, IStationManagementService
     {
-        public StationManagementService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public StationManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
         }
 
@@ -64,47 +66,29 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 return null;
             }
-            StationViewModel model = new StationViewModel()
-            {
-                Id = station.Id,
-                Address = station.Address,
-                Latitude = station.Latitude,
-                Longitude = station.Longitude,
-                Name = station.Name,
-                Status = station.Status
-            };
+            StationViewModel model = station.AsStationViewModel();
             return model;
         }
 
-        public async Task<SearchResultViewModel> SearchStation(StationSearchModel model)
+        public async Task<SearchResultViewModel<StationViewModel>> SearchStation(StationSearchModel model)
         {
-            int stationCount = _unitOfWork.StationRepository.Query().Count();
             var stations = await _unitOfWork.StationRepository.Query()
                 .Where(x => model.Name == null || x.Name.Contains(model.Name))
                 .Where(x => model.Address == null || x.Address.Contains(model.Address))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .OrderBy(x => x.Name)
-                .Skip(model.ItemsPerPage * Math.Min(model.PageIndex - 1, 0))
-                .Take(model.ItemsPerPage > 0 ? model.ItemsPerPage : stationCount)
-                .Select(x => new StationViewModel()
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Address = x.Address,
-                    Latitude = x.Latitude,
-                    Longitude = x.Longitude,
-                    Status = x.Status
-                })
+                .Select(x => x.AsStationViewModel())
                 .ToListAsync();
-            SearchResultViewModel result = null;
-            if (stations.Count > 0)
-            {
-                result = new SearchResultViewModel()
+            var listAfterSorting = GetListAfterSorting(stations, model.SortBy);
+            var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
+            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
+            SearchResultViewModel<StationViewModel> result = null;
+                result = new SearchResultViewModel<StationViewModel>()
                 {
-                    Items = stations.ToList<object>(),
-                    PageSize = model.ItemsPerPage == 0 ? 1 : ((stationCount / model.ItemsPerPage) + (stationCount % model.ItemsPerPage > 0 ? 1 : 0))
+                    Items = listItemsAfterPaging,
+                    PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
+                    TotalItems = totalRecord
                 };
-            }
             return result;
         }
 

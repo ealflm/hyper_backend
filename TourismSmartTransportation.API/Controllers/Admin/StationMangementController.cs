@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
@@ -41,6 +42,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         // POST api/<StationMangementController>
         [HttpPost]
+        [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> Post([FromBody] AddStationViewModel model) 
         {
             return (await _service.AddStation(model)) ? StatusCode(201) : ValidationProblem();

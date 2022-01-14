@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TourismSmartTransportation.API.Validation;
+using TourismSmartTransportation.Business.Interfaces;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.CompanyManagement;
+using TourismSmartTransportation.Business.SearchModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Admin.CompanyManagement;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -39,7 +43,8 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         // POST api/<StationMangementController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] AddCompanyViewModel model)
+        [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+        public async Task<IActionResult> Post([FromForm] AddCompanyViewModel model)
         {
             return (await _service.AddCompany(model)) ? StatusCode(201) : ValidationProblem();
         }
@@ -47,7 +52,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         // PUT api/<StationMangementController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] AddCompanyViewModel model)
+        public async Task<IActionResult> Put(Guid id, [FromForm] AddCompanyViewModel model)
         {
             return (await _service.UpdateCompany(id, model)) ? NoContent() : ValidationProblem();
         }

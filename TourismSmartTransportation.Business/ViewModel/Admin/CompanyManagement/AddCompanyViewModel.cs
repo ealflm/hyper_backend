@@ -5,10 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Validation;
+using TourismSmartTransportation.Business.ViewModel.Common;
 
 namespace TourismSmartTransportation.Business.ViewModel.Admin.CompanyManagement
 {
-    public class AddCompanyViewModel
+    public class AddCompanyViewModel: FileViewModel
     {
         [NotAllowedEmptyStringValidator]
         public string Name { get; set; }
@@ -18,8 +19,6 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.CompanyManagement
         public string Password { get; set; }
         [NotAllowedEmptyStringValidator]
         public string Address { get; set; }
-        [NotAllowedEmptyStringValidator]
-        public string PhotoUrl { get; set; }
         [Range(1, 2)]
         public int? Status { get; set; }
     }

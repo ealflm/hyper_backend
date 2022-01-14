@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Storage.Blobs;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -20,9 +21,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
     public class AuthorizationService : AccountService, IAuthorizationService
     {
         private readonly IConfiguration _configuration;
-        public AuthorizationService(IUnitOfWork unitOfWork, IConfiguration configuration) : base(unitOfWork)
+
+        public AuthorizationService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
-            _configuration = configuration;
         }
 
         public async Task<AuthorizationResultViewModel> Login(LoginSearchModel loginModel)
