@@ -22,8 +22,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
     {
         private readonly IConfiguration _configuration;
 
-        public AuthorizationService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        public AuthorizationService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
         {
+            _configuration = configuration;
         }
 
         public async Task<AuthorizationResultViewModel> Login(LoginSearchModel loginModel)
