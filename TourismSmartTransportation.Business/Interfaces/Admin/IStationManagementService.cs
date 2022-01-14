@@ -11,7 +11,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
 {
     public interface IStationManagementService
     {
-        Task<SearchResultViewModel> SearchStation(StationSearchModel model);
+        Task<SearchResultViewModel<StationViewModel>> SearchStation(StationSearchModel model);
         Task<StationViewModel> GetStation(Guid id);
         Task<bool> AddStation(AddStationViewModel model);
         Task<bool> UpdateStation(Guid id, AddStationViewModel model);

@@ -11,7 +11,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
 {
     public interface ICompanyManagementService
     {
-        Task<SearchResultViewModel> SearchCompany(CompanySearchModel model);
+        Task<SearchResultViewModel<CompanyViewModel>> SearchCompany(CompanySearchModel model);
         Task<CompanyViewModel> GetCompany(Guid id);
         Task<bool> AddCompany(AddCompanyViewModel model);
         Task<bool> UpdateCompany(Guid id, AddCompanyViewModel model);

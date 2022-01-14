@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Storage.Blobs;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace TourismSmartTransportation.Business.Implements
 {
     public class AdminService : BaseService, IAdminService
     {
-        public AdminService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public AdminService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
         }
 
