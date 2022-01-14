@@ -39,7 +39,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Password = passwordHash,
                     Salt = passwordSalt,
                     UserName = model.UserName,
-                    PhotoUrl = Upload(model.UploadFiles, "upload-file").Result,
+                    PhotoUrl = UploadFile(model.UploadFile, Container.Test).Result,
                     Status = 1
                 };
                 await _unitOfWork.CompanyRepository.Add(company);
@@ -114,8 +114,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     company.Password = UpdateTypeOfNullAbleObject<byte[]>(company.Password, passwordHash);
                     company.Salt = UpdateTypeOfNullAbleObject<byte[]>(company.Salt, passwordSalt);
                 }
-                company.PhotoUrl = await Delete(model.DeleteFiles, "upload-file", company.PhotoUrl);
-                company.PhotoUrl += await Upload(model.UploadFiles, "upload-file");
+                company.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Test, company.PhotoUrl);
+                company.PhotoUrl += await UploadFile(model.UploadFile, Container.Test);
                 company.Name = UpdateTypeOfNullAbleObject<string>(company.Name, model.Name);
                 company.Address = UpdateTypeOfNullAbleObject<string>(company.Address, model.Address);
                 company.UserName = UpdateTypeOfNullAbleObject<string>(company.UserName, model.UserName);

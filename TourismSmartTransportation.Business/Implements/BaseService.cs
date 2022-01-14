@@ -15,7 +15,7 @@ namespace TourismSmartTransportation.Business.Implements
     {
         protected readonly IUnitOfWork _unitOfWork;
         private readonly BlobServiceClient _blobServiceClient;
-
+        private static readonly string[] _container = {"admin", "company", "customer", "driver", "upload-file"};
         public BaseService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient)
         {
             _unitOfWork = unitOfWork;
@@ -89,10 +89,10 @@ namespace TourismSmartTransportation.Business.Implements
 
             return result;
         }
-
-        public async Task<string> Upload(IFormFile[] files, string container)
+        // Upload files to azure blob
+        public async Task<string> UploadFile(IFormFile[] files, Container index)
         {
-            var blobContainer = _blobServiceClient.GetBlobContainerClient(container);
+            var blobContainer = _blobServiceClient.GetBlobContainerClient(_container[(int)index]);
             if (blobContainer == null || files == null)
             {
                 return null;
@@ -108,9 +108,23 @@ namespace TourismSmartTransportation.Business.Implements
             return result;
         }
 
-        public async Task<string> Delete(string[] fileNames, string container, string photoUrl)
+        // Upload file to azure blob
+        public async Task<string> UploadFile(IFormFile file, Container index)
         {
-            var blobContainer = _blobServiceClient.GetBlobContainerClient(container);
+            var blobContainer = _blobServiceClient.GetBlobContainerClient(_container[(int)index]);
+            if (blobContainer == null || file == null)
+            {
+                return null;
+            }
+            string fileName = Guid.NewGuid().ToString() + "." + file.ContentType.Substring(6);
+            var blobClient = blobContainer.GetBlobClient(fileName);
+            await blobClient.UploadAsync(file.OpenReadStream());
+            return fileName + " ";
+        }
+        // Delete files from azure blob
+        public async Task<string> DeleteFile(string[] fileNames, Container index, string photoUrl)
+        {
+            var blobContainer = _blobServiceClient.GetBlobContainerClient(_container[(int)index]);
             if (blobContainer == null || fileNames == null)
             {
                 return photoUrl;
@@ -131,8 +145,30 @@ namespace TourismSmartTransportation.Business.Implements
                         continue;
                         }  
                     }
+            }       
+            return photoUrl;
+        }
+        // Delete file from azure blob
+        public async Task<string> DeleteFile(string fileName, Container index, string photoUrl)
+        {
+            var blobContainer = _blobServiceClient.GetBlobContainerClient(_container[(int)index]);
+            if (blobContainer == null || fileName == null)
+            {
+                return photoUrl;
             }
-                    
+            if (photoUrl.Contains(fileName))
+            {
+                try
+                {
+                     var blobClient = blobContainer.GetBlobClient(fileName);
+                     await blobClient.DeleteAsync();
+                     photoUrl = photoUrl.Replace(fileName + " ", "");
+                }
+                catch
+                {
+                    return photoUrl;
+                }
+            }
             return photoUrl;
         }
     }
