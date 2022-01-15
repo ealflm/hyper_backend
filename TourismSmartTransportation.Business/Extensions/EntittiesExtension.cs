@@ -1,4 +1,5 @@
 using TourismSmartTransportation.Business.ViewModel.Admin.CompanyManagement;
+using TourismSmartTransportation.Business.ViewModel.Admin.CustomerManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.Discount;
 using TourismSmartTransportation.Business.ViewModel.Admin.Service;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
@@ -71,6 +72,22 @@ namespace TourismSmartTransportation.Business.Extensions
                 Latitude = item.Latitude,
                 Longitude = item.Longitude,
                 Name = item.Name,
+                Status = item.Status
+            };
+        }
+
+        public static CustomerViewModel AsCustomerViewModel(this Customer item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                FirstName=item.FirstName,
+                LastName= item.LastName,
+                Gender= item.Gender,
+                Birthday= item.Birthday,
+                Email= item.Email,
+                PhoneNumber= item.PhoneNumber,
+                PhotoUrl=item.PhotoUrl,
                 Status = item.Status
             };
         }
