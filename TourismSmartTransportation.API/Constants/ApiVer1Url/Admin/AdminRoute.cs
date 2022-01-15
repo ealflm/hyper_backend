@@ -18,9 +18,6 @@ namespace ApiVer1Url
         // Station
         public const string Station = BaseApiUrl + "/stations";
 
-        // Upload
-        public const string UploadFile = BaseApiUrl + "/upload";
-
         // Discount
         public const string Discount = BaseApiUrl + "/discounts";
 
@@ -29,5 +26,8 @@ namespace ApiVer1Url
 
         // Serivice
         public const string Service = BaseApiUrl + "/service-management";
+
+        // Customer
+        public const string Customer = BaseApiUrl + "/customers";
     }
 }
