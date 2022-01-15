@@ -1,10 +1,11 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 using TourismSmartTransportation.Business.Validation;
+using TourismSmartTransportation.Business.ViewModel.Common;
 
 namespace TourismSmartTransportation.Business.SearchModel.Admin.Authorization
 {
-    public class RegisterSearchModel
+    public class RegisterSearchModel : FileViewModel
     {
         [NotAllowedEmptyStringValidator]
         public string FirstName { get; set; }
