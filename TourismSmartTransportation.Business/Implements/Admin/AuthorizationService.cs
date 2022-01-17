@@ -136,7 +136,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Password = passwordHash,
                     Salt = passwordSalt,
                     PhoneNumber= model.PhoneNumber,
-                    PhotoUrl= await UploadFile(model.UploadFile, Container.Test)
+                    PhotoUrl= await UploadFile(model.UploadFile, Container.Admin)
                 };
                 admin.Status = 1;
 
