@@ -42,7 +42,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     PhoneNumber= model.PhoneNumber,
                     Password = passwordHash,
                     Salt = passwordSalt,
-                    PhotoUrl = UploadFile(model.UploadFile, Container.Test).Result,
+                    PhotoUrl = UploadFile(model.UploadFile, Container.Customer).Result,
                     Status = 1
                 };
                 await _unitOfWork.CustomerRepository.Add(customer);
@@ -120,8 +120,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     customer.Password = UpdateTypeOfNullAbleObject<byte[]>(customer.Password, passwordHash);
                     customer.Salt = UpdateTypeOfNullAbleObject<byte[]>(customer.Salt, passwordSalt);
                 }
-                customer.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Test, customer.PhotoUrl);
-                customer.PhotoUrl += await UploadFile(model.UploadFile, Container.Test);
+                customer.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Customer, customer.PhotoUrl);
+                customer.PhotoUrl += await UploadFile(model.UploadFile, Container.Customer);
                 customer.FirstName = UpdateTypeOfNullAbleObject<string>(customer.FirstName, model.FirstName);
                 customer.LastName = UpdateTypeOfNullAbleObject<string>(customer.LastName, model.LastName);
                 customer.Email = UpdateTypeOfNullAbleObject<string>(customer.Email, model.Email);
