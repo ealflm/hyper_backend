@@ -137,7 +137,6 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-            services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<Business.Interfaces.Admin.IAuthorizationService, AuthorizationService>();
             services.AddScoped<IStationManagementService, StationManagementService>();
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
