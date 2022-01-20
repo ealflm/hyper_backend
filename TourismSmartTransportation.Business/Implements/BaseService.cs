@@ -15,7 +15,7 @@ namespace TourismSmartTransportation.Business.Implements
     {
         protected readonly IUnitOfWork _unitOfWork;
         private readonly BlobServiceClient _blobServiceClient;
-        private static readonly string[] _container = {"admin", "company", "customer", "driver", "upload-file"};
+        private static readonly string[] _container = { "admin", "company", "customer", "driver", "upload-file" };
         public BaseService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient)
         {
             _unitOfWork = unitOfWork;
@@ -44,6 +44,7 @@ namespace TourismSmartTransportation.Business.Implements
         // Get number of pages need to show on UI
         public static int GetPageSize(int itemPerPage, int totalRecord)
         {
+            // return itemPerPage == 0 ? 1 : (int)Math.Ceiling(totalRecord / (double)itemPerPage);
             return itemPerPage == 0 ? 1 : (totalRecord / itemPerPage) + (totalRecord % itemPerPage > 0 ? 1 : 0);
         }
 
@@ -98,7 +99,7 @@ namespace TourismSmartTransportation.Business.Implements
                 return null;
             }
             string result = string.Empty;
-            foreach(IFormFile file in files)
+            foreach (IFormFile file in files)
             {
                 string fileName = Guid.NewGuid().ToString() + "." + file.ContentType.Substring(6);
                 var blobClient = blobContainer.GetBlobClient(fileName);
@@ -132,20 +133,20 @@ namespace TourismSmartTransportation.Business.Implements
 
             foreach (string fileName in fileNames)
             {
-                    if (photoUrl.Contains(fileName))
+                if (photoUrl.Contains(fileName))
+                {
+                    try
                     {
-                        try
-                        {
-                            var blobClient = blobContainer.GetBlobClient(fileName);
-                            await blobClient.DeleteAsync();
-                            photoUrl = photoUrl.Replace(fileName + " ", "");
-                        }
-                        catch
-                        {
-                        continue;
-                        }  
+                        var blobClient = blobContainer.GetBlobClient(fileName);
+                        await blobClient.DeleteAsync();
+                        photoUrl = photoUrl.Replace(fileName + " ", "");
                     }
-            }       
+                    catch
+                    {
+                        continue;
+                    }
+                }
+            }
             return photoUrl;
         }
         // Delete file from azure blob
@@ -160,9 +161,9 @@ namespace TourismSmartTransportation.Business.Implements
             {
                 try
                 {
-                     var blobClient = blobContainer.GetBlobClient(fileName);
-                     await blobClient.DeleteAsync();
-                     photoUrl = photoUrl.Replace(fileName + " ", "");
+                    var blobClient = blobContainer.GetBlobClient(fileName);
+                    await blobClient.DeleteAsync();
+                    photoUrl = photoUrl.Replace(fileName + " ", "");
                 }
                 catch
                 {
