@@ -14,8 +14,4 @@
     <ProjectReference Include="..\TourismSmartTransportation.Data\TourismSmartTransportation.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Constants\" />
-  </ItemGroup>
-
 </Project>
