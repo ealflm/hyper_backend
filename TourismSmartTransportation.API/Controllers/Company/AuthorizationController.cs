@@ -10,7 +10,7 @@ using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 
-namespace TourismSmartTransportation.API.Controllers.Admin
+namespace TourismSmartTransportation.API.Controllers.Company
 {
     [ApiController]
     public class AuthorizationController : ControllerBase
@@ -23,10 +23,10 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpPost]
-        [Route(ApiVer1Url.Admin.Login)]
+        [Route(ApiVer1Url.Company.Login)]
         public async Task<IActionResult> Login([FromBody] LoginSearchModel model)
         {
-            var result = await _authorizationService.Login(model, global::Login.Admin);
+            var result = await _authorizationService.Login(model, global::Login.Company);
 
             if (result.Data == null)
             {
@@ -36,18 +36,5 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             return Ok(loginViewModel);
         }
 
-        [HttpPost]
-        [Route(ApiVer1Url.Admin.Register)]
-        public async Task<IActionResult> Register([FromBody] RegisterSearchModel model)
-        {
-            var result = await _authorizationService.Register(model);
-
-            if (result != null)
-            {
-                return ValidationProblem(result.Message);
-            }
-
-            return Ok();
-        }
     }
 }
