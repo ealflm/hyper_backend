@@ -21,18 +21,12 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             _service = service;
         }
 
-        // [HttpGet]
-        // public async Task<IActionResult> GetListDiscounts()
-        // {
-        //     return Ok(await _service.GetListDiscounts());
-        // }
-
         [HttpGet]
-        public async Task<IActionResult> SearchDiscount([FromQuery] DiscountSearchModel model)
+        public IActionResult SearchDiscount([FromQuery] DiscountSearchModel model)
         {
-            var result = await _service.SearchDiscount(model);
-            if (result is null)
-                return StatusCode(200, Array.Empty<Object>());
+            var result = _service.SearchDiscount(model);
+            // if (result.Items is null)
+            //     return StatusCode(200, Array.Empty<Object>());
 
             return Ok(result);
         }

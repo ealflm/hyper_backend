@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Data.Context;
@@ -21,6 +22,11 @@ namespace TourismSmartTransportation.Data.Repositories
         public DbSet<TEntity> Query()
         {
             return _dbSet;
+        }
+
+        public IQueryable<TEntity> FindAsNoTracking()
+        {
+            return _dbContext.Set<TEntity>().AsNoTracking();
         }
 
         public async Task<TEntity> GetById(Guid id)

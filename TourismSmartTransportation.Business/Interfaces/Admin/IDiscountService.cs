@@ -5,6 +5,7 @@ using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Admin.Discount;
 using TourismSmartTransportation.Business.ViewModel.Admin.Discount;
 using TourismSmartTransportation.Business.ViewModel.Common;
+using TourismSmartTransportation.Data.Models;
 
 namespace TourismSmartTransportation.Business.Interfaces.Admin
 {
@@ -15,6 +16,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
         Task<Response> CreateDiscount(CreateDiscountModel model);
         Task<Response> UpdateDiscount(Guid id, CreateDiscountModel model);
         Task<Response> DeleteDiscount(Guid id);
-        Task<SearchDiscountResultViewModel> SearchDiscount(DiscountSearchModel model);
+        SearchResultViewModel<DiscountViewModel> SearchDiscount(DiscountSearchModel model);
     }
 }

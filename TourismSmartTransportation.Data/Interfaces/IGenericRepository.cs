@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TourismSmartTransportation.Data.Interfaces
@@ -7,6 +8,8 @@ namespace TourismSmartTransportation.Data.Interfaces
     public interface IGenericRepository<TEntity> where TEntity : class
     {
         DbSet<TEntity> Query();
+
+        IQueryable<TEntity> FindAsNoTracking();
 
         Task<TEntity> GetById(Guid id);
 

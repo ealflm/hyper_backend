@@ -85,32 +85,26 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return list;
         }
 
-        public async Task<SearchDiscountResultViewModel> SearchDiscount(DiscountSearchModel model)
+        public SearchResultViewModel<DiscountViewModel> SearchDiscount(DiscountSearchModel model)
         {
-            var listItemsAfterSearching = await _unitOfWork.DiscountRepository
-                            .Query()
+            var source = _unitOfWork.DiscountRepository
+                            .FindAsNoTracking()
                             .Where(item => model.Title == null || item.Title.Contains(model.Title))
                             .Where(item => model.Code == null || item.Code.Contains(model.Code))
                             .Where(item => model.Value == null || item.Value.ToString().Contains(model.Value.Value.ToString()))
                             .Where(item => model.TimeStart == null || item.TimeStart >= model.TimeStart.Value)
                             .Where(item => model.TimeEnd == null || item.TimeEnd <= model.TimeEnd.Value.AddDays(1))
-                            .Where(item => model.Status == null || item.Status == model.Status.Value)
-                            // .OrderBySingleField(SortBy(model.SortBy, "TimeStart"))
+                            .Where(item => model.Status == null || item.Status == model.Status.Value);
+            // .FilterFunc(model).AsEnumerable();
+
+            var totalItems = source.Count();
+            var items = source.AsQueryable().OrderByCustomFunc(model.SortBy)
+                            .PaginateFunc(model.PageIndex, model.ItemsPerPage)
                             .Select(item => item.AsDiscountViewModel())
-                            .ToListAsync();
+                            .ToList();
+            var pageSize = GetPageSize(model.ItemsPerPage, totalItems);
 
-            var listAfterSorting = GetListAfterSorting(listItemsAfterSearching, model.SortBy);
-            var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
-            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
-
-            SearchDiscountResultViewModel searchResult = new()
-            {
-                Items = listItemsAfterPaging,
-                TotalItems = totalRecord,
-                PageSize = GetPageSize(model.ItemsPerPage, totalRecord)
-            };
-
-            return searchResult;
+            return new SearchResultViewModel<DiscountViewModel>(items, pageSize, totalItems);
         }
 
         public async Task<Response> UpdateDiscount(Guid id, CreateDiscountModel model)
