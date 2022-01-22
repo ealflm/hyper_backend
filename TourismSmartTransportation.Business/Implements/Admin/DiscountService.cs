@@ -89,13 +89,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
             var source = _unitOfWork.DiscountRepository
                             .FindAsNoTracking()
-            // .Where(item => model.Title == null || item.Title.Contains(model.Title));
-            // .Where(item => model.Code == null || item.Code.Contains(model.Code))
-            // .Where(item => model.Value == null || item.Value.ToString().Contains(model.Value.Value.ToString()))
-            // .Where(item => model.TimeStart == null || item.TimeStart >= model.TimeStart.Value)
-            // .Where(item => model.TimeEnd == null || item.TimeEnd <= model.TimeEnd.Value.AddDays(1))
-            // .Where(item => model.Status == null || item.Status == model.Status.Value)
-            .FilterFunc(model).AsEnumerable();
+                            .Where(item => model.Title == null || item.Title.Contains(model.Title))
+                            .Where(item => model.Code == null || item.Code.Contains(model.Code))
+                            .Where(item => model.Value == null || item.Value.ToString().Contains(model.Value.Value.ToString()))
+                            .Where(item => model.TimeStart == null || item.TimeStart >= model.TimeStart.Value)
+                            .Where(item => model.TimeEnd == null || item.TimeEnd <= model.TimeEnd.Value.AddDays(1))
+                            .Where(item => model.Status == null || item.Status == model.Status.Value);
+            // .FilterFunc(model).AsEnumerable();
 
             var totalItems = source.Count();
             var items = source.AsQueryable().OrderByCustomFunc(model.SortBy)
