@@ -86,7 +86,7 @@ namespace TourismSmartTransportation.Business.Extensions
             return pagingQuery;
         }
 
-        //
+        // Generic filter function
         public static IQueryable<T> FilterFunc<T>(this IQueryable<T> source, Object model)
         {
             if (model is null)
@@ -95,34 +95,97 @@ namespace TourismSmartTransportation.Business.Extensions
             IQueryable<T> query = source;
             foreach (var p in model.GetType().GetProperties())
             {
-                if (p.Name != "Title" && p.GetValue(model) == null)
+                if (p.Name == "PageIndex" || p.Name == "ItemsPerPage")
                     continue;
 
-                string[] spiltArr = Regex.Split(p.ToString(), @"\s*,\s*");
-                for (int i = 0; i < spiltArr.Length; i++)
+                if (!p.Name.Contains("Time"))
                 {
-                    var type = typeof(T);
-                    var property = type.GetProperty(p.Name);
-                    Expression<Func<T, bool>> predicate = item
-                        => item.GetType().GetProperty(p.Name).GetValue(item, null).ToString().Contains(spiltArr[i]);
+                    var modelValue = p.GetValue(model);
 
-                    var resultExpression = Expression.Call(null, ((MethodInfo)MethodBase.GetCurrentMethod()).MakeGenericMethod(new Type[] { type }),
-                                          source.Expression, Expression.Quote(predicate));
+                    if (modelValue is null || (modelValue != null && string.IsNullOrWhiteSpace(modelValue.ToString())))
+                        continue;
+                    string[] spiltArr = Regex.Split(modelValue.ToString(), @"\s*,\s*");
+                    Func<T, bool> predicate = item =>
+                                    {
+                                        string value = item.GetType().GetProperty(p.Name).GetValue(item, null).ToString();
+                                        foreach (var a in spiltArr)
+                                        {
+                                            if (value.Contains(a))
+                                                return true;
+                                        }
+                                        return false;
+                                    };
+                    query = query.Where(predicate).AsQueryable();
+                }
+                else if (p.Name.Contains("TimeStart"))
+                {
+                    var modelValue = p.GetValue(model, null);
+                    if (modelValue is null)
+                        continue;
 
-                    query = source.Provider.CreateQuery<T>(resultExpression);
+                    Func<T, bool> predicate = item =>
+                                    {
+                                        if (item.GetType().GetProperty(p.Name).Name.Equals("TimeStart"))
+                                        {
+                                            DateTime value = (DateTime)item.GetType().GetProperty(p.Name).GetValue(item, null);
+                                            var date1 = value.ToShortDateString();
+                                            var date2 = modelValue.ToShortDateString();
+                                            if (DateTime.Compare(DateTime.Parse(date1), DateTime.Parse(date2)) >= 0)
+                                                return true;
+                                        }
+                                        return false;
+                                    };
+                    query = query.Where(predicate).AsQueryable();
+                }
+                else if (p.Name.Contains("TimeEnd"))
+                {
+                    var modelValue = p.GetValue(model, null);
+                    if (modelValue is null)
+                        continue;
+
+                    Func<T, bool> predicate = item =>
+                                    {
+                                        if (item.GetType().GetProperty(p.Name).Name.Equals("TimeEnd"))
+                                        {
+                                            DateTime value = (DateTime)item.GetType().GetProperty(p.Name).GetValue(item, null);
+                                            var date1 = value.ToShortDateString();
+                                            var date2 = modelValue.ToShortDateString();
+                                            if (DateTime.Compare(DateTime.Parse(date1), DateTime.Parse(date2)) <= 0)
+                                                return true;
+                                        }
+                                        return false;
+                                    };
+                    query = query.Where(predicate).AsQueryable();
+                }
+                else if (p.Name.Contains("Time"))
+                {
+                    var modelValue = p.GetValue(model, null);
+                    if (modelValue is null)
+                        continue;
+
+                    Func<T, bool> predicate = item =>
+                                    {
+                                        if (item.GetType().GetProperty(p.Name).Name.Contains("Time"))
+                                        {
+                                            DateTime value = (DateTime)item.GetType().GetProperty(p.Name).GetValue(item, null);
+                                            var date1 = value.ToShortDateString();
+                                            var date2 = modelValue.ToShortDateString();
+                                            if (date1.Equals(date2))
+                                                return true;
+                                        }
+                                        return false;
+                                    };
+                    query = query.Where(predicate).AsQueryable();
                 }
             }
-
-
-
-            // Expression<Func<T, bool>> predicate = item => true;
-            // var resultExpression = Expression.Call(
-            //     null,
-            //     ((MethodInfo)MethodBase.GetCurrentMethod()).MakeGenericMethod(new Type[] { typeof(T) }),
-            //     new Expression[] { source.Expression, Expression.Quote(predicate) });
 
             return query;
         }
 
+        // Format to short date string
+        public static string ToShortDateString(this object obj)
+        {
+            return obj.ToString().Split(' ')[0];
+        }
     }
 }
