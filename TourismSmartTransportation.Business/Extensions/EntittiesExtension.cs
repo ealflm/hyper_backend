@@ -4,6 +4,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.Discount;
 using TourismSmartTransportation.Business.ViewModel.Admin.Service;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.Vehicle;
+using TourismSmartTransportation.Business.ViewModel.Company.RentStationManagement;
 using TourismSmartTransportation.Data.Models;
 
 namespace TourismSmartTransportation.Business.Extensions
@@ -88,6 +89,19 @@ namespace TourismSmartTransportation.Business.Extensions
                 Email= item.Email,
                 PhoneNumber= item.PhoneNumber,
                 PhotoUrl=item.PhotoUrl,
+                Status = item.Status
+            };
+        }
+
+        public static RentStationViewModel AsRentStationViewModel(this RentStation item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Address = item.Address,
+                Latitude = item.Latitude,
+                Longitude = item.Longitude,
+                Name = item.Name,
                 Status = item.Status
             };
         }

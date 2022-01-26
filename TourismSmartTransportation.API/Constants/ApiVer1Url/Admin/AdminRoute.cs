@@ -29,5 +29,8 @@ namespace ApiVer1Url
 
         // Customer
         public const string Customer = BaseApiUrl + "/customers";
+
+        // RentStation
+        public const string RentStation = BaseApiUrl + "/rent-station";
     }
 }
