@@ -18,9 +18,9 @@ namespace TourismSmartTransportation.Data.Models
         public bool Gender { get; set; }
         public int YearOfBirth { get; set; }
         public string PhoneNumber { get; set; }
+        public string PhotoUrl { get; set; }
         public byte[] Password { get; set; }
         public byte[] Salt { get; set; }
-        public string PhotoUrl { get; set; }
         public Guid CompanyId { get; set; }
         public int Status { get; set; }
 

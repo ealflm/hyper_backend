@@ -38,7 +38,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         [HttpPost]
         [Route(ApiVer1Url.Admin.Register)]
-        public async Task<IActionResult> Register([FromBody] RegisterSearchModel model)
+        public async Task<IActionResult> Register([FromForm] RegisterSearchModel model)
         {
             var result = await _authorizationService.Register(model);
 

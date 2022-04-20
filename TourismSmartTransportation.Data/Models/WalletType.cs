@@ -5,17 +5,18 @@ using System.Collections.Generic;
 
 namespace TourismSmartTransportation.Data.Models
 {
-    public partial class ServiceType
+    public partial class WalletType
     {
-        public ServiceType()
+        public WalletType()
         {
-            ServiceDetails = new HashSet<ServiceDetail>();
+            Wallets = new HashSet<Wallet>();
         }
 
         public Guid Id { get; set; }
         public string Title { get; set; }
+        public string Description { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<ServiceDetail> ServiceDetails { get; set; }
+        public virtual ICollection<Wallet> Wallets { get; set; }
     }
 }

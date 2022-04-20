@@ -9,21 +9,20 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Service()
         {
+            OrderOfServices = new HashSet<OrderOfService>();
             ServiceDetails = new HashSet<ServiceDetail>();
-            ServiceDiscounts = new HashSet<ServiceDiscount>();
-            WalletServices = new HashSet<WalletService>();
         }
 
         public Guid Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
-        public DateTime Time { get; set; }
+        public DateTime TimeStart { get; set; }
+        public DateTime TimeEnd { get; set; }
         public string PhotoUrls { get; set; }
         public int Status { get; set; }
 
+        public virtual ICollection<OrderOfService> OrderOfServices { get; set; }
         public virtual ICollection<ServiceDetail> ServiceDetails { get; set; }
-        public virtual ICollection<ServiceDiscount> ServiceDiscounts { get; set; }
-        public virtual ICollection<WalletService> WalletServices { get; set; }
     }
 }

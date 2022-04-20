@@ -19,7 +19,8 @@ namespace TourismSmartTransportation.Business.Extensions
                 Title = item.Title,
                 Description = item.Description,
                 Price = item.Price,
-                Time = item.Time,
+                TimeStart = item.TimeStart,
+                TimeEnd= item.TimeEnd,
                 PhotoUrls = item.PhotoUrls,
                 Status = item.Status
             };
@@ -98,7 +99,6 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                Address = item.Address,
                 Latitude = item.Latitude,
                 Longitude = item.Longitude,
                 Name = item.Name,

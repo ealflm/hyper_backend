@@ -9,8 +9,9 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Company()
         {
-            CompanyTrips = new HashSet<CompanyTrip>();
             Drivers = new HashSet<Driver>();
+            RentStations = new HashSet<RentStation>();
+            Trips = new HashSet<Trip>();
             Vehicles = new HashSet<Vehicle>();
         }
 
@@ -23,8 +24,9 @@ namespace TourismSmartTransportation.Data.Models
         public string PhotoUrl { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<CompanyTrip> CompanyTrips { get; set; }
         public virtual ICollection<Driver> Drivers { get; set; }
+        public virtual ICollection<RentStation> RentStations { get; set; }
+        public virtual ICollection<Trip> Trips { get; set; }
         public virtual ICollection<Vehicle> Vehicles { get; set; }
     }
 }

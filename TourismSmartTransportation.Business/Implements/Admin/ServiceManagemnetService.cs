@@ -29,7 +29,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Title = model.Title,
                     Description = model.Description,
                     Price = model.Price.Value,
-                    Time = model.Time.Value,
+                    TimeStart = model.TimeStart.Value,
+                    TimeEnd = model.TimeEnd.Value,
                     PhotoUrls = model.PhotoUrls != null ? model.PhotoUrls : "",
                     Status = model.Status.Value
                 };
@@ -89,7 +90,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         .Where(item => model.Title == null || item.Title.Contains(model.Title))
                         .Where(item => model.Description == null || item.Description.Contains(model.Description))
                         .Where(item => model.Price == null || item.Price == model.Price.Value)
-                        .Where(item => model.Time == null || model.Time.Value <= item.Time && item.Time < model.Time.Value.AddDays(1))
+                        .Where(item => model.TimeStart == null || model.TimeStart.Value <= item.TimeStart && item.TimeStart < model.TimeStart.Value.AddDays(1))
+                        .Where(item => model.TimeEnd == null || model.TimeEnd.Value <= item.TimeEnd && item.TimeEnd < model.TimeEnd.Value.AddDays(1))
                         .Where(item => model.Status == null || item.Status == model.Status.Value)
                         // .OrderByDynamicProperty(SortBy(model.SortBy, "Time"))
                         .Select(item => item.AsServiceViewModel())
@@ -123,7 +125,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 entity.Title = UpdateTypeOfNullAbleObject<string>(entity.Title, model.Title);
                 entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
                 entity.Price = UpdateTypeOfNotNullAbleObject<decimal>(entity.Price, model.Price);
-                entity.Time = UpdateTypeOfNotNullAbleObject<DateTime>(entity.Time, model.Time);
+                entity.TimeStart = UpdateTypeOfNotNullAbleObject<DateTime>(entity.TimeStart, model.TimeStart);
+                entity.TimeEnd = UpdateTypeOfNotNullAbleObject<DateTime>(entity.TimeEnd, model.TimeEnd);
                 entity.PhotoUrls = UpdateTypeOfNullAbleObject<string>(entity.PhotoUrls, model.PhotoUrls);
                 entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
 

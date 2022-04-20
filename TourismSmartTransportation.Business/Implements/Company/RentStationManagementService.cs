@@ -27,7 +27,6 @@ namespace TourismSmartTransportation.Business.Implements.Company
             {
                 var rentStation = new RentStation()
                 {
-                    Address = model.Address,
                     Name = model.Name,
                     Latitude = model.Latitude.Value,
                     Longitude = model.Longitude.Value,
@@ -93,7 +92,6 @@ namespace TourismSmartTransportation.Business.Implements.Company
             {
                 var rentStation = await _unitOfWork.RentStationRepository.GetById(id);
                 rentStation.Name = UpdateTypeOfNullAbleObject<string>(rentStation.Name, model.Name);
-                rentStation.Address = UpdateTypeOfNullAbleObject<string>(rentStation.Address, model.Address);
                 rentStation.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Latitude, model.Latitude);
                 rentStation.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Longitude, model.Longitude);
                 rentStation.Status = UpdateTypeOfNotNullAbleObject<int>(rentStation.Status, model.Status);

@@ -9,8 +9,8 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Guid Id { get; set; }
         public string Uid { get; set; }
-        public Guid WalletId { get; set; }
+        public Guid CustomerId { get; set; }
 
-        public virtual Wallet Wallet { get; set; }
+        public virtual Customer Customer { get; set; }
     }
 }

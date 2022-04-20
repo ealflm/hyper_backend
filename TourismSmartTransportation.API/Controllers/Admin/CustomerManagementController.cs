@@ -14,7 +14,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 {
     [Route(ApiVer1Url.Admin.Customer)]
     [ApiController]
-    public class CustomerManagementController : ControllerBase
+    public class CustomerManagementController : BaseController
     {
         private readonly ICustomerManagementService _service;
 
@@ -28,15 +28,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] CustomerSearchModel model)
         {
-            return Ok(await _service.SearchCustomer(model));
+            return SendReponse(await _service.SearchCustomer(model));
         }
 
         // GET api/<CustomerManagementController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var result = await _service.GetCustomer(id);
-            return result != null ? Ok(result) : NotFound();
+            return SendReponse(await _service.GetCustomer(id));
         }
 
         // POST api/<CustomerManagementController>
@@ -44,21 +43,21 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> Post([FromForm] AddCustomerViewModel model)
         {
-            return (await _service.AddCustomer(model)) ? StatusCode(201) : ValidationProblem();
+            return SendReponse(await _service.AddCustomer(model));
         }
 
         // PUT api/<CustomerManagementController>/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromForm] AddCustomerViewModel model)
         {
-            return (await _service.UpdateCustomer(id, model)) ? NoContent() : ValidationProblem();
+            return SendReponse(await _service.UpdateCustomer(id, model));
         }
 
         // DELETE api/<CustomerManagementController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return (await _service.DeleteCustomer(id)) ? Ok() : ValidationProblem();
+            return SendReponse(await _service.DeleteCustomer(id));
         }
     }
 }

@@ -15,7 +15,6 @@ namespace TourismSmartTransportation.Data.Models
 
         public Guid Id { get; set; }
         public string Title { get; set; }
-        public decimal Distance { get; set; }
         public int Status { get; set; }
 
         public virtual ICollection<RouteStation> RouteStations { get; set; }

@@ -17,7 +17,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 {
     [Route(ApiVer1Url.Admin.Company)]
     [ApiController]
-    public class CompanyMangementController : ControllerBase
+    public class CompanyMangementController : BaseController
     {
 
         private readonly ICompanyManagementService _service;
@@ -30,15 +30,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] CompanySearchModel model)
         {
-            return Ok(await _service.SearchCompany(model));
+            return SendReponse(await _service.SearchCompany(model));
         }
 
         // GET api/<StationMangementController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var result = await _service.GetCompany(id);
-            return result != null ? Ok(result) : NotFound();
+            return SendReponse(await _service.GetCompany(id));
         }
 
         // POST api/<StationMangementController>
@@ -46,7 +45,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> Post([FromForm] AddCompanyViewModel model)
         {
-            return (await _service.AddCompany(model)) ? StatusCode(201) : ValidationProblem();
+            return SendReponse(await _service.AddCompany(model));
         }
 
 
@@ -54,14 +53,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromForm] AddCompanyViewModel model)
         {
-            return (await _service.UpdateCompany(id, model)) ? NoContent() : ValidationProblem();
+            return SendReponse(await _service.UpdateCompany(id, model));
         }
 
         // DELETE api/<StationMangementController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return (await _service.DeleteCompany(id)) ? Ok() : ValidationProblem();
+            return SendReponse(await _service.DeleteCompany(id));
         }
     }
 }
