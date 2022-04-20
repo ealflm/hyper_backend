@@ -16,7 +16,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
     [Route(ApiVer1Url.Admin.Station)]
     [ApiController]
     [Authorize]
-    public class StationMangementController : ControllerBase
+    public class StationMangementController : BaseController
     {
 
         private readonly IStationManagementService _service;
@@ -29,15 +29,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] StationSearchModel model)
         {
-            return Ok(await _service.SearchStation(model));
+            return SendReponse(await _service.SearchStation(model));
         }
 
         // GET api/<StationMangementController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var result = await _service.GetStation(id);
-            return result !=null ? Ok(result): NotFound();
+            return SendReponse(await _service.GetStation(id));
         }
 
         // POST api/<StationMangementController>
@@ -45,7 +44,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> Post([FromBody] AddStationViewModel model) 
         {
-            return (await _service.AddStation(model)) ? StatusCode(201) : ValidationProblem();
+            return SendReponse(await _service.AddStation(model));
         }
         
 
@@ -53,14 +52,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromBody] AddStationViewModel model)
         {
-            return (await _service.UpdateStation(id, model)) ? NoContent() : ValidationProblem();
+            return SendReponse(await _service.UpdateStation(id, model));
         }
 
         // DELETE api/<StationMangementController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return (await _service.DeleteStation(id)) ? Ok() : ValidationProblem();
+            return SendReponse(await _service.DeleteStation(id));
         }
     }
 }

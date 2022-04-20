@@ -7,18 +7,13 @@ namespace TourismSmartTransportation.Data.Models
 {
     public partial class RentStation
     {
-        public RentStation()
-        {
-            Vehicles = new HashSet<Vehicle>();
-        }
-
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public string Address { get; set; }
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
+        public Guid CompanyId { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<Vehicle> Vehicles { get; set; }
+        public virtual Company Company { get; set; }
     }
 }

@@ -9,18 +9,18 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Wallet()
         {
-            Cards = new HashSet<Card>();
             Transactions = new HashSet<Transaction>();
-            WalletServices = new HashSet<WalletService>();
         }
 
         public Guid Id { get; set; }
         public decimal AccountBalance { get; set; }
+        public DateTime TimeStart { get; set; }
+        public DateTime TimeEnd { get; set; }
         public Guid CustomerId { get; set; }
+        public Guid WalletTypeId { get; set; }
 
         public virtual Customer Customer { get; set; }
-        public virtual ICollection<Card> Cards { get; set; }
+        public virtual WalletType WalletType { get; set; }
         public virtual ICollection<Transaction> Transactions { get; set; }
-        public virtual ICollection<WalletService> WalletServices { get; set; }
     }
 }

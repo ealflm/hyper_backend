@@ -13,13 +13,13 @@ namespace TourismSmartTransportation.Data.Models
         }
 
         public Guid Id { get; set; }
+        public Guid OrderId { get; set; }
         public decimal Amount { get; set; }
-        public int PaymentMethod { get; set; }
-        public DateTime Time { get; set; }
-        public Guid CustomerId { get; set; }
+        public DateTime CreateTime { get; set; }
+        public int Method { get; set; }
         public int Status { get; set; }
 
-        public virtual Customer Customer { get; set; }
+        public virtual Order Order { get; set; }
         public virtual ICollection<Transaction> Transactions { get; set; }
     }
 }

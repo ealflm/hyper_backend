@@ -9,8 +9,8 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Customer()
         {
-            Payments = new HashSet<Payment>();
-            Rents = new HashSet<Rent>();
+            Cards = new HashSet<Card>();
+            Orders = new HashSet<Order>();
             Wallets = new HashSet<Wallet>();
         }
 
@@ -19,15 +19,15 @@ namespace TourismSmartTransportation.Data.Models
         public string LastName { get; set; }
         public bool Gender { get; set; }
         public DateTime Birthday { get; set; }
-        public string PhoneNumber { get; set; }
         public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string PhotoUrl { get; set; }
         public byte[] Password { get; set; }
         public byte[] Salt { get; set; }
-        public string PhotoUrl { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<Payment> Payments { get; set; }
-        public virtual ICollection<Rent> Rents { get; set; }
+        public virtual ICollection<Card> Cards { get; set; }
+        public virtual ICollection<Order> Orders { get; set; }
         public virtual ICollection<Wallet> Wallets { get; set; }
     }
 }

@@ -16,6 +16,8 @@ namespace TourismSmartTransportation.Data.Models
         public string Name { get; set; }
         public int Seats { get; set; }
         public int Fuel { get; set; }
+        public decimal Price { get; set; }
+        public decimal Value { get; set; }
         public int Status { get; set; }
 
         public virtual ICollection<Vehicle> Vehicles { get; set; }

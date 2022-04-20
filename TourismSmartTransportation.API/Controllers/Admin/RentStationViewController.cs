@@ -16,7 +16,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
     [Route(ApiVer1Url.Admin.RentStation)]
     [ApiController]
     [Authorize]
-    public class RentStationMangementController : ControllerBase
+    public class RentStationMangementController : BaseController
     {
 
         private readonly IRentStationManagementService _service;
@@ -29,15 +29,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] RentStationSearchModel model)
         {
-            return Ok(await _service.SearchRentStation(model));
+            return SendReponse(await _service.SearchRentStation(model));
         }
 
         // GET api/<StationMangementController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var result = await _service.GetRentStation(id);
-            return result !=null ? Ok(result): NotFound();
+            return SendReponse(await _service.GetRentStation(id));
         }
 
     }

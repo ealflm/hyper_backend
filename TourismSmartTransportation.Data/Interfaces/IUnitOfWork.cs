@@ -10,18 +10,15 @@ namespace TourismSmartTransportation.Data.Interfaces
         IGenericRepository<Admin> AdminRepository { get; }
         IGenericRepository<Card> CardRepository { get; }
         IGenericRepository<Company> CompanyRepository { get; }
-        IGenericRepository<CompanyTrip> CompanyTripRepository { get; }
         IGenericRepository<Customer> CustomerRepository { get; }
         IGenericRepository<Discount> DiscountRepository { get; }
         IGenericRepository<Driver> DriverRepository { get; }
         IGenericRepository<Payment> PaymentRepository { get; }
-        IGenericRepository<Rent> RentRepository { get; }
         IGenericRepository<RentStation> RentStationRepository { get; }
         IGenericRepository<Route> RouteRepository { get; }
         IGenericRepository<RouteStation> RouteStationRepository { get; }
         IGenericRepository<Service> ServiceRepository { get; }
         IGenericRepository<ServiceDetail> ServiceDetailRepository { get; }
-        IGenericRepository<ServiceDiscount> ServiceDiscountRepository { get; }
         IGenericRepository<ServiceType> ServiceTypeRepository { get; }
         IGenericRepository<Station> StationRepository { get; }
         IGenericRepository<Transaction> TransactionRepository { get; }
@@ -29,7 +26,6 @@ namespace TourismSmartTransportation.Data.Interfaces
         IGenericRepository<Vehicle> VehicleRepository { get; }
         IGenericRepository<VehicleType> VehicleTypeRepository { get; }
         IGenericRepository<Wallet> WalletRepository { get; }
-        IGenericRepository<WalletService> WalletServiceRepository { get; }
 
         TourismSmartTransportationContext Context();
 
