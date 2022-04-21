@@ -18,10 +18,10 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
 
         public DateTime? TimeEnd { get; set; }
 
-        [Range(0, 0.99)]
-        public decimal? Value { get; set; }
+        [DiscountValueValidator]
+        public string Value { get; set; }
 
-        [Range(1, 2)]
-        public int? Status { get; set; }
+        [CheckStatusRecordValidator]
+        public string Status { get; set; }
     }
 }

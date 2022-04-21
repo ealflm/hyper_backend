@@ -110,7 +110,8 @@ namespace TourismSmartTransportation.Business.Extensions
                                         string value = item.GetType().GetProperty(p.Name).GetValue(item, null).ToString();
                                         foreach (var a in spiltArr)
                                         {
-                                            if (value.Contains(a))
+                                            // case database value 0.0
+                                            if (value.Equals(a) || (a.Equals("0") && value.Equals("0.0")))
                                                 return true;
                                         }
                                         return false;
