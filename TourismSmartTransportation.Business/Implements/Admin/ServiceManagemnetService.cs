@@ -82,7 +82,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 return new Response(500, e.Message.ToString());
             }
         }
-
         public async Task<SearchServiceResultViewModel> SearchServices(ServiceSearchModel model)
         {
             var listAfterSearching = await _unitOfWork.ServiceRepository
@@ -106,9 +105,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             SearchServiceResultViewModel searchResult = new()
             {
-                Items = listItemsAfterPaging,
-                TotalItems = totalRecord,
-                PageSize = GetPageSize(model.ItemsPerPage, totalRecord)
+                // Items = listItemsAfterPaging,
+                // TotalItems = totalRecord,
+                // PageSize = GetPageSize(model.ItemsPerPage, totalRecord)
             };
 
             return searchResult;
