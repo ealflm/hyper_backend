@@ -10,30 +10,46 @@ namespace TourismSmartTransportation.API.Controllers
     public class BaseController : ControllerBase
     {
         [NonAction]
-        public  ObjectResult SendReponse(object model)
+        public ObjectResult SendReponse(object result)
         {
             int statusCode = 200;
-            if (model == null)
-            {
-                statusCode = 404;
-                model = new {message= "Not Found" };
-            }
-            ObjectResult objectResult = new ObjectResult(model);
-            objectResult.StatusCode=statusCode;
-            return objectResult;
+            string message = "Success";
+            return HandleObjectResponse(statusCode, message, result);
         }
 
         [NonAction]
         public ObjectResult SendReponse(bool result)
         {
             int statusCode = 201;
-            String message = "Successful";
-            if (!result)
+            string message = result ? "Success" : "Validation Problem";
+            return HandleObjectResponse(statusCode, message, null);
+        }
+
+        private ObjectResult HandleObjectResponse(int statusCode, string message, object result)
+        {
+            ObjectResult objectResult = null;
+            Object responseData = null;
+
+            if
+            (result == null)
             {
-                statusCode = 400;
-                message = "Validation Problem";
+                responseData = new
+                {
+                    statusCode = statusCode,
+                    message = message
+                };
             }
-            ObjectResult objectResult = new ObjectResult(new {message= message });
+            else
+            {
+                responseData = new
+                {
+                    statusCode = statusCode,
+                    message = message,
+                    body = result
+                };
+            }
+
+            objectResult = new ObjectResult(responseData);
             objectResult.StatusCode = statusCode;
             return objectResult;
         }
