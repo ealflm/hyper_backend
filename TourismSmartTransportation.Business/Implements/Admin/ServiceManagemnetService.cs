@@ -105,9 +105,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             SearchServiceResultViewModel searchResult = new()
             {
-                // Items = listItemsAfterPaging,
-                // TotalItems = totalRecord,
-                // PageSize = GetPageSize(model.ItemsPerPage, totalRecord)
+                Items = listItemsAfterPaging,
+                TotalItems = totalRecord,
+                PageSize = GetPageSize(model.ItemsPerPage, totalRecord)
             };
 
             return searchResult;
