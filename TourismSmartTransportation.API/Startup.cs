@@ -181,7 +181,11 @@ namespace TourismSmartTransportation.API
                 var exception = context.Features
                     .Get<IExceptionHandlerPathFeature>()
                     .Error;
-                var response = new ErrorModel() { Error = exception.Message };
+                var response = new
+                {
+                    statusCode = 500,
+                    message = exception.Message
+                };
                 await context.Response.WriteAsJsonAsync(response);
             }));
 

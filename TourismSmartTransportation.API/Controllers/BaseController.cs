@@ -10,7 +10,7 @@ namespace TourismSmartTransportation.API.Controllers
     public class BaseController : ControllerBase
     {
         [NonAction]
-        public ObjectResult SendReponse(object result)
+        public ObjectResult SendResponse(object result)
         {
             int statusCode = 200;
             string message = "Success";
@@ -18,7 +18,7 @@ namespace TourismSmartTransportation.API.Controllers
         }
 
         [NonAction]
-        public ObjectResult SendReponse(bool result)
+        public ObjectResult SendResponse(bool result)
         {
             int statusCode = 201;
             string message = result ? "Success" : "Validation Problem";

@@ -95,7 +95,7 @@ namespace TourismSmartTransportation.Business.Extensions
             IQueryable<T> query = source;
             foreach (var p in model.GetType().GetProperties())
             {
-                if (p.Name == "PageIndex" || p.Name == "ItemsPerPage")
+                if (p.Name == "PageIndex" || p.Name == "ItemsPerPage" || p.Name == "SortBy")
                     continue;
 
                 if (!p.Name.Contains("Time"))
@@ -110,9 +110,15 @@ namespace TourismSmartTransportation.Business.Extensions
                                         string value = item.GetType().GetProperty(p.Name).GetValue(item, null).ToString();
                                         foreach (var a in spiltArr)
                                         {
-                                            // case database value 0.0
-                                            if (value.Equals(a) || (a.Equals("0") && value.Equals("0.0")))
-                                                return true;
+                                            try
+                                            {
+                                                if (value.Equals(a) || Double.Parse(a) == 0)
+                                                    return true;
+                                            }
+                                            catch (System.Exception)
+                                            {
+                                                break;
+                                            }
                                         }
                                         return false;
                                     };

@@ -12,15 +12,19 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
         [NotAllowedEmptyStringValidator]
         public string Code { get; set; }
 
+        public string Description { get; set; }
+
         [ValidStartDateTimeAttribute("TimeEnd", ErrorMessage = "Time start cannot be greater than Time end")]
         public DateTime? TimeStart { get; set; }
 
         public DateTime? TimeEnd { get; set; }
 
-        [Range(0, 0.99)]
+        public string PhotoUrls { get; set; }
+
+        [DiscountValueValidator]
         public decimal? Value { get; set; }
 
-        [Range(1, 2)]
-        public int? Status { get; set; }
+        [CheckStatusRecordValidator]
+        public int Status { get; set; }
     }
 }

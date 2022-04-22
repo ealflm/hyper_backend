@@ -30,14 +30,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] CompanySearchModel model)
         {
-            return SendReponse(await _service.SearchCompany(model));
+            return SendResponse(await _service.SearchCompany(model));
         }
 
         // GET api/<StationMangementController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            return SendReponse(await _service.GetCompany(id));
+            return SendResponse(await _service.GetCompany(id));
         }
 
         // POST api/<StationMangementController>
@@ -45,7 +45,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> Post([FromForm] AddCompanyViewModel model)
         {
-            return SendReponse(await _service.AddCompany(model));
+            return SendResponse(await _service.AddCompany(model));
         }
 
 
@@ -53,14 +53,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromForm] AddCompanyViewModel model)
         {
-            return SendReponse(await _service.UpdateCompany(id, model));
+            return SendResponse(await _service.UpdateCompany(id, model));
         }
 
         // DELETE api/<StationMangementController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return SendReponse(await _service.DeleteCompany(id));
+            return SendResponse(await _service.DeleteCompany(id));
         }
     }
 }
