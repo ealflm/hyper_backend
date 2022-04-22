@@ -29,37 +29,37 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] StationSearchModel model)
         {
-            return SendReponse(await _service.SearchStation(model));
+            return SendResponse(await _service.SearchStation(model));
         }
 
         // GET api/<StationMangementController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            return SendReponse(await _service.GetStation(id));
+            return SendResponse(await _service.GetStation(id));
         }
 
         // POST api/<StationMangementController>
         [HttpPost]
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
-        public async Task<IActionResult> Post([FromBody] AddStationViewModel model) 
+        public async Task<IActionResult> Post([FromBody] AddStationViewModel model)
         {
-            return SendReponse(await _service.AddStation(model));
+            return SendResponse(await _service.AddStation(model));
         }
-        
+
 
         // PUT api/<StationMangementController>/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromBody] AddStationViewModel model)
         {
-            return SendReponse(await _service.UpdateStation(id, model));
+            return SendResponse(await _service.UpdateStation(id, model));
         }
 
         // DELETE api/<StationMangementController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return SendReponse(await _service.DeleteStation(id));
+            return SendResponse(await _service.DeleteStation(id));
         }
     }
 }

@@ -28,14 +28,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] CustomerSearchModel model)
         {
-            return SendReponse(await _service.SearchCustomer(model));
+            return SendResponse(await _service.SearchCustomer(model));
         }
 
         // GET api/<CustomerManagementController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            return SendReponse(await _service.GetCustomer(id));
+            return SendResponse(await _service.GetCustomer(id));
         }
 
         // POST api/<CustomerManagementController>
@@ -43,21 +43,21 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> Post([FromForm] AddCustomerViewModel model)
         {
-            return SendReponse(await _service.AddCustomer(model));
+            return SendResponse(await _service.AddCustomer(model));
         }
 
         // PUT api/<CustomerManagementController>/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromForm] AddCustomerViewModel model)
         {
-            return SendReponse(await _service.UpdateCustomer(id, model));
+            return SendResponse(await _service.UpdateCustomer(id, model));
         }
 
         // DELETE api/<CustomerManagementController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return SendReponse(await _service.DeleteCustomer(id));
+            return SendResponse(await _service.DeleteCustomer(id));
         }
     }
 }

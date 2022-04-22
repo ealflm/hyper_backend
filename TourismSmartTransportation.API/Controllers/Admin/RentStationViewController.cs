@@ -29,14 +29,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] RentStationSearchModel model)
         {
-            return SendReponse(await _service.SearchRentStation(model));
+            return SendResponse(await _service.SearchRentStation(model));
         }
 
         // GET api/<StationMangementController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            return SendReponse(await _service.GetRentStation(id));
+            return SendResponse(await _service.GetRentStation(id));
         }
 
     }

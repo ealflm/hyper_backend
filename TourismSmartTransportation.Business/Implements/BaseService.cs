@@ -44,10 +44,8 @@ namespace TourismSmartTransportation.Business.Implements
         // Get number of pages need to show on UI
         public static int GetPageSize(int itemPerPage, int totalRecord)
         {
-            // return itemPerPage == 0 ? 1 : (int)Math.Ceiling(totalRecord / (double)itemPerPage);
-            return itemPerPage == 0 ? 1 : (totalRecord / itemPerPage) + (totalRecord % itemPerPage > 0 ? 1 : 0);
+            return totalRecord != 0 ? itemPerPage == 0 ? 1 : (totalRecord / itemPerPage) + (totalRecord % itemPerPage > 0 ? 1 : 0) : 0;
         }
-
 
         // Function using for method OrderBySingleField
         public static string SortBy(string sortByField, string defaultField)
@@ -90,6 +88,7 @@ namespace TourismSmartTransportation.Business.Implements
 
             return result;
         }
+
         // Upload files to azure blob
         public async Task<string> UploadFile(IFormFile[] files, Container index)
         {
@@ -122,6 +121,7 @@ namespace TourismSmartTransportation.Business.Implements
             await blobClient.UploadAsync(file.OpenReadStream());
             return fileName + " ";
         }
+
         // Delete files from azure blob
         public async Task<string> DeleteFile(string[] fileNames, Container index, string photoUrl)
         {
@@ -149,6 +149,7 @@ namespace TourismSmartTransportation.Business.Implements
             }
             return photoUrl;
         }
+
         // Delete file from azure blob
         public async Task<string> DeleteFile(string fileName, Container index, string photoUrl)
         {

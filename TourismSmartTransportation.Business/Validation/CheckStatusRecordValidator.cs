@@ -10,12 +10,12 @@ namespace TourismSmartTransportation.Business.Validation
 
             if (value != null && !string.IsNullOrWhiteSpace(value.ToString()))
             {
-                if (value.ToString().Equals("1") || value.ToString().Equals("2"))
+                if (value.ToString().Equals("0") || value.ToString().Equals("1"))
                 {
                     return ValidationResult.Success;
                 }
 
-                return new ValidationResult("Status is not correct! It is only  1 or 2");
+                return new ValidationResult("Status is not correct! It is only  0 or 1");
             }
 
             return ValidationResult.Success;

@@ -11,11 +11,10 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
 {
     public interface IDiscountService
     {
-        Task<List<DiscountViewModel>> GetListDiscounts();
         Task<DiscountViewModel> GetDiscount(Guid id);
-        Task<Response> CreateDiscount(CreateDiscountModel model);
-        Task<Response> UpdateDiscount(Guid id, CreateDiscountModel model);
-        Task<Response> DeleteDiscount(Guid id);
-        SearchResultViewModel<DiscountViewModel> SearchDiscount(DiscountSearchModel model);
+        Task<bool> CreateDiscount(CreateDiscountModel model);
+        Task<bool> UpdateDiscount(Guid id, CreateDiscountModel model);
+        Task<bool> DeleteDiscount(Guid id);
+        Task<SearchResultViewModel<DiscountViewModel>> SearchDiscount(DiscountSearchModel model);
     }
 }

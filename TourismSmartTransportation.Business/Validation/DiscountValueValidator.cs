@@ -10,12 +10,12 @@ namespace TourismSmartTransportation.Business.Validation
 
             if (value != null && !string.IsNullOrWhiteSpace(value.ToString()))
             {
-                if (Regex.IsMatch(value.ToString(), @"^0\.[1-9]{1}$|^[0-1]$"))
+                if (Regex.IsMatch(value.ToString(), @"^0\.[0-9]{1}$|^[0-1]$"))
                 {
                     return ValidationResult.Success;
                 }
 
-                return new ValidationResult("dicount value is not correct! It is only between 0 to 1");
+                return new ValidationResult("dicount value is not correct! It is only between 0 and 1");
             }
 
             return ValidationResult.Success;
