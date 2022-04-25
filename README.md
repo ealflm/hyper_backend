@@ -5,12 +5,12 @@
 
 ## Infomation
 
-- WebApi: https://tourism-smart-transportation.azurewebsites.net
-- WebApp: https://red-field-0f2c8b700.azurestaticapps.net/
+- WebApi: https://tourism-smart-transportation-api.azurewebsites.net
+- WebApp: https://wonderful-island-0a012b800.1.azurestaticapps.net
 - Database: 
-    + Server name: tourism-smart-transportation.database.windows.net
-    + Login: uni03_cp
-    + Password: password@03
+    + Server name: tourisms-smart-transportation.database.windows.net
+    + Login: uni03
+    + Password: Password@123
 
 
 ## Tech Stack
