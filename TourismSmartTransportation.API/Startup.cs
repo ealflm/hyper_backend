@@ -143,7 +143,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IStationManagementService, StationManagementService>();
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
             services.AddScoped<IDiscountService, DiscountService>();
-            services.AddScoped<ICompanyManagementService, CompanyManagementService>();
+            services.AddScoped<IPartnerManagementService, PartnerManagementService>();
             services.AddScoped<IServiceManagementService, ServiceManagement>();
             services.AddScoped<ICustomerManagementService, CustomerManagementService>();
             services.AddScoped<IRentStationManagementService, RentStationManagementService>();
@@ -165,7 +165,7 @@ namespace TourismSmartTransportation.API
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/admin/swagger.json", "TourismSmartTransportation.API Admin");
-                c.SwaggerEndpoint("/swagger/company/swagger.json", "TourismSmartTransportation.API Company");
+                c.SwaggerEndpoint("/swagger/partner/swagger.json", "TourismSmartTransportation.API Partner");
                 c.SwaggerEndpoint("/swagger/driver/swagger.json", "TourismSmartTransportation.API Driver");
                 c.SwaggerEndpoint("/swagger/customer/swagger.json", "TourismSmartTransportation.API Customer");
                 c.RoutePrefix = "";

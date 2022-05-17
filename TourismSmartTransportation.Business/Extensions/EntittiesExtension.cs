@@ -1,4 +1,4 @@
-using TourismSmartTransportation.Business.ViewModel.Admin.CompanyManagement;
+using TourismSmartTransportation.Business.ViewModel.Admin.PartnerManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.CustomerManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.Discount;
 using TourismSmartTransportation.Business.ViewModel.Admin.Service;
@@ -53,18 +53,25 @@ namespace TourismSmartTransportation.Business.Extensions
             };
         }
 
-        // public static CompanyViewModel AsCompanyViewModel(this Company item)
-        // {
-        //     return new()
-        //     {
-        //         Id = item.Id,
-        //         Name = item.Name,
-        //         Address = item.Address,
-        //         UserName = item.UserName,
-        //         PhotoUrl = item.PhotoUrl,
-        //         Status = item.Status
-        //     };
-        // }
+        public static PartnerViewModel AsPartnerViewModel(this Partner item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Username = item.Username,
+                FirstName = item.FirstName,
+                LastName = item.LastName,
+                PhotoUrl = item.PhotoUrl,
+                Gender = item.Gender,
+                Phone = item.Phone,
+                Address1 = item.Address1,
+                Address2 = item.Address2,
+                DateOfBirth = item.DateOfBirth,
+                CreatedDate = item.CreatedDate,
+                ModifiedDate = item.ModifiedDate,
+                Status = item.Status
+            };
+        }
 
         public static StationViewModel AsStationViewModel(this Station item)
         {

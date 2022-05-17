@@ -1,7 +1,7 @@
 ﻿public enum Container
 {
     Admin,
-    Company,
+    Partner,
     Customer,
     Driver,
     Test

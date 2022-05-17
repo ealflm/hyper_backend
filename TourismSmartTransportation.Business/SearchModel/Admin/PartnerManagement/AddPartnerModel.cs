@@ -7,19 +7,21 @@ using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Validation;
 using TourismSmartTransportation.Business.ViewModel.Common;
 
-namespace TourismSmartTransportation.Business.ViewModel.Admin.CompanyManagement
+namespace TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagement
 {
-    public class AddCompanyViewModel: FileViewModel
+    public class AddPartnerModel : FileViewModel
     {
         [NotAllowedEmptyStringValidator]
-        public string Name { get; set; }
+        [StringLength(255)]
+        public string Username { get; set; }
         [NotAllowedEmptyStringValidator]
-        public string UserName { get; set; }
+        public string FirstName { get; set; }
+        [NotAllowedEmptyStringValidator]
+        public string LastName { get; set; }
         [NotAllowedEmptyStringValidator]
         public string Password { get; set; }
-        [NotAllowedEmptyStringValidator]
-        public string Address { get; set; }
-        [Range(1, 2)]
+        [Range(0, 1)]
+        public bool Gender { get; set; }
         public int? Status { get; set; }
     }
 }

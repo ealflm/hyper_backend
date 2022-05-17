@@ -7,60 +7,60 @@ using System.Threading.Tasks;
 using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Interfaces;
 using TourismSmartTransportation.Business.Interfaces.Admin;
-using TourismSmartTransportation.Business.SearchModel.Admin.CompanyManagement;
+using TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagement;
 using TourismSmartTransportation.Business.SearchModel.Common;
-using TourismSmartTransportation.Business.ViewModel.Admin.CompanyManagement;
+using TourismSmartTransportation.Business.ViewModel.Admin.PartnerManagement;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace TourismSmartTransportation.API.Controllers.Admin
 {
-    [Route(ApiVer1Url.Admin.Company)]
+    [Route(ApiVer1Url.Admin.Partner)]
     [ApiController]
-    public class CompanyMangementController : BaseController
+    public class PartnerMangementController : BaseController
     {
 
-        private readonly ICompanyManagementService _service;
+        private readonly IPartnerManagementService _service;
 
-        public CompanyMangementController(ICompanyManagementService service)
+        public PartnerMangementController(IPartnerManagementService service)
         {
             _service = service;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] CompanySearchModel model)
+        public async Task<IActionResult> Get([FromQuery] PartnerSearchModel model)
         {
-            return SendResponse(await _service.SearchCompany(model));
+            return SendResponse(await _service.SearchPartner(model));
         }
 
         // GET api/<StationMangementController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            return SendResponse(await _service.GetCompany(id));
+            return SendResponse(await _service.GetPartner(id));
         }
 
         // POST api/<StationMangementController>
         [HttpPost]
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
-        public async Task<IActionResult> Post([FromForm] AddCompanyViewModel model)
+        public async Task<IActionResult> Post([FromForm] AddPartnerModel model)
         {
-            return SendResponse(await _service.AddCompany(model));
+            return SendResponse(await _service.AddPartner(model));
         }
 
 
         // PUT api/<StationMangementController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromForm] AddCompanyViewModel model)
+        public async Task<IActionResult> Put(Guid id, [FromForm] AddPartnerModel model)
         {
-            return SendResponse(await _service.UpdateCompany(id, model));
+            return SendResponse(await _service.UpdatePartner(id, model));
         }
 
         // DELETE api/<StationMangementController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return SendResponse(await _service.DeleteCompany(id));
+            return SendResponse(await _service.DeletePartner(id));
         }
     }
 }
