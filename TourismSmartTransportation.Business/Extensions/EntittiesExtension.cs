@@ -95,9 +95,9 @@ namespace TourismSmartTransportation.Business.Extensions
                 FirstName = item.FirstName,
                 LastName = item.LastName,
                 Gender = item.Gender,
-                Birthday = item.Birthday,
+                DateOfBirth = item.DateOfBirth,
                 Email = item.Email,
-                PhoneNumber = item.PhoneNumber,
+                Phone = item.Phone,
                 PhotoUrl = item.PhotoUrl,
                 Status = item.Status
             };
@@ -110,7 +110,6 @@ namespace TourismSmartTransportation.Business.Extensions
                 Id = item.Id,
                 Latitude = item.Latitude,
                 Longitude = item.Longitude,
-                Name = item.Name,
                 Status = item.Status
             };
         }

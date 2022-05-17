@@ -36,12 +36,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    Birthday= model.Birthday.Value,
-                    Email= model.Email,
-                    Gender= model.Gender.Value,
-                    PhoneNumber= model.PhoneNumber,
+                    DateOfBirth = model.Birthday.Value,
+                    Email = model.Email,
+                    Gender = model.Gender.Value,
+                    Phone = model.Phone,
                     Password = passwordHash,
-                    Salt = passwordSalt,
+                    // Salt = passwordSalt,
                     PhotoUrl = UploadFile(model.UploadFile, Container.Customer).Result,
                     Status = 1
                 };
@@ -89,8 +89,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 .Where(x => model.FirstName == null || x.FirstName.Contains(model.FirstName))
                 .Where(x => model.LastName == null || x.LastName.Contains(model.LastName))
                 .Where(x => model.Email == null || x.Email.Contains(model.Email))
-                .Where(x => model.PhoneNumber == null || x.PhoneNumber.Contains(model.PhoneNumber))
-                .Where(x => model.Birthday == null || x.Birthday==model.Birthday.Value)
+                .Where(x => model.PhoneNumber == null || x.Phone.Contains(model.PhoneNumber))
+                .Where(x => model.Birthday == null || x.DateOfBirth == model.Birthday.Value)
                 .Where(x => model.Gender == null || x.Gender == model.Gender.Value)
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .OrderBy(x => x.Email)
@@ -118,16 +118,16 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
                     customer.Password = UpdateTypeOfNullAbleObject<byte[]>(customer.Password, passwordHash);
-                    customer.Salt = UpdateTypeOfNullAbleObject<byte[]>(customer.Salt, passwordSalt);
+                    // customer.Salt = UpdateTypeOfNullAbleObject<byte[]>(customer.Salt, passwordSalt);
                 }
                 customer.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Customer, customer.PhotoUrl);
                 customer.PhotoUrl += await UploadFile(model.UploadFile, Container.Customer);
                 customer.FirstName = UpdateTypeOfNullAbleObject<string>(customer.FirstName, model.FirstName);
                 customer.LastName = UpdateTypeOfNullAbleObject<string>(customer.LastName, model.LastName);
                 customer.Email = UpdateTypeOfNullAbleObject<string>(customer.Email, model.Email);
-                customer.PhoneNumber = UpdateTypeOfNullAbleObject<string>(customer.PhoneNumber, model.PhoneNumber);
+                customer.Phone = UpdateTypeOfNullAbleObject<string>(customer.Phone, model.Phone);
                 customer.Gender = UpdateTypeOfNotNullAbleObject<bool>(customer.Gender, model.Gender);
-                customer.Birthday = UpdateTypeOfNotNullAbleObject<DateTime>(customer.Birthday, model.Birthday);
+                customer.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(customer.DateOfBirth, model.Birthday);
                 customer.Status = UpdateTypeOfNotNullAbleObject<int>(customer.Status, model.Status);
                 _unitOfWork.CustomerRepository.Update(customer);
                 await _unitOfWork.SaveChangesAsync();

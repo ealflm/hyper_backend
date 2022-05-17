@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using TourismSmartTransportation.Business.Validation;
 
-namespace TourismSmartTransportation.Business.SearchModel.Admin.Vehicle
+namespace TourismSmartTransportation.Business.SearchModel.Partner.Vehicle
 {
     public class CreateVehicleModel
     {
