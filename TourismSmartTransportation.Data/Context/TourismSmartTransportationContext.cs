@@ -818,7 +818,9 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.Property(e => e.Fuel).HasColumnType("decimal(18, 0)");
+                entity.Property(e => e.Fuel)
+                    .IsRequired()
+                    .HasMaxLength(255);
 
                 entity.Property(e => e.Label)
                     .IsRequired()

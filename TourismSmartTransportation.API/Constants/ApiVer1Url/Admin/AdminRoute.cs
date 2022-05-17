@@ -22,7 +22,7 @@ namespace ApiVer1Url
         public const string Discount = BaseApiUrl + "/discounts";
 
         // Company
-        public const string Company = BaseApiUrl + "/companies";
+        public const string Partner = BaseApiUrl + "/partners";
 
         // Serivice
         public const string Service = BaseApiUrl + "/service-management";
