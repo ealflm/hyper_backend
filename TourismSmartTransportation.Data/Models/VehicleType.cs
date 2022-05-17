@@ -16,7 +16,7 @@ namespace TourismSmartTransportation.Data.Models
         public Guid Id { get; set; }
         public string Label { get; set; }
         public int Seats { get; set; }
-        public decimal Fuel { get; set; }
+        public string Fuel { get; set; }
         public decimal Price { get; set; }
         public int Status { get; set; }
 
