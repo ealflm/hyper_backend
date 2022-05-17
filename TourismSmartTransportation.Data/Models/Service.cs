@@ -9,8 +9,7 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Service()
         {
-            OrderOfServices = new HashSet<OrderOfService>();
-            ServiceDetails = new HashSet<ServiceDetail>();
+
         }
 
         public Guid Id { get; set; }
@@ -22,7 +21,5 @@ namespace TourismSmartTransportation.Data.Models
         public string PhotoUrls { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<OrderOfService> OrderOfServices { get; set; }
-        public virtual ICollection<ServiceDetail> ServiceDetails { get; set; }
     }
 }

@@ -11,9 +11,9 @@ namespace TourismSmartTransportation.Data.Repositories
     public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
     {
         private readonly DbSet<TEntity> _dbSet;
-        private readonly TourismSmartTransportationContext _dbContext;
+        private readonly tourismsmarttransportationContext _dbContext;
 
-        public GenericRepository(TourismSmartTransportationContext dbContext)
+        public GenericRepository(tourismsmarttransportationContext dbContext)
         {
             _dbSet = dbContext.Set<TEntity>();
             _dbContext = dbContext;
