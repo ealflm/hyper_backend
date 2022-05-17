@@ -78,10 +78,11 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
+                Title = item.Title,
                 Address = item.Address,
+                Description = item.Description,
                 Latitude = item.Latitude,
                 Longitude = item.Longitude,
-                Name = item.Name,
                 Status = item.Status
             };
         }

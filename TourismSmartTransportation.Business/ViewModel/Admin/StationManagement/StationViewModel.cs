@@ -10,10 +10,11 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.StationManagement
     public class StationViewModel
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
         public string Address { get; set; }
-        public decimal? Latitude { get; set; }
-        public decimal? Longitude { get; set; }
-        public int? Status { get; set; }
+        public decimal Longitude { get; set; }
+        public decimal Latitude { get; set; }
+        public int Status { get; set; }
     }
 }
