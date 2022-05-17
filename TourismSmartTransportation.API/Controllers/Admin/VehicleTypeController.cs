@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Interfaces.Admin;
-using TourismSmartTransportation.Business.SearchModel.Admin.Vehicle;
+using TourismSmartTransportation.Business.SearchModel.Admin.VehicleType;
 
 namespace TourismSmartTransportation.API.Controllers.Admin
 {
     [ApiController]
     [Route(ApiVer1Url.Admin.VehicleType)]
-    public class VehicleTypeController : ControllerBase
+    public class VehicleTypeController : BaseController
     {
         private readonly IVehicleTypeService _service;
 
@@ -23,61 +23,35 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> GetListVehicleType()
         {
-            return Ok(await _service.GetListVehicleTypes());
+            return SendResponse(await _service.GetListVehicleTypes());
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVehicleType(Guid id)
         {
-            var result = await _service.GetVehicleType(id);
-
-            if (result.StatusCode == 404)
-                return NotFound();
-
-            if (result.StatusCode == 200)
-                return Ok(result.Data);
-
-            return Problem(result.Message, "", 500);
+            return SendResponse(await _service.GetVehicleType(id));
         }
 
         [HttpPost]
         [Authorize]
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
-        public async Task<IActionResult> CreateVehicleType(CreateVehicleModel model)
+        public async Task<IActionResult> CreateVehicleType(CreateVehicleTypeModel model)
         {
-            var result = await _service.CreateVehicleType(model);
-            if (result.StatusCode == 201)
-                return StatusCode(201);
-
-            return Problem(result.Message, "", 500);
+            return SendResponse(await _service.CreateVehicleType(model));
         }
 
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> UpdateVehicleType(Guid id, CreateVehicleModel model)
+        public async Task<IActionResult> UpdateVehicleType(Guid id, CreateVehicleTypeModel model)
         {
-            var result = await _service.UpdateVehicleType(id, model);
-            if (result.StatusCode == 204)
-                return NoContent();
-
-            if (result.StatusCode == 404)
-                return NotFound();
-
-            return Problem(result.Message, "", 500);
+            return SendResponse(await _service.UpdateVehicleType(id, model));
         }
 
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteVehicleType(Guid id)
         {
-            var result = await _service.DeleteVehicleType(id);
-            if (result.StatusCode == 200)
-                return Ok();
-
-            if (result.StatusCode == 404)
-                return NotFound();
-
-            return Problem(result.Message, "", 500);
+            return SendResponse(await _service.DeleteVehicleType(id));
         }
     }
 }
