@@ -6,17 +6,17 @@ using System.Text;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Validation;
 
-namespace TourismSmartTransportation.Business.ViewModel.Admin.StationManagement
+namespace TourismSmartTransportation.Business.SearchModel.Admin.StationManagement
 {
     public class AddStationViewModel
     {
         [NotAllowedEmptyStringValidator]
-        public string Name { get; set; }
+        public string Title { get; set; }
         [NotAllowedEmptyStringValidator]
         public string Address { get; set; }
-        public decimal? Latitude { get; set; }
-        public decimal? Longitude { get; set; }
-        [Range(1, 2)]
+        public string Description { get; set; }
+        public decimal Latitude { get; set; }
+        public decimal Longitude { get; set; }
         public int? Status { get; set; }
     }
 }

@@ -28,9 +28,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 var station = new Station()
                 {
                     Address = model.Address,
-                    Name = model.Name,
-                    Latitude = model.Latitude.Value,
-                    Longitude = model.Longitude.Value,
+                    Title = model.Title,
+                    Latitude = model.Latitude,
+                    Longitude = model.Longitude,
                     Status = 1
                 };
                 await _unitOfWork.StationRepository.Add(station);
@@ -48,7 +48,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             try
             {
                 var station = await _unitOfWork.StationRepository.GetById(id);
-                station.Status = 2;
+                station.Status = 0;
                 _unitOfWork.StationRepository.Update(station);
                 await _unitOfWork.SaveChangesAsync();
             }
@@ -73,22 +73,22 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<SearchResultViewModel<StationViewModel>> SearchStation(StationSearchModel model)
         {
             var stations = await _unitOfWork.StationRepository.Query()
-                .Where(x => model.Name == null || x.Name.Contains(model.Name))
+                .Where(x => model.Title == null || x.Title.Contains(model.Title))
                 .Where(x => model.Address == null || x.Address.Contains(model.Address))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
-                .OrderBy(x => x.Name)
+                .OrderBy(x => x.Title)
                 .Select(x => x.AsStationViewModel())
                 .ToListAsync();
             var listAfterSorting = GetListAfterSorting(stations, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
             SearchResultViewModel<StationViewModel> result = null;
-                result = new SearchResultViewModel<StationViewModel>()
-                {
-                    Items = listItemsAfterPaging,
-                    PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
-                    TotalItems = totalRecord
-                };
+            result = new SearchResultViewModel<StationViewModel>()
+            {
+                Items = listItemsAfterPaging,
+                PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
+                TotalItems = totalRecord
+            };
             return result;
         }
 
@@ -97,7 +97,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             try
             {
                 var station = await _unitOfWork.StationRepository.GetById(id);
-                station.Name = UpdateTypeOfNullAbleObject<string>(station.Name, model.Name);
+                station.Title = UpdateTypeOfNullAbleObject<string>(station.Title, model.Title);
                 station.Address = UpdateTypeOfNullAbleObject<string>(station.Address, model.Address);
                 station.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Latitude, model.Latitude);
                 station.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Longitude, model.Longitude);
