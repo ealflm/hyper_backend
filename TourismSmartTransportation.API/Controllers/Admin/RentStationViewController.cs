@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Interfaces.Company;
 using TourismSmartTransportation.Business.SearchModel.Admin.StationManagement;
-using TourismSmartTransportation.Business.SearchModel.Company.RentStationManagement;
+using TourismSmartTransportation.Business.SearchModel.Partner.RentStationManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860

@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Interfaces.Company;
-using TourismSmartTransportation.Business.SearchModel.Company.RentStationManagement;
-using TourismSmartTransportation.Business.ViewModel.Company.RentStationManagement;
+using TourismSmartTransportation.Business.SearchModel.Partner.RentStationManagement;
+using TourismSmartTransportation.Business.ViewModel.Partner.RentStationManagement;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
@@ -26,9 +26,8 @@ namespace TourismSmartTransportation.Business.Implements.Company
 
             var rentStation = new RentStation()
             {
-                Name = model.Name,
-                Latitude = model.Latitude.Value,
-                Longitude = model.Longitude.Value,
+                Latitude = model.Latitude,
+                Longitude = model.Longitude,
                 Status = 1
             };
             await _unitOfWork.RentStationRepository.Add(rentStation);
@@ -87,7 +86,6 @@ namespace TourismSmartTransportation.Business.Implements.Company
             try
             {
                 var rentStation = await _unitOfWork.RentStationRepository.GetById(id);
-                rentStation.Name = UpdateTypeOfNullAbleObject<string>(rentStation.Name, model.Name);
                 rentStation.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Latitude, model.Latitude);
                 rentStation.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Longitude, model.Longitude);
                 rentStation.Status = UpdateTypeOfNotNullAbleObject<int>(rentStation.Status, model.Status);
