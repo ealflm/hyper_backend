@@ -15,8 +15,8 @@ namespace TourismSmartTransportation.Data.Models
         public Guid Id { get; set; }
         public Guid OrderId { get; set; }
         public decimal Amount { get; set; }
-        public DateTime CreateTime { get; set; }
-        public int Method { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public string Content { get; set; }
         public int Status { get; set; }
 
         public virtual Order Order { get; set; }

@@ -5,22 +5,19 @@ using System.Collections.Generic;
 
 namespace TourismSmartTransportation.Data.Models
 {
-    public partial class VehicleType
+    public partial class ActivityDate
     {
-        public VehicleType()
+        public ActivityDate()
         {
-            PriceDefaults = new HashSet<PriceDefault>();
             Vehicles = new HashSet<Vehicle>();
         }
 
         public Guid Id { get; set; }
-        public string Label { get; set; }
-        public int Seats { get; set; }
-        public decimal Fuel { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
         public decimal Price { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<PriceDefault> PriceDefaults { get; set; }
         public virtual ICollection<Vehicle> Vehicles { get; set; }
     }
 }

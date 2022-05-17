@@ -9,16 +9,17 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Station()
         {
-            RouteStations = new HashSet<RouteStation>();
+            StationRoutes = new HashSet<StationRoute>();
         }
 
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
         public string Address { get; set; }
-        public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
+        public decimal Latitude { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<RouteStation> RouteStations { get; set; }
+        public virtual ICollection<StationRoute> StationRoutes { get; set; }
     }
 }
