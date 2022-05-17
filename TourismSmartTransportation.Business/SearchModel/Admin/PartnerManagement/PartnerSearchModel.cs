@@ -13,7 +13,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagemen
     {
         [NotAllowedEmptyStringValidator]
         public string Username { get; set; }
-        [NotAllowedEmptyStringValidator]
         public int? Status { get; set; }
     }
 }
