@@ -3,8 +3,8 @@ using TourismSmartTransportation.Business.ViewModel.Admin.CustomerManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.Discount;
 using TourismSmartTransportation.Business.ViewModel.Admin.Service;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
-using TourismSmartTransportation.Business.ViewModel.Admin.Vehicle;
-using TourismSmartTransportation.Business.ViewModel.Company.RentStationManagement;
+using TourismSmartTransportation.Business.ViewModel.Admin.VehicleType;
+using TourismSmartTransportation.Business.ViewModel.Partner.RentStationManagement;
 using TourismSmartTransportation.Data.Models;
 
 namespace TourismSmartTransportation.Business.Extensions
@@ -20,7 +20,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 Description = item.Description,
                 Price = item.Price,
                 TimeStart = item.TimeStart,
-                TimeEnd= item.TimeEnd,
+                TimeEnd = item.TimeEnd,
                 PhotoUrls = item.PhotoUrls,
                 Status = item.Status
             };
@@ -45,25 +45,26 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                Name = item.Name,
+                Label = item.Label,
                 Fuel = item.Fuel,
                 Seats = item.Seats,
+                Price = item.Price,
                 Status = item.Status
             };
         }
 
-        public static CompanyViewModel AsCompanyViewModel(this Company item)
-        {
-            return new()
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Address = item.Address,
-                UserName = item.UserName,
-                PhotoUrl = item.PhotoUrl,
-                Status = item.Status
-            };
-        }
+        // public static CompanyViewModel AsCompanyViewModel(this Company item)
+        // {
+        //     return new()
+        //     {
+        //         Id = item.Id,
+        //         Name = item.Name,
+        //         Address = item.Address,
+        //         UserName = item.UserName,
+        //         PhotoUrl = item.PhotoUrl,
+        //         Status = item.Status
+        //     };
+        // }
 
         public static StationViewModel AsStationViewModel(this Station item)
         {
@@ -83,13 +84,13 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                FirstName=item.FirstName,
-                LastName= item.LastName,
-                Gender= item.Gender,
-                Birthday= item.Birthday,
-                Email= item.Email,
-                PhoneNumber= item.PhoneNumber,
-                PhotoUrl=item.PhotoUrl,
+                FirstName = item.FirstName,
+                LastName = item.LastName,
+                Gender = item.Gender,
+                Birthday = item.Birthday,
+                Email = item.Email,
+                PhoneNumber = item.PhoneNumber,
+                PhotoUrl = item.PhotoUrl,
                 Status = item.Status
             };
         }

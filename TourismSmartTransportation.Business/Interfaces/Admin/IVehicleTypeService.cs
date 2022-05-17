@@ -2,17 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
-using TourismSmartTransportation.Business.SearchModel.Admin.Vehicle;
-using TourismSmartTransportation.Business.ViewModel.Admin.Vehicle;
+using TourismSmartTransportation.Business.SearchModel.Admin.VehicleType;
+using TourismSmartTransportation.Business.ViewModel.Admin.VehicleType;
 
 namespace TourismSmartTransportation.Business.Interfaces.Admin
 {
     public interface IVehicleTypeService
     {
         Task<List<VehicleTypeViewModel>> GetListVehicleTypes();
-        Task<Response> GetVehicleType(Guid id);
-        Task<Response> CreateVehicleType(CreateVehicleModel model);
-        Task<Response> UpdateVehicleType(Guid id, CreateVehicleModel model);
-        Task<Response> DeleteVehicleType(Guid id);
+        Task<VehicleTypeViewModel> GetVehicleType(Guid id);
+        Task<bool> CreateVehicleType(CreateVehicleTypeModel model);
+        Task<bool> UpdateVehicleType(Guid id, CreateVehicleTypeModel model);
+        Task<bool> DeleteVehicleType(Guid id);
     }
 }
