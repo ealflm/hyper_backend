@@ -8,9 +8,9 @@
 - WebApi: https://tourism-smart-transportation-api.azurewebsites.net
 - WebApp: https://wonderful-island-0a012b800.1.azurestaticapps.net
 - Database: 
-    + Server name: tourisms-smart-transportation.database.windows.net
-    + Login: uni03
-    + Password: Password@123
+    + Server name: se32.database.windows.net
+    + Login: se32
+    + Password: Password@32
 
 
 ## Tech Stack
