@@ -14,7 +14,7 @@ using TourismSmartTransportation.Business.Interfaces;
 using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
-using TourismSmartTransportation.Business.ViewModel.Company.Authorization;
+using TourismSmartTransportation.Business.ViewModel.Partner.Authorization;
 using TourismSmartTransportation.Data.Interfaces;
 using AdminModel = TourismSmartTransportation.Data.Models.Admin;
 
@@ -34,7 +34,7 @@ namespace TourismSmartTransportation.Business.Implements
         {
             AuthorizationResultViewModel model = null;
             string result = null;
-            string message= null;
+            string message = null;
 
             if (!string.IsNullOrEmpty(loginModel.UserName) && !string.IsNullOrEmpty(loginModel.Password))
             {
@@ -61,7 +61,7 @@ namespace TourismSmartTransportation.Business.Implements
                             break;
                         }
                 }
-                
+
             }
 
             if (model != null && model.Data != null)
@@ -89,7 +89,7 @@ namespace TourismSmartTransportation.Business.Implements
                             break;
                         }
                 }
-                
+
             }
 
             message = model.Message;
@@ -113,36 +113,36 @@ namespace TourismSmartTransportation.Business.Implements
                     }
                 case 1:
                     {
-                        user = await _unitOfWork.CompanyRepository.Query()
-                        .Where(x => x.UserName == email && x.Password != null)
+                        user = await _unitOfWork.PartnerRepository.Query()
+                        .Where(x => x.Username == email && x.Password != null)
                         .FirstOrDefaultAsync();
                         break;
                     }
                 case 2:
                     {
                         user = await _unitOfWork.DriverRepository.Query()
-                        .Where(x => x.PhoneNumber == email && x.Password != null)
+                        .Where(x => x.Phone == email && x.Password != null)
                         .FirstOrDefaultAsync();
                         break;
                     }
                 case 3:
                     {
                         user = await _unitOfWork.CustomerRepository.Query()
-                        .Where(x => x.PhoneNumber == email && x.Password != null)
+                        .Where(x => x.Phone == email && x.Password != null)
                         .FirstOrDefaultAsync();
                         break;
                     }
             }
-            
 
-             
+
+
             if (user != null && VerifyPassword(password, user.Password, user.Salt))
             {
                 if (user.Status == 1)
                 {
-                    foreach(var x in result.GetType().GetProperties())
+                    foreach (var x in result.GetType().GetProperties())
                     {
-                        foreach(var y in user.GetType().GetProperties())
+                        foreach (var y in user.GetType().GetProperties())
                         {
                             if (x.Name.Equals(y.Name))
                             {
@@ -166,12 +166,12 @@ namespace TourismSmartTransportation.Business.Implements
             return new AuthorizationResultViewModel(result, message);
         }
 
-        private string GetToken<T>(T model) where T: class
+        private string GetToken<T>(T model) where T : class
         {
             var authClaims = new List<Claim>();
-            foreach(var x in model.GetType().GetProperties())
+            foreach (var x in model.GetType().GetProperties())
             {
-                authClaims.Add(new Claim(x.Name, (x.GetValue(model)?? "").ToString()));
+                authClaims.Add(new Claim(x.Name, (x.GetValue(model) ?? "").ToString()));
             }
             authClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
             var authSigninKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["JWT:Secret"]));
@@ -206,21 +206,23 @@ namespace TourismSmartTransportation.Business.Implements
             {
                 CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-                var admin = new AdminModel
+                var admin = new AdminModel()
                 {
-                    FirstName= model.FirstName,
-                    LastName= model.LastName,
+                    Username = model.Username,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
                     Email = model.Email,
                     Password = passwordHash,
                     Salt = passwordSalt,
-                    PhoneNumber= model.PhoneNumber,
-                    PhotoUrl= await UploadFile(model.UploadFile, Container.Admin)
+                    Phone = model.Phone,
+                    Gender = model.Gender,
+                    PhotoUrl = await UploadFile(model.UploadFile, Container.Admin),
+                    Status = 1
                 };
-                admin.Status = 1;
 
                 await _unitOfWork.AdminRepository.Add(admin);
                 await _unitOfWork.SaveChangesAsync();
-  
+
             }
             else
             {
@@ -230,6 +232,6 @@ namespace TourismSmartTransportation.Business.Implements
             return resultViewModel;
         }
 
-        
+
     }
 }
