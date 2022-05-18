@@ -14,7 +14,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
         Task<SearchResultViewModel<PartnerViewModel>> SearchPartner(PartnerSearchModel model);
         Task<PartnerViewModel> GetPartner(Guid id);
         Task<bool> AddPartner(AddPartnerModel model);
-        Task<bool> UpdatePartner(Guid id, AddPartnerModel model);
+        Task<bool> UpdatePartner(Guid id, UpdatePartnerModel model);
         Task<bool> DeletePartner(Guid id);
     }
 }
