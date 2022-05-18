@@ -19,6 +19,7 @@ namespace TourismSmartTransportation.Data.Models
         public Guid Id { get; set; }
         public Guid? TierId { get; set; }
         public byte[] Password { get; set; }
+        public byte[] Salt { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public bool Gender { get; set; }

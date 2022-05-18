@@ -13,7 +13,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Authorization
         public string FirstName { get; set; }
         [NotAllowedEmptyStringValidator]
         public string LastName { get; set; }
-        [Required, EmailAddress]
+        [EmailAddress]
         public string Email { get; set; }
         [Required]
         public string Password { get; set; }
