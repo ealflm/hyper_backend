@@ -40,15 +40,15 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         // POST api/<CustomerManagementController>
         [HttpPost]
-        [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
-        public async Task<IActionResult> Post([FromForm] AddCustomerViewModel model)
+        // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+        public async Task<IActionResult> Post([FromForm] AddCustomerModel model)
         {
             return SendResponse(await _service.AddCustomer(model));
         }
 
         // PUT api/<CustomerManagementController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromForm] AddCustomerViewModel model)
+        public async Task<IActionResult> Put(Guid id, [FromForm] UpdateCustomerModel model)
         {
             return SendResponse(await _service.UpdateCustomer(id, model));
         }

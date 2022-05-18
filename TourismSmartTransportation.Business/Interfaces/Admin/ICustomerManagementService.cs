@@ -13,8 +13,8 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
     {
         Task<SearchResultViewModel<CustomerViewModel>> SearchCustomer(CustomerSearchModel model);
         Task<CustomerViewModel> GetCustomer(Guid id);
-        Task<bool> AddCustomer(AddCustomerViewModel model);
-        Task<bool> UpdateCustomer(Guid id, AddCustomerViewModel model);
+        Task<bool> AddCustomer(AddCustomerModel model);
+        Task<bool> UpdateCustomer(Guid id, UpdateCustomerModel model);
         Task<bool> DeleteCustomer(Guid id);
     }
 }

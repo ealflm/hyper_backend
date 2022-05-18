@@ -21,10 +21,15 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
         }
 
-        public async Task<bool> AddCustomer(AddCustomerViewModel model)
+        /// <summary>
+        /// Create a new customer
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public async Task<bool> AddCustomer(AddCustomerModel model)
         {
             bool isExist = await _unitOfWork.CustomerRepository.Query()
-                .AnyAsync(x => x.Email == model.Email);
+                .AnyAsync(x => x.Phone == model.Phone);
             if (isExist)
             {
                 return false;
@@ -34,14 +39,19 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
                 var customer = new CustomerModel()
                 {
+                    TierId = model.TierId,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    DateOfBirth = model.Birthday.Value,
+                    DateOfBirth = model.Birthday,
+                    Address1 = model.Address1,
+                    Address2 = model.Address2,
                     Email = model.Email,
-                    Gender = model.Gender.Value,
+                    Gender = model.Gender,
                     Phone = model.Phone,
                     Password = passwordHash,
-                    // Salt = passwordSalt,
+                    Salt = passwordSalt,
+                    CreatedDate = DateTime.Now,
+                    ModifiedDate = DateTime.Now,
                     PhotoUrl = UploadFile(model.UploadFile, Container.Customer).Result,
                     Status = 1
                 };
@@ -55,12 +65,17 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return true;
         }
 
+        /// <summary>
+        /// Update status from active to inactive
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<bool> DeleteCustomer(Guid id)
         {
             try
             {
                 var customer = await _unitOfWork.CustomerRepository.GetById(id);
-                customer.Status = 2;
+                customer.Status = 0;
                 _unitOfWork.CustomerRepository.Update(customer);
                 await _unitOfWork.SaveChangesAsync();
             }
@@ -71,6 +86,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return true;
         }
 
+        /// <summary>
+        /// Get details customer's information
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<CustomerViewModel> GetCustomer(Guid id)
         {
             var customer = await _unitOfWork.CustomerRepository.GetById(id);
@@ -83,17 +103,19 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return model;
         }
 
+        /// <summary>
+        /// Search customers by requirement
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public async Task<SearchResultViewModel<CustomerViewModel>> SearchCustomer(CustomerSearchModel model)
         {
             var customers = await _unitOfWork.CustomerRepository.Query()
-                .Where(x => model.FirstName == null || x.FirstName.Contains(model.FirstName))
-                .Where(x => model.LastName == null || x.LastName.Contains(model.LastName))
-                .Where(x => model.Email == null || x.Email.Contains(model.Email))
-                .Where(x => model.PhoneNumber == null || x.Phone.Contains(model.PhoneNumber))
-                .Where(x => model.Birthday == null || x.DateOfBirth == model.Birthday.Value)
-                .Where(x => model.Gender == null || x.Gender == model.Gender.Value)
+                .Where(x => model.TierId == null || x.Phone.Equals(model.TierId))
+                .Where(x => model.Phone == null || x.Phone.Equals(model.Phone))
+                .Where(x => model.LastName == null || x.Phone.Contains(model.LastName))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
-                .OrderBy(x => x.Email)
+                .OrderBy(x => x.LastName)
                 .Select(x => x.AsCustomerViewModel())
                 .ToListAsync();
             var listAfterSorting = GetListAfterSorting(customers, model.SortBy);
@@ -109,26 +131,45 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return result;
         }
 
-        public async Task<bool> UpdateCustomer(Guid id, AddCustomerViewModel model)
+        /// <summary>
+        /// Update customer's information
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public async Task<bool> UpdateCustomer(Guid id, UpdateCustomerModel model)
         {
             try
             {
+                if (!string.IsNullOrEmpty(model.Phone))
+                {
+                    var isExist = await _unitOfWork.CustomerRepository.Query().AnyAsync(x => x.Phone == model.Phone);
+                    if (isExist)
+                    {
+                        return false;
+                    }
+                }
+
                 var customer = await _unitOfWork.CustomerRepository.GetById(id);
                 if (model.Password != null)
                 {
                     CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
                     customer.Password = UpdateTypeOfNullAbleObject<byte[]>(customer.Password, passwordHash);
-                    // customer.Salt = UpdateTypeOfNullAbleObject<byte[]>(customer.Salt, passwordSalt);
+                    customer.Salt = UpdateTypeOfNullAbleObject<byte[]>(customer.Salt, passwordSalt);
                 }
+                customer.TierId = model.TierId; // Customer cannot need tier, so we always need add value tier when updating data.
+                customer.Phone = UpdateTypeOfNullAbleObject<string>(customer.Phone, model.Phone);
                 customer.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Customer, customer.PhotoUrl);
                 customer.PhotoUrl += await UploadFile(model.UploadFile, Container.Customer);
                 customer.FirstName = UpdateTypeOfNullAbleObject<string>(customer.FirstName, model.FirstName);
                 customer.LastName = UpdateTypeOfNullAbleObject<string>(customer.LastName, model.LastName);
+                customer.Address1 = UpdateTypeOfNullAbleObject<string>(customer.Address1, model.Address1);
+                customer.Address2 = UpdateTypeOfNullAbleObject<string>(customer.Address2, model.Address2);
                 customer.Email = UpdateTypeOfNullAbleObject<string>(customer.Email, model.Email);
-                customer.Phone = UpdateTypeOfNullAbleObject<string>(customer.Phone, model.Phone);
                 customer.Gender = UpdateTypeOfNotNullAbleObject<bool>(customer.Gender, model.Gender);
                 customer.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(customer.DateOfBirth, model.Birthday);
                 customer.Status = UpdateTypeOfNotNullAbleObject<int>(customer.Status, model.Status);
+                customer.ModifiedDate = DateTime.Now;
                 _unitOfWork.CustomerRepository.Update(customer);
                 await _unitOfWork.SaveChangesAsync();
             }
