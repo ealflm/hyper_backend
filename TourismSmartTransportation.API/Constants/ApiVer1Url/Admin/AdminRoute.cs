@@ -32,5 +32,11 @@ namespace ApiVer1Url
 
         // RentStation
         public const string RentStation = BaseApiUrl + "/rent-station";
+
+        // Order
+        public const string Order = BaseApiUrl + "/order";
+
+        // Order detail
+        public const string OrderDetail = BaseApiUrl + "/order-detail";
     }
 }

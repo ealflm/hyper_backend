@@ -6,6 +6,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.VehicleType;
 using TourismSmartTransportation.Business.ViewModel.Partner.RentStationManagement;
 using TourismSmartTransportation.Data.Models;
+using TourismSmartTransportation.Business.ViewModel.Admin.PurchaseHistory;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -116,6 +117,33 @@ namespace TourismSmartTransportation.Business.Extensions
                 Id = item.Id,
                 Latitude = item.Latitude,
                 Longitude = item.Longitude,
+                Status = item.Status
+            };
+        }
+
+        public static OrderViewModel AsOrderViewModel(this Order item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                CreatedDate= item.CreatedDate,
+                CustomerId= item.CustomerId,
+                TotalPrice= item.TotalPrice,
+                Status = item.Status
+            };
+        }
+        public static OrderDetailViewModel AsOrderDetailViewModel(this OrderDetail item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Content= item.Content,
+                CreatedTime= item.CreatedTime,
+                OrderId= item.OrderId,
+                Price= item.Price,
+                PriceDefaultId= item.PriceDefaultId.GetValueOrDefault(),
+                Quantity= item.Quantity,
+                TierId= item.TierId.GetValueOrDefault(),
                 Status = item.Status
             };
         }
