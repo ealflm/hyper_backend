@@ -21,6 +21,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
         }
 
+        /// <summary>
+        /// Create a new partner account
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public async Task<bool> AddPartner(AddPartnerModel model)
         {
             bool isExist = await _unitOfWork.PartnerRepository.Query()
@@ -46,7 +51,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Password = passwordHash,
                     Salt = passwordSalt,
                     CreatedDate = DateTime.Now,
-                    ModifiedDate= DateTime.Now,
+                    ModifiedDate = DateTime.Now,
                     Username = model.Username,
                     PhotoUrl = UploadFile(model.UploadFile, Container.Partner).Result,
                     Status = 1
@@ -61,12 +66,18 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return true;
         }
 
+        /// <summary>
+        /// Update status from active into inactive.
+        /// User cannot do annything when account status is inactive
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<bool> DeletePartner(Guid id)
         {
             try
             {
                 var Partner = await _unitOfWork.PartnerRepository.GetById(id);
-                Partner.Status = 2;
+                Partner.Status = 0;
                 _unitOfWork.PartnerRepository.Update(Partner);
                 await _unitOfWork.SaveChangesAsync();
             }
@@ -77,6 +88,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return true;
         }
 
+        /// <summary>
+        /// Get details partner account by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<PartnerViewModel> GetPartner(Guid id)
         {
             var Partner = await _unitOfWork.PartnerRepository.GetById(id);
@@ -89,6 +105,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return model;
         }
 
+        /// <summary>
+        /// Search partner's accounts by Username and Status
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public async Task<SearchResultViewModel<PartnerViewModel>> SearchPartner(PartnerSearchModel model)
         {
             var companies = await _unitOfWork.PartnerRepository.Query()
@@ -110,7 +131,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return result;
         }
 
-        public async Task<bool> UpdatePartner(Guid id, AddPartnerModel model)
+        /// <summary>
+        /// Update information of partner's account
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public async Task<bool> UpdatePartner(Guid id, UpdatePartnerModel model)
         {
             try
             {
@@ -125,8 +152,15 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 partner.PhotoUrl += await UploadFile(model.UploadFile, Container.Partner);
                 partner.FirstName = UpdateTypeOfNullAbleObject<string>(partner.FirstName, model.FirstName);
                 partner.LastName = UpdateTypeOfNullAbleObject<string>(partner.LastName, model.LastName);
+                partner.Address1 = UpdateTypeOfNullAbleObject<string>(partner.Address1, model.Address1);
+                partner.Address2 = UpdateTypeOfNullAbleObject<string>(partner.Address2, model.Address2);
+                partner.Phone = UpdateTypeOfNullAbleObject<string>(partner.Phone, model.Phone);
+                partner.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(partner.DateOfBirth, model.DateOfBirth);
+                partner.Email = UpdateTypeOfNullAbleObject<string>(partner.Email, model.Email);
+                partner.CompanyName = UpdateTypeOfNullAbleObject<string>(partner.CompanyName, model.CompanyName);
                 partner.Gender = UpdateTypeOfNotNullAbleObject<bool>(partner.Gender, model.Gender);
                 partner.Status = UpdateTypeOfNotNullAbleObject<int>(partner.Status, model.Status);
+                partner.ModifiedDate = DateTime.Now;
                 _unitOfWork.PartnerRepository.Update(partner);
                 await _unitOfWork.SaveChangesAsync();
             }

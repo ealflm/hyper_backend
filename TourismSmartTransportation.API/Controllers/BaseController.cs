@@ -20,8 +20,8 @@ namespace TourismSmartTransportation.API.Controllers
         [NonAction]
         public ObjectResult SendResponse(bool result)
         {
-            int statusCode = 201;
-            string message = result ? "Success" : "Validation Problem";
+            int statusCode = result ? 201 : 400;
+            string message = result ? "Success" : "Bad request!";
             return HandleObjectResponse(statusCode, message, null);
         }
 
