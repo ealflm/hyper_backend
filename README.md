@@ -5,12 +5,16 @@
 
 ## Infomation
 
+- Azureboard: https://dev.azure.com/PhuQuocTouristSmart/Tourism%20Smart%20Transportation
 - WebApi: https://tourism-smart-transportation-api.azurewebsites.net
 - WebApp: https://wonderful-island-0a012b800.1.azurestaticapps.net
 - Database: 
     + Server name: se32.database.windows.net
     + Login: se32
     + Password: Password@32
+- Azure Cloud:
+    + Username: trangianguyen144@gmail.com
+
 
 
 ## Tech Stack
