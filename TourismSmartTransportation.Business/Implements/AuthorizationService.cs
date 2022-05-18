@@ -201,7 +201,7 @@ namespace TourismSmartTransportation.Business.Implements
         {
             AuthorizationResultViewModel resultViewModel = null;
             bool isExist = await _unitOfWork.AdminRepository.Query()
-                .AnyAsync(x => x.Email == model.Email);
+                .AnyAsync(x => x.Username == model.Username);
             if (!isExist)
             {
                 CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -226,7 +226,7 @@ namespace TourismSmartTransportation.Business.Implements
             }
             else
             {
-                resultViewModel = new AuthorizationResultViewModel(null, "This email address has already been registered");
+                resultViewModel = new AuthorizationResultViewModel(null, "This username has already been registered");
             }
 
             return resultViewModel;

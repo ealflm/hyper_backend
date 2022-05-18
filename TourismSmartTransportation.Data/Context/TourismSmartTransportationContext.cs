@@ -71,7 +71,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Admin");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(70)
@@ -177,6 +177,11 @@ namespace TourismSmartTransportation.Data.Context
                     .IsUnicode(false);
 
                 entity.Property(e => e.PhotoUrl).IsUnicode(false);
+
+                entity.Property(e => e.Salt)
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .IsFixedLength(true);
 
                 entity.HasOne(d => d.Tier)
                     .WithMany(p => p.Customers)
@@ -430,6 +435,10 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
+                entity.Property(e => e.CompanyName)
+                    .IsRequired()
+                    .HasMaxLength(1000);
+
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
@@ -565,9 +574,9 @@ namespace TourismSmartTransportation.Data.Context
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.Latitude).HasColumnType("decimal(18, 7)");
+                entity.Property(e => e.Latitude).HasColumnType("decimal(18, 15)");
 
-                entity.Property(e => e.Longitude).HasColumnType("decimal(18, 7)");
+                entity.Property(e => e.Longitude).HasColumnType("decimal(18, 14)");
 
                 entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
 
@@ -630,9 +639,9 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Address).IsRequired();
 
-                entity.Property(e => e.Latitude).HasColumnType("decimal(18, 7)");
+                entity.Property(e => e.Latitude).HasColumnType("decimal(18, 15)");
 
-                entity.Property(e => e.Longitude).HasColumnType("decimal(18, 7)");
+                entity.Property(e => e.Longitude).HasColumnType("decimal(18, 14)");
 
                 entity.Property(e => e.Title)
                     .IsRequired()
@@ -756,14 +765,14 @@ namespace TourismSmartTransportation.Data.Context
                     .HasMaxLength(255)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Latitude).HasColumnType("decimal(18, 7)");
+                entity.Property(e => e.Latitude).HasColumnType("decimal(18, 15)");
 
                 entity.Property(e => e.LicensePlates)
                     .IsRequired()
                     .HasMaxLength(255)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Longitude).HasColumnType("decimal(18, 7)");
+                entity.Property(e => e.Longitude).HasColumnType("decimal(18, 14)");
 
                 entity.Property(e => e.Name)
                     .IsRequired()

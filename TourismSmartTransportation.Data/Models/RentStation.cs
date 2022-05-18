@@ -14,10 +14,10 @@ namespace TourismSmartTransportation.Data.Models
 
         public Guid Id { get; set; }
         public Guid PartnerId { get; set; }
-        public decimal Longitude { get; set; }
-        public decimal Latitude { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
+        public decimal Longitude { get; set; }
+        public decimal Latitude { get; set; }
         public int Status { get; set; }
 
         public virtual Partner Partner { get; set; }
