@@ -11,17 +11,11 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.CustomerManageme
 {
     public class CustomerSearchModel : PagingSearchModel
     {
-        [NotAllowedEmptyStringValidator]
-        public string FirstName { get; set; }
-        [NotAllowedEmptyStringValidator]
+        public string TierId { get; set; }
+        [StringLength(50)]
         public string LastName { get; set; }
-        public bool? Gender { get; set; }
-        public DateTime? Birthday { get; set; }
-        [Phone]
-        public string PhoneNumber { get; set; }
-        [EmailAddress]
-        public string Email { get; set; }
-        [Range(1,2)]
+        [AllowNullOrEmptyAndCheckValidPhone]
+        public string Phone { get; set; }
         public int? Status { get; set; }
     }
 }

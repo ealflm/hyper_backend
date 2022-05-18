@@ -92,13 +92,18 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
+                TierId = item.TierId,
                 FirstName = item.FirstName,
                 LastName = item.LastName,
                 Gender = item.Gender,
-                DateOfBirth = item.DateOfBirth,
-                Email = item.Email,
                 Phone = item.Phone,
+                Address1 = item.Address1,
+                Address2 = item.Address2,
+                DateOfBirth = item.DateOfBirth,
                 PhotoUrl = item.PhotoUrl,
+                Email = item.Email,
+                CreatedDate = item.CreatedDate,
+                ModifiedDate = item.ModifiedDate,
                 Status = item.Status
             };
         }

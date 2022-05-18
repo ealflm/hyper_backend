@@ -9,27 +9,27 @@ using TourismSmartTransportation.Business.ViewModel.Common;
 
 namespace TourismSmartTransportation.Business.SearchModel.Admin.CustomerManagement
 {
-    public class AddCustomerViewModel : FileViewModel
+    public class AddCustomerModel : FileViewModel
     {
-        public string TierId { get; set; }
-        [NotAllowedEmptyStringValidator]
+        public Guid? TierId { get; set; }
+        [Required]
         [StringLength(50)]
         public string FirstName { get; set; }
-        [NotAllowedEmptyStringValidator]
+        [Required]
         [StringLength(50)]
         public string LastName { get; set; }
-        public bool? Gender { get; set; }
-        public DateTime? Birthday { get; set; }
+        public bool Gender { get; set; }
+        public DateTime Birthday { get; set; }
         public string Address1 { get; set; }
         public string Address2 { get; set; }
         public string PhotoUrl { get; set; }
         [Phone]
+        [Required]
         public string Phone { get; set; }
-        [EmailAddress]
+        [AllowEmptyAndChekcValidEmail]
+        [StringLength(50)]
         public string Email { get; set; }
-        [NotAllowedEmptyStringValidator]
+        [Required]
         public string Password { get; set; }
-        [Range(1, 2)]
-        public int? Status { get; set; }
     }
 }
