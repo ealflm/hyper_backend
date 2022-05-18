@@ -61,6 +61,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 Username = item.Username,
                 FirstName = item.FirstName,
                 LastName = item.LastName,
+                CompanyName = item.CompanyName,
                 PhotoUrl = item.PhotoUrl,
                 Gender = item.Gender,
                 Phone = item.Phone,
