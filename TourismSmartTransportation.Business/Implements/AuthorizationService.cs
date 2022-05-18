@@ -107,7 +107,7 @@ namespace TourismSmartTransportation.Business.Implements
                 case 0:
                     {
                         user = await _unitOfWork.AdminRepository.Query()
-                        .Where(x => x.Email == email && x.Password != null)
+                        .Where(x => x.Username == email && x.Password != null)
                         .FirstOrDefaultAsync();
                         break;
                     }

@@ -76,7 +76,7 @@ namespace TourismSmartTransportation.API
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("admin", new OpenApiInfo { Title = "TourismSmartTransportation.API Admin", Version = "admin" });
-                c.SwaggerDoc("company", new OpenApiInfo { Title = "TourismSmartTransportation.API Company", Version = "company" });
+                c.SwaggerDoc("partner", new OpenApiInfo { Title = "TourismSmartTransportation.API Partner", Version = "partner" });
                 c.SwaggerDoc("driver", new OpenApiInfo { Title = "TourismSmartTransportation.API Driver", Version = "driver" });
                 c.SwaggerDoc("customer", new OpenApiInfo { Title = "TourismSmartTransportation.API Customer", Version = "customer" });
 

@@ -5,7 +5,7 @@ namespace ApiVer1Url
     public static class Company
     {
         // Base url
-        public const string Role = "company";
+        public const string Role = "partner";
         public const string BaseApiUrl = BaseRoute.BaseApiUrl + "/" + Role;
 
         // Authorization
