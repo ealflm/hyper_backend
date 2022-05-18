@@ -348,7 +348,9 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Content).IsRequired();
 
-                entity.Property(e => e.CreatedTime).HasColumnType("datetime");
+                entity.Property(e => e.CreatedTime)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.Price).HasColumnType("decimal(18, 0)");
 
@@ -361,13 +363,11 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.PriceDefault)
                     .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.PriceDefaultId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__OrderDeta__Price__236943A5");
 
                 entity.HasOne(d => d.Tier)
                     .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.TierId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__OrderDeta__TierI__22751F6C");
             });
 
