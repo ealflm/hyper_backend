@@ -19,7 +19,16 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagemen
         [NotAllowedEmptyStringValidator]
         public string LastName { get; set; }
         [NotAllowedEmptyStringValidator]
+        public string CompanyName { get; set; }
+        [NotAllowedEmptyStringValidator]
         public string Password { get; set; }
+        [NotAllowedEmptyStringValidator]
+        public string Address1 { get; set; }
+        public string Address2 { get; set; }
+        public string Phone { get; set; }
+        [EmailAddress]
+        public string Email { get; set; }
+        public DateTime DateOfBirth { get; set; }
         [Range(0, 1)]
         public bool Gender { get; set; }
         public int? Status { get; set; }

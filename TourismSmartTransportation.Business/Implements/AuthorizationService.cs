@@ -70,22 +70,22 @@ namespace TourismSmartTransportation.Business.Implements
                 {
                     case 0:
                         {
-                            result = GetToken((AdminViewModel)model.Data);
+                            result = GetToken((AdminViewModel)model.Data, 0);
                             break;
                         }
                     case 1:
                         {
-                            result = GetToken((CompanyViewModel)model.Data);
+                            result = GetToken((CompanyViewModel)model.Data, 1);
                             break;
                         }
                     case 2:
                         {
-                            result = GetToken((AdminViewModel)model.Data);
+                            result = GetToken((AdminViewModel)model.Data, 2);
                             break;
                         }
                     case 3:
                         {
-                            result = GetToken((AdminViewModel)model.Data);
+                            result = GetToken((AdminViewModel)model.Data, 3);
                             break;
                         }
                 }
@@ -166,13 +166,38 @@ namespace TourismSmartTransportation.Business.Implements
             return new AuthorizationResultViewModel(result, message);
         }
 
-        private string GetToken<T>(T model) where T : class
+        private string GetToken<T>(T model, int loginType) where T : class
         {
             var authClaims = new List<Claim>();
             foreach (var x in model.GetType().GetProperties())
             {
                 authClaims.Add(new Claim(x.Name, (x.GetValue(model) ?? "").ToString()));
             }
+
+            switch ((int)loginType)
+            {
+                case 0:
+                    {
+                        authClaims.Add(new Claim("Role", "Admin"));
+                        break;
+                    }
+                case 1:
+                    {
+                        authClaims.Add(new Claim("Role", "Partner"));
+                        break;
+                    }
+                case 2:
+                    {
+                        authClaims.Add(new Claim("Role", "Customer"));
+                        break;
+                    }
+                case 3:
+                    {
+                        authClaims.Add(new Claim("Role", "Driver"));
+                        break;
+                    }
+            }
+
             authClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
             var authSigninKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["JWT:Secret"]));
 
@@ -214,7 +239,7 @@ namespace TourismSmartTransportation.Business.Implements
                     Email = model.Email,
                     Password = passwordHash,
                     Salt = passwordSalt,
-                    Phone = model.Phone,
+                    PhoneNumber = model.Phone,
                     Gender = model.Gender,
                     PhotoUrl = await UploadFile(model.UploadFile, Container.Admin),
                     Status = 1

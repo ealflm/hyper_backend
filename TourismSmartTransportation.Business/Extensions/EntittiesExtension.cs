@@ -67,8 +67,8 @@ namespace TourismSmartTransportation.Business.Extensions
                 Address1 = item.Address1,
                 Address2 = item.Address2,
                 DateOfBirth = item.DateOfBirth,
-                CreatedDate = item.CreatedDate,
-                ModifiedDate = item.ModifiedDate,
+                CreatedDate = item.CreatedDate.Value,
+                ModifiedDate = item.ModifiedDate.Value,
                 Status = item.Status
             };
         }

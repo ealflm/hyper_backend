@@ -36,8 +36,17 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     FirstName = model.FirstName,
                     LastName = model.LastName,
+                    CompanyName = model.CompanyName,
+                    Address1 = model.Address1,
+                    Address2 = model.Address2,
+                    Phone = model.Phone,
+                    DateOfBirth = model.DateOfBirth,
+                    Gender = model.Gender,
+                    Email = model.Email,
                     Password = passwordHash,
                     Salt = passwordSalt,
+                    CreatedDate = DateTime.Now,
+                    ModifiedDate= DateTime.Now,
                     Username = model.Username,
                     PhotoUrl = UploadFile(model.UploadFile, Container.Partner).Result,
                     Status = 1

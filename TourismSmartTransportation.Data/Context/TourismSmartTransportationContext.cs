@@ -56,7 +56,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("ActivityDate");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Description).IsRequired();
 
@@ -90,7 +90,7 @@ namespace TourismSmartTransportation.Data.Context
                     .HasMaxLength(128)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.Phone)
+                entity.Property(e => e.PhoneNumber)
                     .IsRequired()
                     .HasMaxLength(15)
                     .IsUnicode(false);
@@ -112,7 +112,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Card");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Uid)
                     .IsRequired()
@@ -129,7 +129,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Category");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Description).IsRequired();
 
@@ -144,7 +144,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Customer");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
@@ -193,7 +193,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("CustomerTierHistory");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.TimeEnd).HasColumnType("datetime");
 
@@ -216,7 +216,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("CustomerTrip");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
@@ -249,7 +249,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Discount");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Code)
                     .IsRequired()
@@ -273,7 +273,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Driver");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
@@ -325,7 +325,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Order");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
@@ -344,7 +344,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("OrderDetail");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Content).IsRequired();
 
@@ -375,7 +375,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Package");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Limit).HasColumnType("decimal(18, 0)");
 
@@ -406,7 +406,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("PackageStatus");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Limit).HasColumnType("decimal(18, 0)");
 
@@ -433,7 +433,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Partner");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CompanyName)
                     .IsRequired()
@@ -469,9 +469,7 @@ namespace TourismSmartTransportation.Data.Context
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
-                entity.Property(e => e.PhotoUrl)
-                    .IsRequired()
-                    .IsUnicode(false);
+                entity.Property(e => e.PhotoUrl).IsUnicode(false);
 
                 entity.Property(e => e.Salt)
                     .IsRequired()
@@ -488,7 +486,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("PartnerServiceType");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.HasOne(d => d.Partner)
                     .WithMany(p => p.PartnerServiceTypes)
@@ -507,7 +505,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Payment");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 0)");
 
@@ -528,7 +526,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("PriceDefault");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.RangeEnd).HasColumnType("decimal(18, 0)");
 
@@ -553,7 +551,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("PublishYear");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Description).IsRequired();
 
@@ -568,7 +566,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("RentStation");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
@@ -591,7 +589,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Route");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
@@ -616,7 +614,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("ServiceType");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Content).IsRequired();
 
@@ -635,7 +633,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Station");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Address).IsRequired();
 
@@ -652,7 +650,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("StationRoute");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.HasOne(d => d.Route)
                     .WithMany(p => p.StationRoutes)
@@ -671,7 +669,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Tier");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Description).IsRequired();
 
@@ -692,7 +690,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Transaction");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 0)");
 
@@ -719,7 +717,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Trip");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.TimeEnd).HasColumnType("datetime");
 
@@ -758,7 +756,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Vehicle");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Color)
                     .IsRequired()
@@ -825,7 +823,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("VehicleType");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Fuel)
                     .IsRequired()
@@ -842,7 +840,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Wallet");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.AccountBalance).HasColumnType("decimal(18, 0)");
 
