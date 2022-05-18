@@ -18,10 +18,10 @@ namespace TourismSmartTransportation.API.Utilities.Swagger
                 .ToList();
                 nonMobileRoutes.ForEach(x => { swaggerDoc.Paths.Remove(x.Key); });
             }
-            if (swaggerDoc.Info.Version.Equals("company"))
+            if (swaggerDoc.Info.Version.Equals("partner"))
             {
                 var nonMobileRoutes = swaggerDoc.Paths
-                .Where(x => !x.Key.ToLower().Contains("/company/"))
+                .Where(x => !x.Key.ToLower().Contains("/partner/"))
                 .ToList();
                 nonMobileRoutes.ForEach(x => { swaggerDoc.Paths.Remove(x.Key); });
             }
