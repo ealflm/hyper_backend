@@ -38,5 +38,8 @@ namespace ApiVer1Url
 
         // Order detail
         public const string OrderDetail = BaseApiUrl + "/order-detail";
+
+        // Transaction
+        public const string Transaction = BaseApiUrl + "/transaction";
     }
 }

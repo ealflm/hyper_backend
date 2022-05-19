@@ -147,5 +147,32 @@ namespace TourismSmartTransportation.Business.Extensions
                 Status = item.Status
             };
         }
+
+        public static PaymentViewModel AsPaymentViewModel(this Payment item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Content = item.Content,
+                Amount= item.Amount,
+                CreatedDate= item.CreatedDate,
+                OrderId= item.OrderId,
+                Status = item.Status
+            };
+        }
+
+        public static TransactionViewModel AsTransactionViewModel(this Transaction item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Content = item.Content,
+                Amount = item.Amount,
+                CreatedDate = item.CreatedDate,
+                PaymentId= item.PaymentId,
+                WalletId= item.WalletId,
+                Status = item.Status
+            };
+        }
     }
 }

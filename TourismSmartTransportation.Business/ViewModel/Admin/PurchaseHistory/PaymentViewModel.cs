@@ -13,6 +13,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.PurchaseHistory
         public decimal Amount { get; set; }
         public DateTime CreatedDate { get; set; }
         public string Content { get; set; }
+        public List<TransactionViewModel> TransactionList { get; set; }
         public int Status { get; set; }
     }
 }
