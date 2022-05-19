@@ -54,12 +54,26 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<SearchResultViewModel<PaymentViewModel>> GetPayment(string orderId)
         {
-            throw new NotImplementedException();
+            var paymentList = await _unitOfWork.PaymentRepository.Query()
+                .Where(x => orderId != null && x.OrderId.Equals(new Guid(orderId)))
+                .Select(x => x.AsPaymentViewModel())
+                .ToListAsync();
+            foreach(PaymentViewModel x in paymentList)
+            {
+                x.TransactionList= await _unitOfWork.TransactionRepository.Query()
+                .Where(y => y.PaymentId.Equals(x.Id))
+                .Select(y => y.AsTransactionViewModel())
+                .ToListAsync();
+            }
+            SearchResultViewModel<PaymentViewModel> result = null;
+            result = new SearchResultViewModel<PaymentViewModel>()
+            {
+                Items = paymentList,
+                PageSize = 1,
+                TotalItems = paymentList.Count
+            };
+            return result;
         }
 
-        public async Task<SearchResultViewModel<TransactionViewModel>> GetTransaction(string paymentId)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

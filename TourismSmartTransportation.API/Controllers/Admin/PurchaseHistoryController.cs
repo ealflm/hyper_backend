@@ -31,5 +31,12 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         {
             return SendResponse(await _service.GetOrderDetail(orderId));
         }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Admin.Transaction)]
+        public async Task<IActionResult> GetTransaction([FromQuery] string orderId)
+        {
+            return SendResponse(await _service.GetPayment(orderId));
+        }
     }
 }
