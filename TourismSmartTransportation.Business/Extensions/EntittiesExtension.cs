@@ -68,7 +68,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 Phone = item.Phone,
                 Address1 = item.Address1,
                 Address2 = item.Address2,
-                DateOfBirth = item.DateOfBirth,
+                DateOfBirth = item.DateOfBirth.Value,
                 CreatedDate = item.CreatedDate.Value,
                 ModifiedDate = item.ModifiedDate.Value,
                 Status = item.Status
@@ -101,7 +101,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 Phone = item.Phone,
                 Address1 = item.Address1,
                 Address2 = item.Address2,
-                DateOfBirth = item.DateOfBirth,
+                DateOfBirth = item.DateOfBirth.Value,
                 PhotoUrl = item.PhotoUrl,
                 Email = item.Email,
                 CreatedDate = item.CreatedDate,
@@ -126,9 +126,9 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                CreatedDate= item.CreatedDate,
-                CustomerId= item.CustomerId,
-                TotalPrice= item.TotalPrice,
+                CreatedDate = item.CreatedDate,
+                CustomerId = item.CustomerId,
+                TotalPrice = item.TotalPrice,
                 Status = item.Status
             };
         }
@@ -137,13 +137,13 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                Content= item.Content,
-                CreatedTime= item.CreatedTime,
-                OrderId= item.OrderId,
-                Price= item.Price,
-                PriceDefaultId= item.PriceDefaultId.GetValueOrDefault(),
-                Quantity= item.Quantity,
-                TierId= item.TierId.GetValueOrDefault(),
+                Content = item.Content,
+                CreatedTime = item.CreatedTime,
+                OrderId = item.OrderId,
+                Price = item.Price,
+                PriceDefaultId = item.PriceDefaultId.GetValueOrDefault(),
+                Quantity = item.Quantity,
+                TierId = item.TierId.GetValueOrDefault(),
                 Status = item.Status
             };
         }
@@ -154,9 +154,9 @@ namespace TourismSmartTransportation.Business.Extensions
             {
                 Id = item.Id,
                 Content = item.Content,
-                Amount= item.Amount,
-                CreatedDate= item.CreatedDate,
-                OrderId= item.OrderId,
+                Amount = item.Amount,
+                CreatedDate = item.CreatedDate,
+                OrderId = item.OrderId,
                 Status = item.Status
             };
         }
@@ -169,8 +169,8 @@ namespace TourismSmartTransportation.Business.Extensions
                 Content = item.Content,
                 Amount = item.Amount,
                 CreatedDate = item.CreatedDate,
-                PaymentId= item.PaymentId,
-                WalletId= item.WalletId,
+                PaymentId = item.PaymentId,
+                WalletId = item.WalletId,
                 Status = item.Status
             };
         }
