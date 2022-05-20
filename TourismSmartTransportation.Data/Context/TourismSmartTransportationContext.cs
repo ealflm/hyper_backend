@@ -144,6 +144,9 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Customer");
 
+                entity.HasIndex(e => e.Phone, "UC_Phone_Customer")
+                    .IsUnique();
+
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CreatedDate)
@@ -433,6 +436,12 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Partner");
 
+                entity.HasIndex(e => e.Username, "UC_Username_Partner")
+                    .IsUnique();
+
+                entity.HasIndex(e => e.Username, "UQ__Partner__536C85E4C0324D60")
+                    .IsUnique();
+
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CompanyName)
@@ -451,11 +460,11 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.FirstName)
                     .IsRequired()
-                    .HasMaxLength(255);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.LastName)
                     .IsRequired()
-                    .HasMaxLength(255);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
 
@@ -478,7 +487,7 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Username)
                     .IsRequired()
-                    .HasMaxLength(255)
+                    .HasMaxLength(50)
                     .IsUnicode(false);
             });
 
@@ -622,7 +631,9 @@ namespace TourismSmartTransportation.Data.Context
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+                entity.Property(e => e.ModifiedDate)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.Name)
                     .IsRequired()

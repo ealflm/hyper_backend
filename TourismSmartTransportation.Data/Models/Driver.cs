@@ -22,7 +22,7 @@ namespace TourismSmartTransportation.Data.Models
         public string Phone { get; set; }
         public byte[] Password { get; set; }
         public byte[] Salt { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
         public int Status { get; set; }
