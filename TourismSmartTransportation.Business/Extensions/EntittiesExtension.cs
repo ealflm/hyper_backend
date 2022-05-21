@@ -34,8 +34,10 @@ namespace TourismSmartTransportation.Business.Extensions
                 Id = item.Id,
                 Title = item.Title,
                 Code = item.Code,
+                Description = item.Description,
                 TimeStart = item.TimeStart,
                 TimeEnd = item.TimeEnd,
+                PhotoUrls = item.PhotoUrls,
                 Value = item.Value,
                 Status = item.Status
             };

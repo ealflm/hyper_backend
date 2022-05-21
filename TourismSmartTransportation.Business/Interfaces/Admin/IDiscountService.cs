@@ -13,7 +13,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
     {
         Task<DiscountViewModel> GetDiscount(Guid id);
         Task<bool> CreateDiscount(CreateDiscountModel model);
-        Task<bool> UpdateDiscount(Guid id, CreateDiscountModel model);
+        Task<bool> UpdateDiscount(Guid id, UpdateDiscountModel model);
         Task<bool> DeleteDiscount(Guid id);
         Task<SearchResultViewModel<DiscountViewModel>> SearchDiscount(DiscountSearchModel model);
     }

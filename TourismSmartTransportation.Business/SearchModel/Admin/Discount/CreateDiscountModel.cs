@@ -6,25 +6,26 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
 {
     public class CreateDiscountModel
     {
-        [NotAllowedEmptyStringValidator]
+        [Required]
         public string Title { get; set; }
 
-        [NotAllowedEmptyStringValidator]
+        [Required]
         public string Code { get; set; }
 
+        [Required]
         public string Description { get; set; }
 
+        [Required]
         [ValidStartDateTimeAttribute("TimeEnd", ErrorMessage = "Time start cannot be greater than Time end")]
-        public DateTime? TimeStart { get; set; }
+        public DateTime TimeStart { get; set; }
 
-        public DateTime? TimeEnd { get; set; }
+        [Required]
+        public DateTime TimeEnd { get; set; }
 
         public string PhotoUrls { get; set; }
 
+        [Required]
         [DiscountValueValidator]
-        public decimal? Value { get; set; }
-
-        [CheckStatusRecordValidator]
-        public int Status { get; set; }
+        public decimal Value { get; set; }
     }
 }
