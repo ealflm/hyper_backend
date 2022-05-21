@@ -269,7 +269,7 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Title).IsRequired();
 
-                entity.Property(e => e.Value).HasColumnType("decimal(18, 0)");
+                entity.Property(e => e.Value).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<Driver>(entity =>
