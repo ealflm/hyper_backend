@@ -22,9 +22,11 @@ using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Implements;
 using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Implements.Company;
+using TourismSmartTransportation.Business.Implements.Shared;
 using TourismSmartTransportation.Business.Interfaces;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Company;
+using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Data.Context;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Repositories;
@@ -148,6 +150,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<ICustomerManagementService, CustomerManagementService>();
             services.AddScoped<IRentStationManagementService, RentStationManagementService>();
             services.AddScoped<IPurchaseHistoryService, PurchaseHistoryService>();
+            services.AddScoped<ICustomerTierHistoryService, CustomerTierHistoryService>();
 
             // Azure blob
             services.AddScoped(_ => new BlobServiceClient(Configuration.GetConnectionString("AzureBlobStorage")));

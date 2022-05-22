@@ -7,6 +7,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.VehicleType;
 using TourismSmartTransportation.Business.ViewModel.Partner.RentStationManagement;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.ViewModel.Admin.PurchaseHistory;
+using TourismSmartTransportation.Business.ViewModel.Shared;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -173,6 +174,19 @@ namespace TourismSmartTransportation.Business.Extensions
                 CreatedDate = item.CreatedDate,
                 PaymentId = item.PaymentId,
                 WalletId = item.WalletId,
+                Status = item.Status
+            };
+        }
+
+        public static CustomerTierHistoryViewModel AsCustomerTierHistoryViewModel(this CustomerTierHistory item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                CustomerId = item.CustomerId,
+                TierId = item.TierId,
+                TimeStart = item.TimeStart,
+                TimeEnd = item.TimeEnd,
                 Status = item.Status
             };
         }
