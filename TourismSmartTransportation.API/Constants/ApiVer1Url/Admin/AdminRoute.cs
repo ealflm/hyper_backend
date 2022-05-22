@@ -41,5 +41,8 @@ namespace ApiVer1Url
 
         // Transaction
         public const string Transaction = BaseApiUrl + "/transaction";
+
+        // Customer Tier History
+        public const string CustomerTierHistory = BaseApiUrl + "/cus-tier-his";
     }
 }
