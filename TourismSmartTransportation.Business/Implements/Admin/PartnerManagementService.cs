@@ -45,7 +45,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Address1 = model.Address1,
                     Address2 = model.Address2,
                     Phone = model.Phone,
-                    DateOfBirth = model.DateOfBirth,
+                    DateOfBirth = model.DateOfBirth != null ? model.DateOfBirth.Value : null,
                     Gender = model.Gender,
                     Email = model.Email,
                     Password = passwordHash,
@@ -59,7 +59,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 await _unitOfWork.PartnerRepository.Add(partner);
                 await _unitOfWork.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }
@@ -95,7 +95,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         /// <returns></returns>
         public async Task<PartnerViewModel> GetPartner(Guid id)
         {
-            var Partner = await _unitOfWork.PartnerRepository.GetById(id); 
+            var Partner = await _unitOfWork.PartnerRepository.GetById(id);
             if (Partner == null)
             {
                 return null;
@@ -164,7 +164,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 _unitOfWork.PartnerRepository.Update(partner);
                 await _unitOfWork.SaveChangesAsync();
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }

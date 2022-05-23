@@ -31,9 +31,9 @@ namespace TourismSmartTransportation.Business.Implements
             return newValue != null ? newValue.Value : oldValue;
         }
 
-        public static T UpdateTypeOfNotNullAbleObject<T>(T? oldValue, T? newValue) where T : struct
+        public static T? UpdateTypeOfNotNullAbleObject<T>(T? oldValue, T? newValue) where T : struct
         {
-            return newValue != null ? newValue.Value : oldValue.Value;
+            return newValue != null ? newValue.Value : oldValue != null ? oldValue.Value : null;
         }
 
         public static int SkipItemsOfPagingFunc(int itemPerPage, int totalRecord, int pageIndex)

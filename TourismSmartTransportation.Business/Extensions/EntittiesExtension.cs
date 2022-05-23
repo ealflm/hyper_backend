@@ -73,11 +73,10 @@ namespace TourismSmartTransportation.Business.Extensions
                 Phone = item.Phone,
                 Address1 = item.Address1,
                 Address2 = item.Address2,
-
-                Email= item.Email,
-                DateOfBirth = item.DateOfBirth.Value,
-                CreatedDate = item.CreatedDate.Value,
-                ModifiedDate = item.ModifiedDate.Value,
+                Email = item.Email,
+                DateOfBirth = item.DateOfBirth != null ? item.DateOfBirth.Value : null,
+                CreatedDate = item.CreatedDate != null ? item.CreatedDate.Value : null,
+                ModifiedDate = item.ModifiedDate != null ? item.ModifiedDate.Value : null,
                 Status = item.Status
             };
         }
@@ -199,8 +198,8 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Content= item.Content,
-                Name= item.Name
+                Content = item.Content,
+                Name = item.Name
             };
         }
 
@@ -208,10 +207,10 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id= item.Id,
+                Id = item.Id,
                 Content = item.Content,
                 Name = item.Name,
-                Status= item.Status
+                Status = item.Status
             };
         }
     }
