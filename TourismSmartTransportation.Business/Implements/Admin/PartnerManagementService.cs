@@ -95,7 +95,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         /// <returns></returns>
         public async Task<PartnerViewModel> GetPartner(Guid id)
         {
-            var Partner = await _unitOfWork.PartnerRepository.GetById(id);
+            var Partner = await _unitOfWork.PartnerRepository.GetById(id); 
             if (Partner == null)
             {
                 return null;

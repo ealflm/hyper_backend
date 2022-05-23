@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using TourismSmartTransportation.Business.Interfaces.Admin;
 
 namespace TourismSmartTransportation.API.Controllers.Admin
 {
+    [Authorize]
     [ApiController]
     public class PurchaseHistoryController : BaseController
     {
