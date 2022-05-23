@@ -9,6 +9,7 @@ using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.ViewModel.Admin.PurchaseHistory;
 using TourismSmartTransportation.Business.SearchModel.Admin.ServiceType;
 using TourismSmartTransportation.Business.ViewModel.Admin.ServiceTypeManagement;
+using TourismSmartTransportation.Business.ViewModel.Shared;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -36,8 +37,10 @@ namespace TourismSmartTransportation.Business.Extensions
                 Id = item.Id,
                 Title = item.Title,
                 Code = item.Code,
+                Description = item.Description,
                 TimeStart = item.TimeStart,
                 TimeEnd = item.TimeEnd,
+                PhotoUrls = item.PhotoUrls,
                 Value = item.Value,
                 Status = item.Status
             };
@@ -70,8 +73,9 @@ namespace TourismSmartTransportation.Business.Extensions
                 Phone = item.Phone,
                 Address1 = item.Address1,
                 Address2 = item.Address2,
+
                 Email= item.Email,
-                DateOfBirth = item.DateOfBirth,
+                DateOfBirth = item.DateOfBirth.Value,
                 CreatedDate = item.CreatedDate.Value,
                 ModifiedDate = item.ModifiedDate.Value,
                 Status = item.Status
@@ -104,7 +108,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 Phone = item.Phone,
                 Address1 = item.Address1,
                 Address2 = item.Address2,
-                DateOfBirth = item.DateOfBirth,
+                DateOfBirth = item.DateOfBirth.Value,
                 PhotoUrl = item.PhotoUrl,
                 Email = item.Email,
                 CreatedDate = item.CreatedDate,
@@ -129,9 +133,9 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                CreatedDate= item.CreatedDate,
-                CustomerId= item.CustomerId,
-                TotalPrice= item.TotalPrice,
+                CreatedDate = item.CreatedDate,
+                CustomerId = item.CustomerId,
+                TotalPrice = item.TotalPrice,
                 Status = item.Status
             };
         }
@@ -140,13 +144,13 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                Content= item.Content,
-                CreatedTime= item.CreatedTime,
-                OrderId= item.OrderId,
-                Price= item.Price,
-                PriceDefaultId= item.PriceDefaultId.GetValueOrDefault(),
-                Quantity= item.Quantity,
-                TierId= item.TierId.GetValueOrDefault(),
+                Content = item.Content,
+                CreatedTime = item.CreatedTime,
+                OrderId = item.OrderId,
+                Price = item.Price,
+                PriceDefaultId = item.PriceDefaultId.GetValueOrDefault(),
+                Quantity = item.Quantity,
+                TierId = item.TierId.GetValueOrDefault(),
                 Status = item.Status
             };
         }
@@ -157,9 +161,9 @@ namespace TourismSmartTransportation.Business.Extensions
             {
                 Id = item.Id,
                 Content = item.Content,
-                Amount= item.Amount,
-                CreatedDate= item.CreatedDate,
-                OrderId= item.OrderId,
+                Amount = item.Amount,
+                CreatedDate = item.CreatedDate,
+                OrderId = item.OrderId,
                 Status = item.Status
             };
         }
@@ -172,8 +176,21 @@ namespace TourismSmartTransportation.Business.Extensions
                 Content = item.Content,
                 Amount = item.Amount,
                 CreatedDate = item.CreatedDate,
-                PaymentId= item.PaymentId,
-                WalletId= item.WalletId,
+                PaymentId = item.PaymentId,
+                WalletId = item.WalletId,
+                Status = item.Status
+            };
+        }
+
+        public static CustomerTierHistoryViewModel AsCustomerTierHistoryViewModel(this CustomerTierHistory item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                CustomerId = item.CustomerId,
+                TierId = item.TierId,
+                TimeStart = item.TimeStart,
+                TimeEnd = item.TimeEnd,
                 Status = item.Status
             };
         }

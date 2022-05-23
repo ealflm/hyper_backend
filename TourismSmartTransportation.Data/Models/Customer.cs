@@ -27,7 +27,7 @@ namespace TourismSmartTransportation.Data.Models
         public string Address1 { get; set; }
         public string Address2 { get; set; }
         public string PhotoUrl { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         public string Email { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }

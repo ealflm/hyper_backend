@@ -42,7 +42,12 @@ namespace ApiVer1Url
         // Transaction
         public const string Transaction = BaseApiUrl + "/transaction";
 
+
         // Service type
         public const string ServiceType = BaseApiUrl + "/service-type";
+
+        // Customer Tier History
+        public const string CustomerTierHistory = BaseApiUrl + "/cus-tier-his";
+
     }
 }

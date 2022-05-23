@@ -33,14 +33,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpPost]
-        [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
-        public async Task<IActionResult> CreateDiscount(CreateDiscountModel model)
+        // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+        public async Task<IActionResult> CreateDiscount([FromForm] CreateDiscountModel model)
         {
             return SendResponse(await _service.CreateDiscount(model));
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDiscount(Guid id, CreateDiscountModel model)
+        public async Task<IActionResult> UpdateDiscount(Guid id, [FromForm] UpdateDiscountModel model)
         {
             return SendResponse(await _service.UpdateDiscount(id, model));
         }
