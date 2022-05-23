@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TourismSmartTransportation.Business.CommonModel;
 
 namespace TourismSmartTransportation.API.Controllers
 {
@@ -23,6 +24,12 @@ namespace TourismSmartTransportation.API.Controllers
             int statusCode = result ? 201 : 400;
             string message = result ? "Success" : "Bad request!";
             return HandleObjectResponse(statusCode, message, null);
+        }
+
+        [NonAction]
+        public ObjectResult SendResponse(Response response)
+        {
+            return HandleObjectResponse(response.StatusCode, response.Message, null);
         }
 
         private ObjectResult HandleObjectResponse(int statusCode, string message, object result)

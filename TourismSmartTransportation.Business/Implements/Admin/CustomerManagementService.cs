@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.CustomerManagement;
@@ -26,43 +27,45 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<bool> AddCustomer(AddCustomerModel model)
+        public async Task<Response> AddCustomer(AddCustomerModel model)
         {
             bool isExist = await _unitOfWork.CustomerRepository.Query()
                 .AnyAsync(x => x.Phone == model.Phone);
             if (isExist)
             {
-                return false;
-            }
-            try
-            {
-                CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
-                var customer = new CustomerModel()
+                return new()
                 {
-                    TierId = model.TierId,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    DateOfBirth = model.Birthday != null ? model.Birthday.Value : null,
-                    Address1 = model.Address1,
-                    Address2 = model.Address2,
-                    Email = model.Email,
-                    Gender = model.Gender,
-                    Phone = model.Phone,
-                    Password = passwordHash,
-                    Salt = passwordSalt,
-                    CreatedDate = DateTime.Now,
-                    ModifiedDate = DateTime.Now,
-                    PhotoUrl = UploadFile(model.UploadFile, Container.Customer).Result,
-                    Status = 1
+                    StatusCode = 400,
+                    Message = "Số điện thoại đã được sử dụng để tạo tài khoản!"
                 };
-                await _unitOfWork.CustomerRepository.Add(customer);
-                await _unitOfWork.SaveChangesAsync();
             }
-            catch
+
+            CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            var customer = new CustomerModel()
             {
-                return false;
-            }
-            return true;
+                TierId = model.TierId,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                DateOfBirth = model.Birthday != null ? model.Birthday.Value : null,
+                Address1 = model.Address1,
+                Address2 = model.Address2,
+                Email = model.Email,
+                Gender = model.Gender,
+                Phone = model.Phone,
+                Password = passwordHash,
+                Salt = passwordSalt,
+                CreatedDate = DateTime.Now,
+                ModifiedDate = DateTime.Now,
+                PhotoUrl = UploadFile(model.UploadFile, Container.Customer).Result,
+                Status = 1
+            };
+            await _unitOfWork.CustomerRepository.Add(customer);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Tạo tài khoản thành công!"
+            };
         }
 
         /// <summary>
@@ -70,20 +73,26 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<bool> DeleteCustomer(Guid id)
+        public async Task<Response> DeleteCustomer(Guid id)
         {
-            try
+
+            var customer = await _unitOfWork.CustomerRepository.GetById(id);
+            if (customer == null)
             {
-                var customer = await _unitOfWork.CustomerRepository.GetById(id);
-                customer.Status = 0;
-                _unitOfWork.CustomerRepository.Update(customer);
-                await _unitOfWork.SaveChangesAsync();
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Không tìm thấy!"
+                };
             }
-            catch
+            customer.Status = 0;
+            _unitOfWork.CustomerRepository.Update(customer);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
             {
-                return false;
-            }
-            return true;
+                StatusCode = 201,
+                Message = "Cập nhật trạng thái thành công!"
+            };
         }
 
         /// <summary>
@@ -137,47 +146,49 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<bool> UpdateCustomer(Guid id, UpdateCustomerModel model)
+        public async Task<Response> UpdateCustomer(Guid id, UpdateCustomerModel model)
         {
-            try
+            if (!string.IsNullOrEmpty(model.Phone))
             {
-                if (!string.IsNullOrEmpty(model.Phone))
+                var isExist = await _unitOfWork.CustomerRepository.Query().AnyAsync(x => x.Phone == model.Phone);
+                if (isExist)
                 {
-                    var isExist = await _unitOfWork.CustomerRepository.Query().AnyAsync(x => x.Phone == model.Phone);
-                    if (isExist)
+                    return new()
                     {
-                        return false;
-                    }
+                        StatusCode = 400,
+                        Message = "Số điện thoại đã được sử dụng!"
+                    };
                 }
+            }
 
-                var customer = await _unitOfWork.CustomerRepository.GetById(id);
-                if (model.Password != null)
-                {
-                    CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
-                    customer.Password = UpdateTypeOfNullAbleObject<byte[]>(customer.Password, passwordHash);
-                    customer.Salt = UpdateTypeOfNullAbleObject<byte[]>(customer.Salt, passwordSalt);
-                }
-                customer.TierId = model.TierId; // Customer cannot need tier, so we always need add value tier when updating data.
-                customer.Phone = UpdateTypeOfNullAbleObject<string>(customer.Phone, model.Phone);
-                customer.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Customer, customer.PhotoUrl);
-                customer.PhotoUrl += await UploadFile(model.UploadFile, Container.Customer);
-                customer.FirstName = UpdateTypeOfNullAbleObject<string>(customer.FirstName, model.FirstName);
-                customer.LastName = UpdateTypeOfNullAbleObject<string>(customer.LastName, model.LastName);
-                customer.Address1 = UpdateTypeOfNullAbleObject<string>(customer.Address1, model.Address1);
-                customer.Address2 = UpdateTypeOfNullAbleObject<string>(customer.Address2, model.Address2);
-                customer.Email = UpdateTypeOfNullAbleObject<string>(customer.Email, model.Email);
-                customer.Gender = UpdateTypeOfNotNullAbleObject<bool>(customer.Gender, model.Gender);
-                customer.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(customer.DateOfBirth, model.Birthday);
-                customer.Status = UpdateTypeOfNotNullAbleObject<int>(customer.Status, model.Status);
-                customer.ModifiedDate = DateTime.Now;
-                _unitOfWork.CustomerRepository.Update(customer);
-                await _unitOfWork.SaveChangesAsync();
-            }
-            catch
+            var customer = await _unitOfWork.CustomerRepository.GetById(id);
+            if (model.Password != null)
             {
-                return false;
+                CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                customer.Password = UpdateTypeOfNullAbleObject<byte[]>(customer.Password, passwordHash);
+                customer.Salt = UpdateTypeOfNullAbleObject<byte[]>(customer.Salt, passwordSalt);
             }
-            return true;
+            customer.TierId = model.TierId; // Customer cannot need tier, so we always need add value tier when updating data.
+            customer.Phone = UpdateTypeOfNullAbleObject<string>(customer.Phone, model.Phone);
+            customer.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Customer, customer.PhotoUrl);
+            customer.PhotoUrl += await UploadFile(model.UploadFile, Container.Customer);
+            customer.FirstName = UpdateTypeOfNullAbleObject<string>(customer.FirstName, model.FirstName);
+            customer.LastName = UpdateTypeOfNullAbleObject<string>(customer.LastName, model.LastName);
+            customer.Address1 = UpdateTypeOfNullAbleObject<string>(customer.Address1, model.Address1);
+            customer.Address2 = UpdateTypeOfNullAbleObject<string>(customer.Address2, model.Address2);
+            customer.Email = UpdateTypeOfNullAbleObject<string>(customer.Email, model.Email);
+            customer.Gender = UpdateTypeOfNotNullAbleObject<bool>(customer.Gender, model.Gender);
+            customer.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(customer.DateOfBirth, model.Birthday);
+            customer.Status = UpdateTypeOfNotNullAbleObject<int>(customer.Status, model.Status);
+            customer.ModifiedDate = DateTime.Now;
+            _unitOfWork.CustomerRepository.Update(customer);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new()
+            {
+                StatusCode = 200,
+                Message = "Cập nhật thành công!"
+            };
         }
     }
 }

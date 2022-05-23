@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -157,6 +158,12 @@ namespace TourismSmartTransportation.API
             // Azure blob
             services.AddScoped(_ => new BlobServiceClient(Configuration.GetConnectionString("AzureBlobStorage")));
 
+            // Custom Error Message for Model Validation
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = actionContext => new CustomErrorResponse().ErrorResponse(actionContext);
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -190,7 +197,7 @@ namespace TourismSmartTransportation.API
                 var response = new
                 {
                     statusCode = 500,
-                    message = exception.Message
+                    message = $"Lỗi hệ thống: {exception.Message}"
                 };
                 await context.Response.WriteAsJsonAsync(response);
             }));

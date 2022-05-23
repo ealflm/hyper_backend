@@ -1,10 +1,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using TourismSmartTransportation.Business.Validation;
+using TourismSmartTransportation.Business.ViewModel.Common;
 
 namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
 {
-    public class CreateDiscountModel
+    public class CreateDiscountModel : FileViewModel
     {
         [Required]
         public string Title { get; set; }
