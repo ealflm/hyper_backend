@@ -41,5 +41,8 @@ namespace ApiVer1Url
 
         // Transaction
         public const string Transaction = BaseApiUrl + "/transaction";
+
+        // Service type
+        public const string ServiceType = BaseApiUrl + "/service-type";
     }
 }

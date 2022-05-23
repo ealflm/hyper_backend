@@ -7,6 +7,8 @@ using TourismSmartTransportation.Business.ViewModel.Admin.VehicleType;
 using TourismSmartTransportation.Business.ViewModel.Partner.RentStationManagement;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.ViewModel.Admin.PurchaseHistory;
+using TourismSmartTransportation.Business.SearchModel.Admin.ServiceType;
+using TourismSmartTransportation.Business.ViewModel.Admin.ServiceTypeManagement;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -68,6 +70,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 Phone = item.Phone,
                 Address1 = item.Address1,
                 Address2 = item.Address2,
+                Email= item.Email,
                 DateOfBirth = item.DateOfBirth,
                 CreatedDate = item.CreatedDate.Value,
                 ModifiedDate = item.ModifiedDate.Value,
@@ -172,6 +175,26 @@ namespace TourismSmartTransportation.Business.Extensions
                 PaymentId= item.PaymentId,
                 WalletId= item.WalletId,
                 Status = item.Status
+            };
+        }
+
+        public static ServiceType AsServiceTypeDataModel(this ServiceTypeSearchModel item)
+        {
+            return new()
+            {
+                Content= item.Content,
+                Name= item.Name
+            };
+        }
+
+        public static ServiceTypeViewModel AsServiceTypeViewModel(this ServiceType item)
+        {
+            return new()
+            {
+                Id= item.Id,
+                Content = item.Content,
+                Name = item.Name,
+                Status= item.Status
             };
         }
     }
