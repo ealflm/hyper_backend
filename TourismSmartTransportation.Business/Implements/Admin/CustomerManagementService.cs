@@ -42,7 +42,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     TierId = model.TierId,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    DateOfBirth = model.Birthday,
+                    DateOfBirth = model.Birthday != null ? model.Birthday.Value : null,
                     Address1 = model.Address1,
                     Address2 = model.Address2,
                     Email = model.Email,
