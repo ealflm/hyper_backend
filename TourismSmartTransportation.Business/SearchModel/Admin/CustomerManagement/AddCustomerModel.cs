@@ -19,7 +19,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.CustomerManageme
         [StringLength(50)]
         public string LastName { get; set; }
         public bool Gender { get; set; }
-        public DateTime Birthday { get; set; }
+        public DateTime? Birthday { get; set; }
         public string Address1 { get; set; }
         public string Address2 { get; set; }
         public string PhotoUrl { get; set; }

@@ -107,7 +107,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 Phone = item.Phone,
                 Address1 = item.Address1,
                 Address2 = item.Address2,
-                DateOfBirth = item.DateOfBirth.Value,
+                DateOfBirth = item.DateOfBirth != null ? item.DateOfBirth.Value : null,
                 PhotoUrl = item.PhotoUrl,
                 Email = item.Email,
                 CreatedDate = item.CreatedDate,
