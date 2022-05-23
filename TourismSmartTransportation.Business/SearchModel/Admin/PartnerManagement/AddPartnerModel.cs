@@ -24,11 +24,12 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagemen
         public string Password { get; set; }
         public string Address1 { get; set; }
         public string Address2 { get; set; }
+        [Required]
+        [Phone]
         public string Phone { get; set; }
         [AllowEmptyAndChekcValidEmail]
         public string Email { get; set; }
-        [Required]
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
         /// <summary>
         /// true is male,
