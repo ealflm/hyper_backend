@@ -113,7 +113,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var customers = await _unitOfWork.CustomerRepository.Query()
                 .Where(x => model.TierId == null || x.Phone.Equals(model.TierId))
                 .Where(x => model.Phone == null || x.Phone.Equals(model.Phone))
-                .Where(x => model.LastName == null || x.Phone.Contains(model.LastName))
+                .Where(x => model.LastName == null || x.LastName.Contains(model.LastName))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .OrderBy(x => x.LastName)
                 .Select(x => x.AsCustomerViewModel())
