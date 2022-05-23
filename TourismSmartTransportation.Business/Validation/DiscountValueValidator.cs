@@ -15,7 +15,7 @@ namespace TourismSmartTransportation.Business.Validation
                     return ValidationResult.Success;
                 }
 
-                return new ValidationResult("dicount value is not correct! It is only between 0 and 1");
+                return new ValidationResult("Giá trị khuyến mãi chỉ nằm trong đoạn [0-1]");
             }
 
             return ValidationResult.Success;

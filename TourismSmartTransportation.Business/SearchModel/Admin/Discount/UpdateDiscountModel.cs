@@ -13,7 +13,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
 
         public string Description { get; set; }
 
-        [ValidStartDateTimeAttribute("TimeEnd", ErrorMessage = "Time start cannot be greater than Time end")]
+        [ValidStartDateTimeAttribute("TimeEnd", ErrorMessage = "Thời gian bắt đầu không được lớn hơn thời gian kết thúc")]
         public DateTime? TimeStart { get; set; }
 
         public DateTime? TimeEnd { get; set; }

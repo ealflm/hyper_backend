@@ -21,12 +21,16 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
         }
 
-        public async Task<bool> CreateDiscount(CreateDiscountModel model)
+        public async Task<Response> CreateDiscount(CreateDiscountModel model)
         {
             var isExistCode = await _unitOfWork.DiscountRepository.Query().AnyAsync(x => x.Code == model.Code);
             if (isExistCode)
             {
-                return false;
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Mã khuyến mãi đã tồn tại!"
+                };
             }
 
             var entity = new Discount()
@@ -44,22 +48,34 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             await _unitOfWork.DiscountRepository.Add(entity);
             await _unitOfWork.SaveChangesAsync();
 
-            return true;
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Tạo mới khuyến mãi thành công!"
+            };
         }
 
-        public async Task<bool> DeleteDiscount(Guid id)
+        public async Task<Response> DeleteDiscount(Guid id)
         {
             var entity = await _unitOfWork.DiscountRepository.GetById(id);
             if (entity is null)
             {
-                return false;
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Không tìm thấy!"
+                };
             }
 
             entity.Status = 0;
             _unitOfWork.DiscountRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
 
-            return true;
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Cập nhật trạng thái thành công!"
+            };
 
         }
 
@@ -122,21 +138,43 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return result;
         }
 
-        public async Task<bool> UpdateDiscount(Guid id, UpdateDiscountModel model)
+        public async Task<Response> UpdateDiscount(Guid id, UpdateDiscountModel model)
         {
-
-            var entity = _unitOfWork.DiscountRepository.GetById(id).Result;
+            var isExistedCode = await _unitOfWork.DiscountRepository.Query().AnyAsync(x => x.Code == model.Code);
+            if (isExistedCode)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Mã khuyến mãi đã tồn tại!"
+                };
+            }
+            var entity = await _unitOfWork.DiscountRepository.GetById(id);
             if (entity is null)
             {
-                return false;
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Không tìm thấy"
+                };
             }
-            if (model.TimeStart != null && DateTime.Compare(model.TimeStart.Value, entity.TimeEnd) > 0)
+            DateTime timeEnd = model.TimeEnd != null ? model.TimeEnd.Value : entity.TimeEnd;
+            if (model.TimeStart != null && DateTime.Compare(model.TimeStart.Value, timeEnd) > 0)
             {
-                return false;
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = $"Thời gian bắt đầu không được lớn hơn thời gian kết thúc({timeEnd})"
+                };
             }
-            if (model.TimeEnd != null && DateTime.Compare(model.TimeEnd.Value, entity.TimeStart) < 0)
+            DateTime timeStart = model.TimeStart != null ? model.TimeStart.Value : entity.TimeStart;
+            if (model.TimeEnd != null && DateTime.Compare(model.TimeEnd.Value, timeStart) < 0)
             {
-                return false;
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = $"Thời gian kết thúc không được nhỏ hơn thời gian bắt đầu({timeStart})"
+                };
             }
             entity.PhotoUrls = await DeleteFile(model.DeleteFile, Container.Admin, entity.PhotoUrls);
             entity.PhotoUrls += await UploadFile(model.UploadFile, Container.Admin);
@@ -151,7 +189,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             _unitOfWork.DiscountRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
 
-            return true;
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Cập nhật thành công!"
+            };
         }
     }
 }
