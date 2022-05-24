@@ -13,13 +13,12 @@ namespace TourismSmartTransportation.API.Validation
             .Where(model => model.Value.Errors.Count > 0)
             .Select(model => new Error()
             {
-                Property = model.Key,
                 ErrorMessage = model.Value.Errors.FirstOrDefault().ErrorMessage
-            }).ToList();
+            }).FirstOrDefault();
             return new BadRequestObjectResult(new
             {
                 StatusCode = 400,
-                Message = errorRecordList
+                Message = errorRecordList.ErrorMessage
             });
         }
     }
