@@ -153,6 +153,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IPurchaseHistoryService, PurchaseHistoryService>();
             services.AddScoped<IServiceTypeManagementService, ServiceTypeManagementService>();
             services.AddScoped<ICustomerTierHistoryService, CustomerTierHistoryService>();
+            services.AddScoped<ITierService, TierService>();
 
 
             // Azure blob
