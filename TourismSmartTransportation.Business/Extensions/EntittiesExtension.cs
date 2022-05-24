@@ -10,6 +10,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.PurchaseHistory;
 using TourismSmartTransportation.Business.SearchModel.Admin.ServiceType;
 using TourismSmartTransportation.Business.ViewModel.Admin.ServiceTypeManagement;
 using TourismSmartTransportation.Business.ViewModel.Shared;
+using TourismSmartTransportation.Business.ViewModel.Admin.Tier;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -210,6 +211,20 @@ namespace TourismSmartTransportation.Business.Extensions
                 Id = item.Id,
                 Content = item.Content,
                 Name = item.Name,
+                Status = item.Status
+            };
+        }
+
+        public static TierViewModel AsTierViewModel(this Tier item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Description = item.Description,
+                PhotoUrl = item.PhotoUrl,
+                PromotedTitle = item.PromotedTitle,
+                Price = item.Price,
                 Status = item.Status
             };
         }
