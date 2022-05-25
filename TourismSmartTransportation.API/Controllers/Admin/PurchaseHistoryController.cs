@@ -35,7 +35,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpGet]
-        [Route(ApiVer1Url.Admin.Transaction)]
+        [Route(ApiVer1Url.Admin.Payment)]
         public async Task<IActionResult> GetTransaction([FromQuery] string orderId)
         {
             return SendResponse(await _service.GetPayment(orderId));
