@@ -41,7 +41,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 Description = item.Description,
                 TimeStart = item.TimeStart,
                 TimeEnd = item.TimeEnd,
-                PhotoUrls = item.PhotoUrls,
+                PhotoUrl = item.PhotoUrl,
                 Value = item.Value,
                 Status = item.Status
             };
@@ -145,10 +145,8 @@ namespace TourismSmartTransportation.Business.Extensions
             {
                 Id = item.Id,
                 Content = item.Content,
-                CreatedTime = item.CreatedTime,
                 OrderId = item.OrderId,
                 Price = item.Price,
-                PriceDefaultId = item.PriceDefaultId.GetValueOrDefault(),
                 Quantity = item.Quantity,
                 TierId = item.TierId.GetValueOrDefault(),
                 Status = item.Status

@@ -23,7 +23,6 @@ namespace TourismSmartTransportation.Data.Interfaces
         IGenericRepository<Partner> PartnerRepository { get; }
         IGenericRepository<PartnerServiceType> PartnerServiceTypeRepository { get; }
         IGenericRepository<Payment> PaymentRepository { get; }
-        IGenericRepository<PriceDefault> PriceDefaultRepository { get; }
         IGenericRepository<PublishYear> PublishYearRepository { get; }
         IGenericRepository<RentStation> RentStationRepository { get; }
         IGenericRepository<Route> RouteRepository { get; }

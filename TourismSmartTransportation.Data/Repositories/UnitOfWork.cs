@@ -26,7 +26,6 @@ namespace TourismSmartTransportation.Data.Repositories
         public IGenericRepository<Partner> PartnerRepository { get; }
         public IGenericRepository<PartnerServiceType> PartnerServiceTypeRepository { get; }
         public IGenericRepository<Payment> PaymentRepository { get; }
-        public IGenericRepository<PriceDefault> PriceDefaultRepository { get; }
         public IGenericRepository<PublishYear> PublishYearRepository { get; }
         public IGenericRepository<RentStation> RentStationRepository { get; }
         public IGenericRepository<Route> RouteRepository { get; }
@@ -60,7 +59,6 @@ namespace TourismSmartTransportation.Data.Repositories
             IGenericRepository<Partner> partnerRepository,
             IGenericRepository<PartnerServiceType> partnerServiceTypeRepository,
             IGenericRepository<Payment> paymentRepository,
-            IGenericRepository<PriceDefault> priceDefaultRepository,
             IGenericRepository<PublishYear> publishYearRepository,
             IGenericRepository<RentStation> rentStationRepository,
             IGenericRepository<Route> routeRepository,
@@ -94,7 +92,6 @@ namespace TourismSmartTransportation.Data.Repositories
             PartnerRepository = partnerRepository;
             PartnerServiceTypeRepository = partnerServiceTypeRepository;
             PaymentRepository = paymentRepository;
-            PriceDefaultRepository = priceDefaultRepository;
             PublishYearRepository = publishYearRepository;
             RentStationRepository = rentStationRepository;
             RouteRepository = routeRepository;

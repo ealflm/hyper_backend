@@ -23,7 +23,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
         [Required]
         public DateTime TimeEnd { get; set; }
 
-        public string PhotoUrls { get; set; }
+        public string PhotoUrl { get; set; }
 
         [Required]
         [DiscountValueValidator]

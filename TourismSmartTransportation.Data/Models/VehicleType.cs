@@ -9,7 +9,7 @@ namespace TourismSmartTransportation.Data.Models
     {
         public VehicleType()
         {
-            PriceDefaults = new HashSet<PriceDefault>();
+            PriceBookings = new HashSet<PriceBooking>();
             Vehicles = new HashSet<Vehicle>();
         }
 
@@ -20,7 +20,7 @@ namespace TourismSmartTransportation.Data.Models
         public decimal Price { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<PriceDefault> PriceDefaults { get; set; }
+        public virtual ICollection<PriceBooking> PriceBookings { get; set; }
         public virtual ICollection<Vehicle> Vehicles { get; set; }
     }
 }

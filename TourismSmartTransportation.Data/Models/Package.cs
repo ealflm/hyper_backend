@@ -11,7 +11,6 @@ namespace TourismSmartTransportation.Data.Models
         public Guid TierId { get; set; }
         public Guid ServiceTypeId { get; set; }
         public string Name { get; set; }
-        public string PhotoUrls { get; set; }
         public decimal Limit { get; set; }
         public decimal Value { get; set; }
         public int Status { get; set; }

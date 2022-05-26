@@ -41,7 +41,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Description = model.Description,
                 TimeStart = model.TimeStart,
                 TimeEnd = model.TimeEnd,
-                PhotoUrls = model.PhotoUrls,
+                PhotoUrl = model.PhotoUrl,
                 Value = model.Value,
                 Status = 1
             };
@@ -176,8 +176,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = $"Thời gian kết thúc không được nhỏ hơn thời gian bắt đầu({timeStart})"
                 };
             }
-            entity.PhotoUrls = await DeleteFile(model.DeleteFile, Container.Admin, entity.PhotoUrls);
-            entity.PhotoUrls += await UploadFile(model.UploadFile, Container.Admin);
+            entity.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Admin, entity.PhotoUrl);
+            entity.PhotoUrl += await UploadFile(model.UploadFile, Container.Admin);
             entity.Title = UpdateTypeOfNullAbleObject<string>(entity.Title, model.Title);
             entity.Code = UpdateTypeOfNullAbleObject<string>(entity.Code, model.Code);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);

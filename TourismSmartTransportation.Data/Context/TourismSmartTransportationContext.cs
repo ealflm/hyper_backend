@@ -18,7 +18,6 @@ namespace TourismSmartTransportation.Data.Context
         {
         }
 
-        public virtual DbSet<ActivityDate> ActivityDates { get; set; }
         public virtual DbSet<Admin> Admins { get; set; }
         public virtual DbSet<Card> Cards { get; set; }
         public virtual DbSet<Category> Categories { get; set; }
@@ -34,10 +33,13 @@ namespace TourismSmartTransportation.Data.Context
         public virtual DbSet<Partner> Partners { get; set; }
         public virtual DbSet<PartnerServiceType> PartnerServiceTypes { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
-        public virtual DbSet<PriceDefault> PriceDefaults { get; set; }
+        public virtual DbSet<PriceBooking> PriceBookings { get; set; }
+        public virtual DbSet<PriceBusing> PriceBusings { get; set; }
+        public virtual DbSet<PriceRenting> PriceRentings { get; set; }
         public virtual DbSet<PublishYear> PublishYears { get; set; }
         public virtual DbSet<RentStation> RentStations { get; set; }
         public virtual DbSet<Route> Routes { get; set; }
+        public virtual DbSet<RoutePriceBusing> RoutePriceBusings { get; set; }
         public virtual DbSet<ServiceType> ServiceTypes { get; set; }
         public virtual DbSet<Station> Stations { get; set; }
         public virtual DbSet<StationRoute> StationRoutes { get; set; }
@@ -51,21 +53,6 @@ namespace TourismSmartTransportation.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
-
-            modelBuilder.Entity<ActivityDate>(entity =>
-            {
-                entity.ToTable("ActivityDate");
-
-                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-
-                entity.Property(e => e.Description).IsRequired();
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(255);
-
-                entity.Property(e => e.Price).HasColumnType("decimal(18, 0)");
-            });
 
             modelBuilder.Entity<Admin>(entity =>
             {
@@ -136,8 +123,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(255);
-
-                entity.Property(e => e.Value).HasColumnType("decimal(18, 0)");
             });
 
             modelBuilder.Entity<Customer>(entity =>
@@ -261,7 +246,7 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Description).IsRequired();
 
-                entity.Property(e => e.PhotoUrls).IsUnicode(false);
+                entity.Property(e => e.PhotoUrl).IsUnicode(false);
 
                 entity.Property(e => e.TimeEnd).HasColumnType("datetime");
 
@@ -351,10 +336,6 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Content).IsRequired();
 
-                entity.Property(e => e.CreatedTime)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
                 entity.Property(e => e.Price).HasColumnType("decimal(18, 0)");
 
                 entity.HasOne(d => d.Order)
@@ -363,10 +344,20 @@ namespace TourismSmartTransportation.Data.Context
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__OrderDeta__Order__2180FB33");
 
-                entity.HasOne(d => d.PriceDefault)
+                entity.HasOne(d => d.PriceBooking)
                     .WithMany(p => p.OrderDetails)
-                    .HasForeignKey(d => d.PriceDefaultId)
-                    .HasConstraintName("FK__OrderDeta__Price__236943A5");
+                    .HasForeignKey(d => d.PriceBookingId)
+                    .HasConstraintName("FK__OrderDeta__Price__2057CCD0");
+
+                entity.HasOne(d => d.PriceBusing)
+                    .WithMany(p => p.OrderDetails)
+                    .HasForeignKey(d => d.PriceBusingId)
+                    .HasConstraintName("FK__OrderDeta__Price__29E1370A");
+
+                entity.HasOne(d => d.PriceRenting)
+                    .WithMany(p => p.OrderDetails)
+                    .HasForeignKey(d => d.PriceRentingId)
+                    .HasConstraintName("FK__OrderDeta__Price__24285DB4");
 
                 entity.HasOne(d => d.Tier)
                     .WithMany(p => p.OrderDetails)
@@ -385,10 +376,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(1000);
-
-                entity.Property(e => e.PhotoUrls)
-                    .IsRequired()
-                    .IsUnicode(false);
 
                 entity.Property(e => e.Value).HasColumnType("decimal(18, 0)");
 
@@ -531,29 +518,90 @@ namespace TourismSmartTransportation.Data.Context
                     .HasConstraintName("FK__Payment__OrderId__1F98B2C1");
             });
 
-            modelBuilder.Entity<PriceDefault>(entity =>
+            modelBuilder.Entity<PriceBooking>(entity =>
             {
-                entity.ToTable("PriceDefault");
+                entity.ToTable("PriceBooking");
 
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
-                entity.Property(e => e.RangeEnd).HasColumnType("decimal(18, 0)");
+                entity.Property(e => e.FixedDistance).HasColumnType("decimal(18, 0)");
 
-                entity.Property(e => e.RangeStart).HasColumnType("decimal(18, 0)");
+                entity.Property(e => e.FixedPrice).HasColumnType("decimal(18, 0)");
 
-                entity.Property(e => e.Value).HasColumnType("decimal(18, 0)");
+                entity.Property(e => e.MaxDistance).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.MinDistance).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.PricePerKilometer).HasColumnType("decimal(18, 0)");
 
                 entity.HasOne(d => d.ServiceType)
-                    .WithMany(p => p.PriceDefaults)
+                    .WithMany(p => p.PriceBookings)
                     .HasForeignKey(d => d.ServiceTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__PriceDefa__Servi__2B0A656D");
+                    .HasConstraintName("FK__PriceBook__Servi__1E6F845E");
 
                 entity.HasOne(d => d.VehicleType)
-                    .WithMany(p => p.PriceDefaults)
+                    .WithMany(p => p.PriceBookings)
                     .HasForeignKey(d => d.VehicleTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__PriceDefa__Vehic__2BFE89A6");
+                    .HasConstraintName("FK__PriceBook__Vehic__1F63A897");
+            });
+
+            modelBuilder.Entity<PriceBusing>(entity =>
+            {
+                entity.ToTable("PriceBusing");
+
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+
+                entity.Property(e => e.MaxDistance).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.MaxRouteDistance).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.MaxStation).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.MinDistance).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.MinRouteDistance).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.MinStation).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.Mode)
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Price).HasColumnType("decimal(18, 0)");
+            });
+
+            modelBuilder.Entity<PriceRenting>(entity =>
+            {
+                entity.ToTable("PriceRenting");
+
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+
+                entity.Property(e => e.FixedPrice).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.HolidayPrice).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.MaxTime).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.MinTime).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.PricePerHour).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.WeekendPrice).HasColumnType("decimal(18, 0)");
+
+                entity.HasOne(d => d.Category)
+                    .WithMany(p => p.PriceRentings)
+                    .HasForeignKey(d => d.CategoryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_PriceRenting_Category");
+
+                entity.HasOne(d => d.PublishYear)
+                    .WithMany(p => p.PriceRentings)
+                    .HasForeignKey(d => d.PublishYearId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_PriceRenting_PublishYear");
             });
 
             modelBuilder.Entity<PublishYear>(entity =>
@@ -567,8 +615,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(255);
-
-                entity.Property(e => e.Value).HasColumnType("decimal(18, 0)");
             });
 
             modelBuilder.Entity<RentStation>(entity =>
@@ -617,6 +663,25 @@ namespace TourismSmartTransportation.Data.Context
                     .HasForeignKey(d => d.PartnerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Route__PartnerId__339FAB6E");
+            });
+
+            modelBuilder.Entity<RoutePriceBusing>(entity =>
+            {
+                entity.ToTable("RoutePriceBusing");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.HasOne(d => d.PriceBusing)
+                    .WithMany(p => p.RoutePriceBusings)
+                    .HasForeignKey(d => d.PriceBusingId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_RoutePriceBusing_PriceBusing");
+
+                entity.HasOne(d => d.Route)
+                    .WithMany(p => p.RoutePriceBusings)
+                    .HasForeignKey(d => d.RouteId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_RoutePriceBusing_Route");
             });
 
             modelBuilder.Entity<ServiceType>(entity =>
@@ -787,29 +852,17 @@ namespace TourismSmartTransportation.Data.Context
                     .IsRequired()
                     .HasMaxLength(1000);
 
-                entity.HasOne(d => d.ActivityDate)
-                    .WithMany(p => p.Vehicles)
-                    .HasForeignKey(d => d.ActivityDateId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Vehicle__Activit__3E1D39E1");
-
-                entity.HasOne(d => d.Category)
-                    .WithMany(p => p.Vehicles)
-                    .HasForeignKey(d => d.CategoryId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Vehicle__Categor__3C34F16F");
-
                 entity.HasOne(d => d.Partner)
                     .WithMany(p => p.Vehicles)
                     .HasForeignKey(d => d.PartnerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Vehicle__Partner__3B40CD36");
 
-                entity.HasOne(d => d.PublishYear)
+                entity.HasOne(d => d.PriceRenting)
                     .WithMany(p => p.Vehicles)
-                    .HasForeignKey(d => d.PublishYearId)
+                    .HasForeignKey(d => d.PriceRentingId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Vehicle__Publish__3D2915A8");
+                    .HasConstraintName("FK_Vehicle_PriceRenting");
 
                 entity.HasOne(d => d.RentStation)
                     .WithMany(p => p.Vehicles)

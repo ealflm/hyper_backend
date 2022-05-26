@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace TourismSmartTransportation.Data.Models
 {
-    public partial class PriceDefault
+    public partial class PriceBooking
     {
-        public PriceDefault()
+        public PriceBooking()
         {
             OrderDetails = new HashSet<OrderDetail>();
         }
@@ -15,10 +15,11 @@ namespace TourismSmartTransportation.Data.Models
         public Guid Id { get; set; }
         public Guid ServiceTypeId { get; set; }
         public Guid VehicleTypeId { get; set; }
-        public int Seats { get; set; }
-        public decimal RangeStart { get; set; }
-        public decimal RangeEnd { get; set; }
-        public decimal Value { get; set; }
+        public decimal MinDistance { get; set; }
+        public decimal MaxDistance { get; set; }
+        public decimal FixedPrice { get; set; }
+        public decimal FixedDistance { get; set; }
+        public decimal PricePerKilometer { get; set; }
         public int Status { get; set; }
 
         public virtual ServiceType ServiceType { get; set; }
