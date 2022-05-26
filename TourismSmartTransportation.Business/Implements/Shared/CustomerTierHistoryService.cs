@@ -27,6 +27,10 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                         .Where(x => model.Status == null || x.Status == model.Status.Value)
                         .Select(x => x.AsCustomerTierHistoryViewModel())
                         .ToListAsync();
+            foreach(CustomerTierHistoryViewModel x in entity)
+            {
+                x.TierName = (await _unitOfWork.TierRepository.GetById(x.TierId)).Name;
+            }
             var listAfterSorting = GetListAfterSorting(entity, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
