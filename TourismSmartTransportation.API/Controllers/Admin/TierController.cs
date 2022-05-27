@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.Tier;
 
@@ -30,7 +31,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpPost]
-        // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+       // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> CreateTier([FromForm] CreateTierModel model)
         {
             return SendResponse(await _service.CreateTier(model));

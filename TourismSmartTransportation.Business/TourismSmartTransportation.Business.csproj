@@ -13,4 +13,8 @@
     <ProjectReference Include="..\TourismSmartTransportation.Data\TourismSmartTransportation.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="SearchModel\Admin\Service\" />
+  </ItemGroup>
+
 </Project>

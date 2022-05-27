@@ -147,7 +147,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
             services.AddScoped<IDiscountService, DiscountService>();
             services.AddScoped<IPartnerManagementService, PartnerManagementService>();
-            services.AddScoped<IServiceManagementService, ServiceManagement>();
+  //          services.AddScoped<IServiceManagementService, ServiceManagement>();
             services.AddScoped<ICustomerManagementService, CustomerManagementService>();
             services.AddScoped<IRentStationManagementService, RentStationManagementService>();
             services.AddScoped<IPurchaseHistoryService, PurchaseHistoryService>();

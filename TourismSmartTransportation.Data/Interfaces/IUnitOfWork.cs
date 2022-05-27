@@ -26,7 +26,6 @@ namespace TourismSmartTransportation.Data.Interfaces
         IGenericRepository<PublishYear> PublishYearRepository { get; }
         IGenericRepository<RentStation> RentStationRepository { get; }
         IGenericRepository<Route> RouteRepository { get; }
-        IGenericRepository<Service> ServiceRepository { get; }
         IGenericRepository<ServiceType> ServiceTypeRepository { get; }
         IGenericRepository<Station> StationRepository { get; }
         IGenericRepository<StationRoute> StationRouteRepository { get; }
