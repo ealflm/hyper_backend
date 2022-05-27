@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.Tier;
+using TourismSmartTransportation.Business.ViewModel.Admin.Package;
 
 namespace TourismSmartTransportation.API.Controllers.Admin
 {
@@ -31,9 +34,11 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpPost]
-       // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+        // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> CreateTier([FromForm] CreateTierModel model)
         {
+            String formPackageList = this.Request.Form["PackageList"];
+            model.PackageList = JsonConvert.DeserializeObject<List<CreatePackageModel>>(formPackageList);
             return SendResponse(await _service.CreateTier(model));
         }
 
