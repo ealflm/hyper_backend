@@ -154,12 +154,15 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             tier.PromotedTitle = UpdateTypeOfNullAbleObject<string>(tier.PromotedTitle, model.PromotedTitle);
             tier.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Admin, tier.PhotoUrl);
             tier.PhotoUrl += await UploadFile(model.UploadFile, Container.Admin);
-            tier.Price = UpdateTypeOfNotNullAbleObject<decimal>(tier.Price, model.Price.Value);
+            tier.Price = UpdateTypeOfNotNullAbleObject<decimal>(tier.Price, model.Price);
             tier.Status = UpdateTypeOfNotNullAbleObject<int>(tier.Status, model.Status);
             _unitOfWork.TierRepository.Update(tier);
-            foreach (PackageViewModel x in model.PackageList)
+            if (model.PackageList != null && model.PackageList.Count() > 0)
             {
-                // _unitOfWork.PackageRepository.Update(x.AsPackageData());
+                foreach (UpdatePackageModel x in model.PackageList)
+                {
+                    _unitOfWork.PackageRepository.Update(x.AsPackageData());
+                }
             }
             await _unitOfWork.SaveChangesAsync();
 

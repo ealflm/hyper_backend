@@ -12,7 +12,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Tier
         public string Description { get; set; }
         public decimal? Price { get; set; }
         public string PromotedTitle { get; set; }
-        public List<PackageViewModel> PackageList { get; set; }
+        public List<UpdatePackageModel> PackageList { get; set; }
         public int? Status { get; set; }
     }
 }

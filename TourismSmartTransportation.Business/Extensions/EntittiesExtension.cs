@@ -243,5 +243,19 @@ namespace TourismSmartTransportation.Business.Extensions
                 Status = item.Status.Value
             };
         }
+
+        public static Package AsPackageData(this UpdatePackageModel item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                TierId = item.TierId.Value,
+                ServiceTypeId = item.ServiceTypeId.Value,
+                Name = item.Name,
+                Limit = item.Limit.Value,
+                Value = item.Value.Value,
+                Status = item.Status.Value
+            };
+        }
     }
 }
