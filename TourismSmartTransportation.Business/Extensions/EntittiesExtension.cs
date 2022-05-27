@@ -12,12 +12,13 @@ using TourismSmartTransportation.Business.ViewModel.Admin.ServiceTypeManagement;
 using TourismSmartTransportation.Business.ViewModel.Shared;
 using TourismSmartTransportation.Business.ViewModel.Admin.Tier;
 using TourismSmartTransportation.Business.ViewModel.Admin.Package;
+using System;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
     public static class EntitiesExtension
     {
-       
+
 
         public static DiscountViewModel AsDiscountViewModel(this Discount item)
         {
@@ -229,17 +230,31 @@ namespace TourismSmartTransportation.Business.Extensions
             };
         }
 
-        public static Package AsPackageData(this PackageViewModel item)
+        public static Package AsPackageData(this CreatePackageModel item)
+        {
+            return new()
+            {
+                Id = Guid.NewGuid(),
+                Name = item.Name,
+                Limit = item.Limit,
+                ServiceTypeId = item.ServiceTypeId.Value,
+                TierId = item.TierId.Value,
+                Value = item.Value,
+                Status = item.Status.Value
+            };
+        }
+
+        public static Package AsPackageData(this UpdatePackageModel item)
         {
             return new()
             {
                 Id = item.Id,
+                TierId = item.TierId.Value,
+                ServiceTypeId = item.ServiceTypeId.Value,
                 Name = item.Name,
-                Limit = item.Limit,
-                ServiceTypeId = item.ServiceTypeId,
-                TierId = item.TierId,
-                Value = item.Value,
-                Status = item.Status
+                Limit = item.Limit.Value,
+                Value = item.Value.Value,
+                Status = item.Status.Value
             };
         }
     }

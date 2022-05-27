@@ -16,7 +16,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Tier
         [Required]
         public decimal Price { get; set; }
         [Required]
-        public List<PackageViewModel> PackageList { get; set; }
+        public List<CreatePackageModel> PackageList { get; set; }
         [Required]
         public string PromotedTitle { get; set; }
     }

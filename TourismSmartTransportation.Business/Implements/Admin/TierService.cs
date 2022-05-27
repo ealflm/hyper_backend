@@ -44,11 +44,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Status = 1,
             };
             await _unitOfWork.TierRepository.Add(entity);
-            foreach(PackageViewModel x in model.PackageList)
+            foreach (CreatePackageModel x in model.PackageList)
             {
                 x.TierId = entity.Id;
                 await _unitOfWork.PackageRepository.Add(x.AsPackageData());
             }
+
             await _unitOfWork.SaveChangesAsync();
             return new()
             {
@@ -72,7 +73,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             tier.Status = 0;
             _unitOfWork.TierRepository.Update(tier);
             var packages = await _unitOfWork.PackageRepository.Query().Where(x => x.TierId.Equals(tier.Id)).ToListAsync();
-            foreach(Package x in packages)
+            foreach (Package x in packages)
             {
                 x.Status = 0;
                 _unitOfWork.PackageRepository.Update(x);
@@ -103,12 +104,19 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(x => model.Description == null || x.Description.Contains(model.Description))
                             .Where(x => model.PromotedTitle == null || x.PromotedTitle.Contains(model.PromotedTitle))
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
-                            .OrderBy(x => x.Name)
                             .Select(x => x.AsTierViewModel())
                             .ToListAsync();
             var listAfterSorting = GetListAfterSorting(tier, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
+            foreach (var item in listItemsAfterPaging)
+            {
+                var packageList = await _unitOfWork.PackageRepository.Query()
+                                    .Where(x => x.TierId == item.Id)
+                                    .Select(x => x.AsPackageViewModel())
+                                    .ToListAsync();
+                item.PackageList = packageList;
+            }
             SearchResultViewModel<TierViewModel> result = null;
             result = new SearchResultViewModel<TierViewModel>()
             {
@@ -146,12 +154,15 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             tier.PromotedTitle = UpdateTypeOfNullAbleObject<string>(tier.PromotedTitle, model.PromotedTitle);
             tier.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Admin, tier.PhotoUrl);
             tier.PhotoUrl += await UploadFile(model.UploadFile, Container.Admin);
-            tier.Price = UpdateTypeOfNotNullAbleObject<decimal>(tier.Price, model.Price.Value);
+            tier.Price = UpdateTypeOfNotNullAbleObject<decimal>(tier.Price, model.Price);
             tier.Status = UpdateTypeOfNotNullAbleObject<int>(tier.Status, model.Status);
             _unitOfWork.TierRepository.Update(tier);
-            foreach(PackageViewModel x in model.PackageList)
+            if (model.PackageList != null && model.PackageList.Count() > 0)
             {
-                _unitOfWork.PackageRepository.Update(x.AsPackageData());
+                foreach (UpdatePackageModel x in model.PackageList)
+                {
+                    _unitOfWork.PackageRepository.Update(x.AsPackageData());
+                }
             }
             await _unitOfWork.SaveChangesAsync();
 
