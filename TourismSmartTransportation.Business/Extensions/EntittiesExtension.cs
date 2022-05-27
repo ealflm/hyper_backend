@@ -1,7 +1,7 @@
 using TourismSmartTransportation.Business.ViewModel.Admin.PartnerManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.CustomerManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.Discount;
-using TourismSmartTransportation.Business.ViewModel.Admin.Service;
+//using TourismSmartTransportation.Business.ViewModel.Admin.Service;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.VehicleType;
 using TourismSmartTransportation.Business.ViewModel.Partner.RentStationManagement;
@@ -11,25 +11,13 @@ using TourismSmartTransportation.Business.SearchModel.Admin.ServiceType;
 using TourismSmartTransportation.Business.ViewModel.Admin.ServiceTypeManagement;
 using TourismSmartTransportation.Business.ViewModel.Shared;
 using TourismSmartTransportation.Business.ViewModel.Admin.Tier;
+using TourismSmartTransportation.Business.ViewModel.Admin.Package;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
     public static class EntitiesExtension
     {
-        public static ServiceViewModel AsServiceViewModel(this Service item)
-        {
-            return new()
-            {
-                Id = item.Id,
-                Title = item.Title,
-                Description = item.Description,
-                Price = item.Price,
-                TimeStart = item.TimeStart,
-                TimeEnd = item.TimeEnd,
-                PhotoUrls = item.PhotoUrls,
-                Status = item.Status
-            };
-        }
+       
 
         public static DiscountViewModel AsDiscountViewModel(this Discount item)
         {
@@ -223,6 +211,34 @@ namespace TourismSmartTransportation.Business.Extensions
                 PhotoUrl = item.PhotoUrl,
                 PromotedTitle = item.PromotedTitle,
                 Price = item.Price,
+                Status = item.Status
+            };
+        }
+
+        public static PackageViewModel AsPackageViewModel(this Package item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Limit = item.Limit,
+                ServiceTypeId = item.ServiceTypeId,
+                TierId = item.TierId,
+                Value = item.Value,
+                Status = item.Status
+            };
+        }
+
+        public static Package AsPackageData(this PackageViewModel item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Limit = item.Limit,
+                ServiceTypeId = item.ServiceTypeId,
+                TierId = item.TierId,
+                Value = item.Value,
                 Status = item.Status
             };
         }

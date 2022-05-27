@@ -7,6 +7,7 @@ using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.Tier;
+using TourismSmartTransportation.Business.ViewModel.Admin.Package;
 using TourismSmartTransportation.Business.ViewModel.Admin.Tier;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Data.Interfaces;
@@ -43,6 +44,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Status = 1,
             };
             await _unitOfWork.TierRepository.Add(entity);
+            foreach(PackageViewModel x in model.PackageList)
+            {
+                x.TierId = entity.Id;
+                await _unitOfWork.PackageRepository.Add(x.AsPackageData());
+            }
             await _unitOfWork.SaveChangesAsync();
             return new()
             {
@@ -65,6 +71,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             tier.Status = 0;
             _unitOfWork.TierRepository.Update(tier);
+            var packages = await _unitOfWork.PackageRepository.Query().Where(x => x.TierId.Equals(tier.Id)).ToListAsync();
+            foreach(Package x in packages)
+            {
+                x.Status = 0;
+                _unitOfWork.PackageRepository.Update(x);
+            }
             await _unitOfWork.SaveChangesAsync();
             return new()
             {
@@ -75,12 +87,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<TierViewModel> GetTier(Guid id)
         {
-            var tier = await _unitOfWork.TierRepository.GetById(id);
+            var tier = (await _unitOfWork.TierRepository.GetById(id)).AsTierViewModel();
             if (tier == null)
             {
                 return null;
             }
-            return tier.AsTierViewModel();
+            tier.PackageList = await _unitOfWork.PackageRepository.Query().Where(x => x.TierId.Equals(tier.Id)).Select(x => x.AsPackageViewModel()).ToListAsync();
+            return tier;
         }
 
         public async Task<SearchResultViewModel<TierViewModel>> SearchTier(TierSearchModel model)
@@ -136,6 +149,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             tier.Price = UpdateTypeOfNotNullAbleObject<decimal>(tier.Price, model.Price.Value);
             tier.Status = UpdateTypeOfNotNullAbleObject<int>(tier.Status, model.Status);
             _unitOfWork.TierRepository.Update(tier);
+            foreach(PackageViewModel x in model.PackageList)
+            {
+                _unitOfWork.PackageRepository.Update(x.AsPackageData());
+            }
             await _unitOfWork.SaveChangesAsync();
 
             return new()

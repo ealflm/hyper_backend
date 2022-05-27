@@ -29,7 +29,6 @@ namespace TourismSmartTransportation.Data.Repositories
         public IGenericRepository<PublishYear> PublishYearRepository { get; }
         public IGenericRepository<RentStation> RentStationRepository { get; }
         public IGenericRepository<Route> RouteRepository { get; }
-        public IGenericRepository<Service> ServiceRepository { get; }
         public IGenericRepository<ServiceType> ServiceTypeRepository { get; }
         public IGenericRepository<Station> StationRepository { get; }
         public IGenericRepository<StationRoute> StationRouteRepository { get; }
@@ -62,7 +61,6 @@ namespace TourismSmartTransportation.Data.Repositories
             IGenericRepository<PublishYear> publishYearRepository,
             IGenericRepository<RentStation> rentStationRepository,
             IGenericRepository<Route> routeRepository,
-            IGenericRepository<Service> serviceRepository,
             IGenericRepository<ServiceType> serviceTypeRepository,
             IGenericRepository<Station> stationRepository,
             IGenericRepository<StationRoute> stationRouteRepository,
@@ -95,7 +93,6 @@ namespace TourismSmartTransportation.Data.Repositories
             PublishYearRepository = publishYearRepository;
             RentStationRepository = rentStationRepository;
             RouteRepository = routeRepository;
-            ServiceRepository = serviceRepository;
             ServiceTypeRepository = serviceTypeRepository;
             StationRepository = stationRepository;
             StationRouteRepository = stationRouteRepository;
