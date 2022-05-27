@@ -37,8 +37,14 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> CreateTier([FromForm] CreateTierModel model)
         {
-            String formPackageList = this.Request.Form["PackageList"];
-            model.PackageList = JsonConvert.DeserializeObject<List<CreatePackageModel>>(formPackageList);
+            var formPackageList = this.Request.Form["PackageList"];
+            List<CreatePackageModel> list = new List<CreatePackageModel>();
+            foreach (var x in formPackageList)
+            {
+                var item = JsonConvert.DeserializeObject<CreatePackageModel>(x);
+                list.Add(item);
+            }
+            model.PackageList = list;
             return SendResponse(await _service.CreateTier(model));
         }
 
