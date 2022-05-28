@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.Tier;
 using TourismSmartTransportation.Business.ViewModel.Admin.Package;
@@ -38,13 +37,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         public async Task<IActionResult> CreateTier([FromForm] CreateTierModel model)
         {
             var formPackageList = this.Request.Form["PackageList"];
-            List<CreatePackageModel> list = new List<CreatePackageModel>();
-            foreach (var x in formPackageList)
-            {
-                var item = JsonConvert.DeserializeObject<CreatePackageModel>(x);
-                list.Add(item);
-            }
-            model.PackageList = list;
+            model.PackageList = JsonExtensions.FromDelimitedJson<CreatePackageModel>(new StringReader(formPackageList)).ToList();
             return SendResponse(await _service.CreateTier(model));
         }
 
