@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace TourismSmartTransportation.Business.ViewModel.Admin.Package
 {
-    [ModelBinder(BinderType = typeof(MetadataValueModelBinder))]
+    // [ModelBinder(BinderType = typeof(MetadataValueModelBinder))]
     public class UpdatePackageModel
     {
         public Guid Id { get; set; }
