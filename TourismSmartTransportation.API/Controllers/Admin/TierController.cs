@@ -44,6 +44,8 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTier(Guid id, [FromForm] UpdateTierModel model)
         {
+            var formPackageList = this.Request.Form["PackageList"];
+            model.PackageList = JsonExtensions.FromDelimitedJson<UpdatePackageModel>(new StringReader(formPackageList)).ToList();
             return SendResponse(await _service.UpdateTier(id, model));
         }
 
