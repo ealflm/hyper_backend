@@ -41,7 +41,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
 
             CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            var partner = new Partner()
+            var partner = new TourismSmartTransportation.Data.Models.Partner()
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,

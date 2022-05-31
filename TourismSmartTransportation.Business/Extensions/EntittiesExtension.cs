@@ -13,6 +13,7 @@ using TourismSmartTransportation.Business.ViewModel.Shared;
 using TourismSmartTransportation.Business.ViewModel.Admin.Tier;
 using TourismSmartTransportation.Business.ViewModel.Admin.Package;
 using System;
+using TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -255,6 +256,18 @@ namespace TourismSmartTransportation.Business.Extensions
                 Limit = item.Limit.Value,
                 Value = item.Value.Value,
                 Status = item.Status.Value
+            };
+        }
+
+        public static RouteViewModel AsRouteViewModel(this Route item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Distance= item.Distance,
+                Name= item.Name,
+                TotalStation= item.TotalStation,
+                Status = item.Status
             };
         }
     }
