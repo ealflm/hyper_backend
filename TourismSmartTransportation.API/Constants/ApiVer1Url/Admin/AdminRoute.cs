@@ -52,5 +52,8 @@ namespace ApiVer1Url
         // Tier
         public const string Tier = BaseApiUrl + "/tier";
 
+        //Route
+        public const string Route = BaseApiUrl + "/route";
+
     }
 }
