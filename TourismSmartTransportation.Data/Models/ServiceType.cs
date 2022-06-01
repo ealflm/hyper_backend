@@ -12,7 +12,6 @@ namespace TourismSmartTransportation.Data.Models
             PackageStatuses = new HashSet<PackageStatus>();
             Packages = new HashSet<Package>();
             PartnerServiceTypes = new HashSet<PartnerServiceType>();
-            PriceBookings = new HashSet<PriceBooking>();
             Vehicles = new HashSet<Vehicle>();
         }
 
@@ -26,7 +25,6 @@ namespace TourismSmartTransportation.Data.Models
         public virtual ICollection<PackageStatus> PackageStatuses { get; set; }
         public virtual ICollection<Package> Packages { get; set; }
         public virtual ICollection<PartnerServiceType> PartnerServiceTypes { get; set; }
-        public virtual ICollection<PriceBooking> PriceBookings { get; set; }
         public virtual ICollection<Vehicle> Vehicles { get; set; }
     }
 }

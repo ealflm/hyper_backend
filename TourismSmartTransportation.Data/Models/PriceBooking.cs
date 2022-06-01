@@ -13,7 +13,6 @@ namespace TourismSmartTransportation.Data.Models
         }
 
         public Guid Id { get; set; }
-        public Guid ServiceTypeId { get; set; }
         public Guid VehicleTypeId { get; set; }
         public decimal MinDistance { get; set; }
         public decimal MaxDistance { get; set; }
@@ -22,7 +21,6 @@ namespace TourismSmartTransportation.Data.Models
         public decimal PricePerKilometer { get; set; }
         public int Status { get; set; }
 
-        public virtual ServiceType ServiceType { get; set; }
         public virtual VehicleType VehicleType { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
     }

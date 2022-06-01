@@ -534,12 +534,6 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.PricePerKilometer).HasColumnType("decimal(18, 0)");
 
-                entity.HasOne(d => d.ServiceType)
-                    .WithMany(p => p.PriceBookings)
-                    .HasForeignKey(d => d.ServiceTypeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__PriceBook__Servi__1E6F845E");
-
                 entity.HasOne(d => d.VehicleType)
                     .WithMany(p => p.PriceBookings)
                     .HasForeignKey(d => d.VehicleTypeId)
@@ -622,6 +616,8 @@ namespace TourismSmartTransportation.Data.Context
                 entity.ToTable("RentStation");
 
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+
+                entity.Property(e => e.Address).IsRequired();
 
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
