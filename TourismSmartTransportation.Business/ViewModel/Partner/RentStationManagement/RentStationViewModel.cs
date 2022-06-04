@@ -9,8 +9,10 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.RentStationManag
     public class RentStationViewModel
     {
         public Guid Id { get; set; }
+        public string Title { get; set; }
         public string Address { get; set; }
         public Guid PartnerId { get; set; }
+        public string companyName { get; set; }
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
         public int Status { get; set; }

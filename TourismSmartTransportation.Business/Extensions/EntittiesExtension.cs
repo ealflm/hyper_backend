@@ -112,6 +112,7 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
+                Title= item.Title,
                 Address= item.Address,
                 PartnerId= item.PartnerId,
                 Latitude = item.Latitude,

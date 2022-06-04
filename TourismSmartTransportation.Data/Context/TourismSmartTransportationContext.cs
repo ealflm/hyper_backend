@@ -629,6 +629,8 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
 
+                entity.Property(e => e.Title).IsRequired();
+
                 entity.HasOne(d => d.Partner)
                     .WithMany(p => p.RentStations)
                     .HasForeignKey(d => d.PartnerId)

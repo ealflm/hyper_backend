@@ -55,6 +55,7 @@ namespace TourismSmartTransportation.Business.Implements.Company
                 return null;
             }
             RentStationViewModel model = rentStation.AsRentStationViewModel();
+            model.companyName = (await _unitOfWork.PartnerRepository.GetById(model.PartnerId)).CompanyName;
             return model;
         }
 
@@ -72,6 +73,10 @@ namespace TourismSmartTransportation.Business.Implements.Company
                                 .PaginateFunc(model.PageIndex, model.ItemsPerPage)
                                 .Select(item => item.AsRentStationViewModel())
                                 .ToList();
+                foreach(RentStationViewModel x in items)
+                {
+                    x.companyName= ( _unitOfWork.PartnerRepository.GetById(x.PartnerId)).Result.CompanyName;
+                }
                 var pageSize = GetPageSize(model.ItemsPerPage, totalItems);
                 return new SearchResultViewModel<RentStationViewModel>(items, pageSize, totalItems);
             };
