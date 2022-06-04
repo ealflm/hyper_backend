@@ -99,6 +99,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 var station = await _unitOfWork.StationRepository.GetById(id);
                 station.Title = UpdateTypeOfNullAbleObject<string>(station.Title, model.Title);
                 station.Address = UpdateTypeOfNullAbleObject<string>(station.Address, model.Address);
+                station.Description = UpdateTypeOfNullAbleObject<string>(station.Description, model.Description);
                 station.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Latitude, model.Latitude);
                 station.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Longitude, model.Longitude);
                 station.Status = UpdateTypeOfNotNullAbleObject<int>(station.Status, model.Status);
