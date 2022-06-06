@@ -29,6 +29,12 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             return SendResponse(await _service.GetAll());
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetRoute(Guid id)
+        {
+            return SendResponse(await _service.GetRouteById(id));
+        }
+
         [HttpPost]
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> CreateRoute([FromBody] CreateRouteModel model)
