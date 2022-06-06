@@ -10,13 +10,14 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.StationManagemen
 {
     public class AddStationViewModel
     {
-        [NotAllowedEmptyStringValidator]
+        [Required]
         public string Title { get; set; }
-        [NotAllowedEmptyStringValidator]
+        [Required]
         public string Address { get; set; }
         public string Description { get; set; }
+        [Required]
         public decimal Latitude { get; set; }
+        [Required]
         public decimal Longitude { get; set; }
-        public int? Status { get; set; }
     }
 }
