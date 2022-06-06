@@ -112,9 +112,9 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                Title= item.Title,
-                Address= item.Address,
-                PartnerId= item.PartnerId,
+                Title = item.Title,
+                Address = item.Address,
+                PartnerId = item.PartnerId,
                 Latitude = item.Latitude,
                 Longitude = item.Longitude,
                 Status = item.Status
@@ -267,9 +267,10 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                Distance= item.Distance,
-                Name= item.Name,
-                TotalStation= item.TotalStation,
+                PartnerId = item.PartnerId,
+                Distance = item.Distance,
+                Name = item.Name,
+                TotalStation = item.TotalStation,
                 Status = item.Status
             };
         }
