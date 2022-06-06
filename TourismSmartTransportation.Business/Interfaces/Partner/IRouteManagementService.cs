@@ -14,5 +14,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Partner
     {
         Task<SearchResultViewModel<RouteViewModel>> GetAll();
         Task<Response> CreateRoute(CreateRouteModel model);
+        Task<RouteViewModel> GetRouteById(Guid id);
     }
 }

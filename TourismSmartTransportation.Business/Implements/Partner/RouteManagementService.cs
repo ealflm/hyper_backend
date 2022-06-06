@@ -75,5 +75,23 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             return result;
 
         }
+
+        public async Task<RouteViewModel> GetRouteById(Guid id)
+        {
+            var entity = await _unitOfWork.RouteRepository.GetById(id);
+            if (entity == null)
+            {
+                return null;
+            }
+            var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(entity.Id)).ToListAsync();
+            var route = entity.AsRouteViewModel();
+            route.StationList = new List<ViewModel.Admin.StationManagement.StationViewModel>();
+            foreach (StationRoute s in stationRouteList)
+            {
+                var station = await _unitOfWork.StationRepository.GetById(s.StationId);
+                route.StationList.Add(station.AsStationViewModel());
+            }
+            return route;
+        }
     }
 }
