@@ -268,6 +268,7 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
+                PartnerId = item.PartnerId,
                 Distance = item.Distance,
                 Name = item.Name,
                 TotalStation = item.TotalStation,
