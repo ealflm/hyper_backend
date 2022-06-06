@@ -2,7 +2,7 @@
 
 namespace ApiVer1Url
 {
-    public static class Company
+    public static class Partner
     {
         // Base url
         public const string Role = "partner";
