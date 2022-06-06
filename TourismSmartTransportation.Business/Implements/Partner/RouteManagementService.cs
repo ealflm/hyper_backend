@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Partner;
+using TourismSmartTransportation.Business.SearchModel.Partner.Route;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement;
 using TourismSmartTransportation.Data.Interfaces;
@@ -20,22 +22,49 @@ namespace TourismSmartTransportation.Business.Implements.Partner
         {
         }
 
+        public async Task<Response> CreateRoute(CreateRouteModel model)
+        {
+            var entity = new Route()
+            {
+                Id = Guid.NewGuid(),
+                PartnerId = model.PartnerId,
+                Name = model.Name,
+                TotalStation = model.TotalStation,
+                Distance = model.Distance,
+                CreatedDate = DateTime.Now,
+                ModifiedDate = DateTime.Now,
+                Status = 1
+            };
+            await _unitOfWork.RouteRepository.Add(entity);
+            foreach (var p in model.StationList)
+            {
+                p.RouteId = entity.Id;
+                await _unitOfWork.StationRouteRepository.Add(p.AsStationRoute());
+            }
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Tạo tuyến đường thành công!"
+            };
+        }
+
         public async Task<SearchResultViewModel<RouteViewModel>> GetAll()
         {
             var routes = await _unitOfWork.RouteRepository.Query()
                .Select(x => x.AsRouteViewModel())
                .ToListAsync();
-            foreach(RouteViewModel x in routes)
+            foreach (RouteViewModel x in routes)
             {
                 var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(y => y.RouteId.Equals(x.Id)).ToListAsync();
                 x.StationList = new List<ViewModel.Admin.StationManagement.StationViewModel>();
-                foreach(StationRoute y in stationRouteList)
+                foreach (StationRoute y in stationRouteList)
                 {
                     var station = await _unitOfWork.StationRepository.GetById(y.StationId);
                     x.StationList.Add(station.AsStationViewModel());
                 }
             }
-            
+
             SearchResultViewModel<RouteViewModel> result = null;
             result = new SearchResultViewModel<RouteViewModel>()
             {
