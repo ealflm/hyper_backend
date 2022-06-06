@@ -12,6 +12,7 @@ using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 using Azure.Storage.Blobs;
+using TourismSmartTransportation.Business.CommonModel;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -21,42 +22,47 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
         }
 
-        public async Task<bool> AddStation(AddStationViewModel model)
+        public async Task<Response> AddStation(AddStationViewModel model)
         {
-            try
+
+            var station = new Station()
             {
-                var station = new Station()
-                {
-                    Address = model.Address,
-                    Title = model.Title,
-                    Latitude = model.Latitude,
-                    Longitude = model.Longitude,
-                    Status = 1
-                };
-                await _unitOfWork.StationRepository.Add(station);
-                await _unitOfWork.SaveChangesAsync();
-            }
-            catch
+                Address = model.Address,
+                Title = model.Title,
+                Description = model.Description,
+                Latitude = model.Latitude,
+                Longitude = model.Longitude,
+                Status = 1
+            };
+            await _unitOfWork.StationRepository.Add(station);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
             {
-                return false;
-            }
-            return true;
+                StatusCode = 201,
+                Message = "Tạo trạm thành công!"
+            };
         }
 
-        public async Task<bool> DeleteStation(Guid id)
+        public async Task<Response> DeleteStation(Guid id)
         {
-            try
+            var station = await _unitOfWork.StationRepository.GetById(id);
+            if (station == null)
             {
-                var station = await _unitOfWork.StationRepository.GetById(id);
-                station.Status = 0;
-                _unitOfWork.StationRepository.Update(station);
-                await _unitOfWork.SaveChangesAsync();
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Không tìm thấy!"
+                };
             }
-            catch
+            station.Status = 0;
+            _unitOfWork.StationRepository.Update(station);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
             {
-                return false;
-            }
-            return true;
+                StatusCode = 201,
+                Message = "Cập nhật trạng thái thành công!"
+            };
+
         }
 
         public async Task<StationViewModel> GetStation(Guid id)
@@ -92,25 +98,31 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return result;
         }
 
-        public async Task<bool> UpdateStation(Guid id, AddStationViewModel model)
+        public async Task<Response> UpdateStation(Guid id, UpdateStationModel model)
         {
-            try
+
+            var station = await _unitOfWork.StationRepository.GetById(id);
+            if (station == null)
             {
-                var station = await _unitOfWork.StationRepository.GetById(id);
-                station.Title = UpdateTypeOfNullAbleObject<string>(station.Title, model.Title);
-                station.Address = UpdateTypeOfNullAbleObject<string>(station.Address, model.Address);
-                station.Description = UpdateTypeOfNullAbleObject<string>(station.Description, model.Description);
-                station.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Latitude, model.Latitude);
-                station.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Longitude, model.Longitude);
-                station.Status = UpdateTypeOfNotNullAbleObject<int>(station.Status, model.Status);
-                _unitOfWork.StationRepository.Update(station);
-                await _unitOfWork.SaveChangesAsync();
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Không tìm thấy!"
+                };
             }
-            catch
+            station.Title = UpdateTypeOfNullAbleObject<string>(station.Title, model.Title);
+            station.Address = UpdateTypeOfNullAbleObject<string>(station.Address, model.Address);
+            station.Description = UpdateTypeOfNullAbleObject<string>(station.Description, model.Description);
+            station.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Latitude, model.Latitude);
+            station.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Longitude, model.Longitude);
+            station.Status = UpdateTypeOfNotNullAbleObject<int>(station.Status, model.Status);
+            _unitOfWork.StationRepository.Update(station);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
             {
-                return false;
-            }
-            return true;
+                StatusCode = 201,
+                Message = "Cập nhật thành công!"
+            };
         }
     }
 }

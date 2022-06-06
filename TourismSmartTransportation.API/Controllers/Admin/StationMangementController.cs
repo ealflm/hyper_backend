@@ -41,7 +41,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         // POST api/<StationMangementController>
         [HttpPost]
-        [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+        // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> Post([FromBody] AddStationViewModel model)
         {
             return SendResponse(await _service.AddStation(model));
@@ -50,7 +50,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         // PUT api/<StationMangementController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] AddStationViewModel model)
+        public async Task<IActionResult> Put(Guid id, [FromBody] UpdateStationModel model)
         {
             return SendResponse(await _service.UpdateStation(id, model));
         }
