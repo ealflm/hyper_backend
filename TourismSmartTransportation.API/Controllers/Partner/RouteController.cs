@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +11,13 @@ using TourismSmartTransportation.Business.SearchModel.Partner.Route;
 
 namespace TourismSmartTransportation.API.Controllers.Admin
 {
-    [Route(ApiVer1Url.Admin.Route)]
+    [Route(ApiVer1Url.Partner.Route)]
     [ApiController]
-    public class RouteManagementController : BaseController
+    public class RouteController : BaseController
     {
         private readonly IRouteManagementService _service;
 
-        public RouteManagementController(IRouteManagementService service)
+        public RouteController(IRouteManagementService service)
         {
             _service = service;
         }
@@ -33,6 +33,13 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         public async Task<IActionResult> GetRoute(Guid id)
         {
             return SendResponse(await _service.GetRouteById(id));
+        }
+
+        [HttpPost]
+        [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+        public async Task<IActionResult> CreateRoute([FromBody] CreateRouteModel model)
+        {
+            return SendResponse(await _service.CreateRoute(model));
         }
     }
 }
