@@ -10,7 +10,7 @@ using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 
-namespace TourismSmartTransportation.API.Controllers.Company
+namespace TourismSmartTransportation.API.Controllers.Partner
 {
     [ApiController]
     public class AuthorizationController : ControllerBase
