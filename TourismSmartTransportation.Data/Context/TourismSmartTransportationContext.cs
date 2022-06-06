@@ -33,9 +33,9 @@ namespace TourismSmartTransportation.Data.Context
         public virtual DbSet<Partner> Partners { get; set; }
         public virtual DbSet<PartnerServiceType> PartnerServiceTypes { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
-        public virtual DbSet<PriceBooking> PriceBookings { get; set; }
-        public virtual DbSet<PriceBusing> PriceBusings { get; set; }
-        public virtual DbSet<PriceRenting> PriceRentings { get; set; }
+        public virtual DbSet<PriceListOfBookingService> PriceListOfBookingServices { get; set; }
+        public virtual DbSet<PriceListOfBusService> PriceListOfBusServices { get; set; }
+        public virtual DbSet<PriceListOfRentingService> PriceListOfRentingServices { get; set; }
         public virtual DbSet<PublishYear> PublishYears { get; set; }
         public virtual DbSet<RentStation> RentStations { get; set; }
         public virtual DbSet<Route> Routes { get; set; }
@@ -518,9 +518,9 @@ namespace TourismSmartTransportation.Data.Context
                     .HasConstraintName("FK__Payment__OrderId__1F98B2C1");
             });
 
-            modelBuilder.Entity<PriceBooking>(entity =>
+            modelBuilder.Entity<PriceListOfBookingService>(entity =>
             {
-                entity.ToTable("PriceBooking");
+                entity.ToTable("PriceListOfBookingService");
 
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
@@ -535,15 +535,15 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.PricePerKilometer).HasColumnType("decimal(18, 0)");
 
                 entity.HasOne(d => d.VehicleType)
-                    .WithMany(p => p.PriceBookings)
+                    .WithMany(p => p.PriceListOfBookingServices)
                     .HasForeignKey(d => d.VehicleTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__PriceBook__Vehic__1F63A897");
             });
 
-            modelBuilder.Entity<PriceBusing>(entity =>
+            modelBuilder.Entity<PriceListOfBusService>(entity =>
             {
-                entity.ToTable("PriceBusing");
+                entity.ToTable("PriceListOfBusService");
 
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
@@ -567,9 +567,9 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.Price).HasColumnType("decimal(18, 0)");
             });
 
-            modelBuilder.Entity<PriceRenting>(entity =>
+            modelBuilder.Entity<PriceListOfRentingService>(entity =>
             {
-                entity.ToTable("PriceRenting");
+                entity.ToTable("PriceListOfRentingService");
 
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
@@ -586,13 +586,13 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.WeekendPrice).HasColumnType("decimal(18, 0)");
 
                 entity.HasOne(d => d.Category)
-                    .WithMany(p => p.PriceRentings)
+                    .WithMany(p => p.PriceListOfRentingServices)
                     .HasForeignKey(d => d.CategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_PriceRenting_Category");
 
                 entity.HasOne(d => d.PublishYear)
-                    .WithMany(p => p.PriceRentings)
+                    .WithMany(p => p.PriceListOfRentingServices)
                     .HasForeignKey(d => d.PublishYearId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_PriceRenting_PublishYear");

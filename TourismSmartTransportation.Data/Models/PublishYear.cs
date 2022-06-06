@@ -9,7 +9,7 @@ namespace TourismSmartTransportation.Data.Models
     {
         public PublishYear()
         {
-            PriceRentings = new HashSet<PriceRenting>();
+            PriceListOfRentingServices = new HashSet<PriceListOfRentingService>();
         }
 
         public Guid Id { get; set; }
@@ -17,6 +17,6 @@ namespace TourismSmartTransportation.Data.Models
         public string Description { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<PriceRenting> PriceRentings { get; set; }
+        public virtual ICollection<PriceListOfRentingService> PriceListOfRentingServices { get; set; }
     }
 }

@@ -28,7 +28,7 @@ namespace TourismSmartTransportation.Data.Models
         public int Status { get; set; }
 
         public virtual Partner Partner { get; set; }
-        public virtual PriceRenting PriceRenting { get; set; }
+        public virtual PriceListOfRentingService PriceRenting { get; set; }
         public virtual RentStation RentStation { get; set; }
         public virtual ServiceType ServiceType { get; set; }
         public virtual VehicleType VehicleType { get; set; }

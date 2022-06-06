@@ -11,7 +11,7 @@ namespace TourismSmartTransportation.Data.Models
         public Guid RouteId { get; set; }
         public Guid PriceBusingId { get; set; }
 
-        public virtual PriceBusing PriceBusing { get; set; }
+        public virtual PriceListOfBusService PriceBusing { get; set; }
         public virtual Route Route { get; set; }
     }
 }

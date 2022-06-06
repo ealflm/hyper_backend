@@ -19,9 +19,9 @@ namespace TourismSmartTransportation.Data.Models
         public Guid? PriceBusingId { get; set; }
 
         public virtual Order Order { get; set; }
-        public virtual PriceBooking PriceBooking { get; set; }
-        public virtual PriceBusing PriceBusing { get; set; }
-        public virtual PriceRenting PriceRenting { get; set; }
+        public virtual PriceListOfBookingService PriceBooking { get; set; }
+        public virtual PriceListOfBusService PriceBusing { get; set; }
+        public virtual PriceListOfRentingService PriceRenting { get; set; }
         public virtual Tier Tier { get; set; }
     }
 }
