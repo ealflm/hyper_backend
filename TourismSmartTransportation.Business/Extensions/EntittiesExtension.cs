@@ -14,6 +14,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.Tier;
 using TourismSmartTransportation.Business.ViewModel.Admin.Package;
 using System;
 using TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement;
+using TourismSmartTransportation.Business.SearchModel.Partner.Route;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -272,6 +273,18 @@ namespace TourismSmartTransportation.Business.Extensions
                 Name = item.Name,
                 TotalStation = item.TotalStation,
                 Status = item.Status
+            };
+        }
+
+        public static StationRoute AsStationRoute(this CreateStationRoute item)
+        {
+            return new()
+            {
+                Id = Guid.NewGuid(),
+                StationId = item.StationId,
+                RouteId = item.RouteId.Value,
+                OrderNumber = item.OrderNumber,
+                Status = 1
             };
         }
     }
