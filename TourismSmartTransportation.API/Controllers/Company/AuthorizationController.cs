@@ -23,7 +23,7 @@ namespace TourismSmartTransportation.API.Controllers.Company
         }
 
         [HttpPost]
-        [Route(ApiVer1Url.Company.Login)]
+        [Route(ApiVer1Url.Partner.Login)]
         public async Task<IActionResult> Login([FromBody] LoginSearchModel model)
         {
             var result = await _authorizationService.Login(model, global::Login.Company);
