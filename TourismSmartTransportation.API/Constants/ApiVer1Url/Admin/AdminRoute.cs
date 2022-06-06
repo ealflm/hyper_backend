@@ -55,5 +55,8 @@ namespace ApiVer1Url
         //Route
         public const string Route = BaseApiUrl + "/route";
 
+        // Price Bus Service Config
+        public const string PriceBusConfig = BaseApiUrl + "/price-bus-service-config";
+
     }
 }

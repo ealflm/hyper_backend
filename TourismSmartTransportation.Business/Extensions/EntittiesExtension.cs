@@ -15,6 +15,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.Package;
 using System;
 using TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.Route;
+using TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceViewModel;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -285,6 +286,23 @@ namespace TourismSmartTransportation.Business.Extensions
                 RouteId = item.RouteId.Value,
                 OrderNumber = item.OrderNumber,
                 Status = 1
+            };
+        }
+
+        public static PriceBusServiceViewModel AsPriceListOfBusService(this PriceListOfBusService item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                MinRouteDistance = item.MinRouteDistance,
+                MaxRouteDistance = item.MaxRouteDistance,
+                MinDistance = item.MinDistance,
+                MaxDistance = item.MaxDistance,
+                MinStation = item.MinStation,
+                MaxStation = item.MaxStation,
+                Price = item.Price,
+                Mode = item.Mode,
+                Status = item.Status
             };
         }
     }
