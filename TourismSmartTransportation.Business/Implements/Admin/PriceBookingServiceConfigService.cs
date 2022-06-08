@@ -12,7 +12,7 @@ using TourismSmartTransportation.Business.SearchModel.Admin.PriceBusServiceConfi
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceViewModel;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Admin.PriceBookingServiceConfig;
-using TourismSmartTransportation.Business.ViewModel.Admin.PriceBookServiceViewModel;
+using TourismSmartTransportation.Business.ViewModel.Admin.PriceBookingServiceViewModel;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {

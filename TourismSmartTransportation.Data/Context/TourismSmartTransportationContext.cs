@@ -580,6 +580,18 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.PricePerHour).HasColumnType("decimal(18, 0)");
 
                 entity.Property(e => e.WeekendPrice).HasColumnType("decimal(18, 0)");
+
+                entity.HasOne(d => d.Category)
+                    .WithMany(p => p.PriceListOfRentingServices)
+                    .HasForeignKey(d => d.CategoryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_PriceListOfRentingService_Category");
+
+                entity.HasOne(d => d.PublishYear)
+                    .WithMany(p => p.PriceListOfRentingServices)
+                    .HasForeignKey(d => d.PublishYearId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_PriceListOfRentingService_PublishYear");
             });
 
             modelBuilder.Entity<PublishYear>(entity =>

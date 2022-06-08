@@ -1,6 +1,6 @@
 using System;
 
-namespace TourismSmartTransportation.Business.ViewModel.Admin.PriceBookServiceViewModel
+namespace TourismSmartTransportation.Business.ViewModel.Admin.PriceBookingServiceViewModel
 {
     public class PriceBookingServiceViewModel
     {
