@@ -18,7 +18,8 @@ using TourismSmartTransportation.Business.SearchModel.Partner.Route;
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceViewModel;
 using TourismSmartTransportation.Business.ViewModel.Admin.CategoryManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.PublishYearManagement;
-using TourismSmartTransportation.Business.ViewModel.Admin.PriceBookServiceViewModel;
+using TourismSmartTransportation.Business.ViewModel.Admin.PriceBookingServiceViewModel;
+using TourismSmartTransportation.Business.ViewModel.Admin.PriceRentingServiceViewModel;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -339,6 +340,23 @@ namespace TourismSmartTransportation.Business.Extensions
                 FixedPrice=item.FixedPrice,
                 PricePerKilometer=item.PricePerKilometer,
                 VehicleTypeId= item.VehicleTypeId,
+                Status = item.Status
+            };
+        }
+
+        public static PriceRentingServiceViewModel AsPriceListOfRentingService(this PriceListOfRentingService item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                CategoryId= item.CategoryId,
+                FixedPrice= item.FixedPrice,
+                HolidayPrice= item.HolidayPrice,
+                MaxTime= item.MaxTime,
+                MinTime= item.MinTime,
+                PricePerHour= item.PricePerHour,
+                PublishYearId= item.PublishYearId,
+                WeekendPrice= item.WeekendPrice,
                 Status = item.Status
             };
         }
