@@ -58,5 +58,11 @@ namespace ApiVer1Url
         // Price Bus Service Config
         public const string PriceBusConfig = BaseApiUrl + "/price-bus-service-config";
 
+        // Category
+        public const string Category = BaseApiUrl + "/category";
+
+        // Publish year
+        public const string PublishYear = BaseApiUrl + "/publish-year";
+
     }
 }

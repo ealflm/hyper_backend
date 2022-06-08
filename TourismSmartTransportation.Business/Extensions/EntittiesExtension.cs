@@ -16,6 +16,8 @@ using System;
 using TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.Route;
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceViewModel;
+using TourismSmartTransportation.Business.ViewModel.Admin.CategoryManagement;
+using TourismSmartTransportation.Business.ViewModel.Admin.PublishYearManagement;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -302,6 +304,28 @@ namespace TourismSmartTransportation.Business.Extensions
                 MaxStation = item.MaxStation,
                 Price = item.Price,
                 Mode = item.Mode,
+                Status = item.Status
+            };
+        }
+
+        public static CategoryViewModel AsCategoryViewModel(this Category item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Name= item.Name,
+                Description= item.Description,
+                Status = item.Status
+            };
+        }
+
+        public static PublishYearViewModel AsPublishYearViewModel(this PublishYear item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Description = item.Description,
                 Status = item.Status
             };
         }
