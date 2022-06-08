@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TourismSmartTransportation.Business.SearchModel.Admin.CategoryManagement
+namespace TourismSmartTransportation.Business.SearchModel.Admin.PublishYearManagement
 {
-    public class CategorySearchModel
+    public class PublishYearSearchModel
     {
         public string Name { get; set; }
         public string Description { get; set; }

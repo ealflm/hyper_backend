@@ -61,5 +61,8 @@ namespace ApiVer1Url
         // Category
         public const string Category = BaseApiUrl + "/category";
 
+        // Publish year
+        public const string PublishYear = BaseApiUrl + "/publish-year";
+
     }
 }

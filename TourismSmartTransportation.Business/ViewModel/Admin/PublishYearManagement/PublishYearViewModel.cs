@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TourismSmartTransportation.Business.SearchModel.Admin.CategoryManagement
+namespace TourismSmartTransportation.Business.ViewModel.Admin.PublishYearManagement
 {
-    public class CategorySearchModel
+    public class PublishYearViewModel
     {
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public int? Status { get; set; }
+        public int Status { get; set; }
     }
 }
