@@ -18,6 +18,7 @@ using TourismSmartTransportation.Business.SearchModel.Partner.Route;
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceViewModel;
 using TourismSmartTransportation.Business.ViewModel.Admin.CategoryManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.PublishYearManagement;
+using TourismSmartTransportation.Business.ViewModel.Admin.PriceBookServiceViewModel;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -49,7 +50,6 @@ namespace TourismSmartTransportation.Business.Extensions
                 Label = item.Label,
                 Fuel = item.Fuel,
                 Seats = item.Seats,
-                Price = item.Price,
                 Status = item.Status
             };
         }
@@ -326,6 +326,19 @@ namespace TourismSmartTransportation.Business.Extensions
                 Id = item.Id,
                 Name = item.Name,
                 Description = item.Description,
+                Status = item.Status
+            };
+        }
+
+        public static PriceBookingServiceViewModel AsPriceListOfBookingService(this PriceListOfBookingService item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                FixedDistance= item.FixedDistance,
+                FixedPrice=item.FixedPrice,
+                PricePerKilometer=item.PricePerKilometer,
+                VehicleTypeId= item.VehicleTypeId,
                 Status = item.Status
             };
         }

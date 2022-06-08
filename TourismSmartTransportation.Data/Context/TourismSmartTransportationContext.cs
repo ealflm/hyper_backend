@@ -528,17 +528,13 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.FixedPrice).HasColumnType("decimal(18, 0)");
 
-                entity.Property(e => e.MaxDistance).HasColumnType("decimal(18, 0)");
-
-                entity.Property(e => e.MinDistance).HasColumnType("decimal(18, 0)");
-
                 entity.Property(e => e.PricePerKilometer).HasColumnType("decimal(18, 0)");
 
                 entity.HasOne(d => d.VehicleType)
                     .WithMany(p => p.PriceListOfBookingServices)
                     .HasForeignKey(d => d.VehicleTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__PriceBook__Vehic__1F63A897");
+                    .HasConstraintName("FK_PriceListOfBookingService_VehicleType");
             });
 
             modelBuilder.Entity<PriceListOfBusService>(entity =>
@@ -584,18 +580,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.PricePerHour).HasColumnType("decimal(18, 0)");
 
                 entity.Property(e => e.WeekendPrice).HasColumnType("decimal(18, 0)");
-
-                entity.HasOne(d => d.Category)
-                    .WithMany(p => p.PriceListOfRentingServices)
-                    .HasForeignKey(d => d.CategoryId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_PriceRenting_Category");
-
-                entity.HasOne(d => d.PublishYear)
-                    .WithMany(p => p.PriceListOfRentingServices)
-                    .HasForeignKey(d => d.PublishYearId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_PriceRenting_PublishYear");
             });
 
             modelBuilder.Entity<PublishYear>(entity =>
@@ -894,8 +878,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.Label)
                     .IsRequired()
                     .HasMaxLength(255);
-
-                entity.Property(e => e.Price).HasColumnType("decimal(18, 0)");
             });
 
             modelBuilder.Entity<Wallet>(entity =>
