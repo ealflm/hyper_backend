@@ -48,7 +48,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Label = model.Label,
                 Seats = model.Seats,
                 Fuel = model.Fuel,
-                Price = model.Price,
                 Status = model.Status != null ? model.Status.Value : 1
             };
             await _unitOfWork.VehicleTypeRepository.Add(entity);

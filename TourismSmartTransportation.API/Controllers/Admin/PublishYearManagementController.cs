@@ -40,13 +40,13 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         // POST api/<CategoryManagementController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromForm] PublishYearSearchModel model)
+        public async Task<IActionResult> Post([FromBody] PublishYearSearchModel model)
         {
             return SendResponse(await _service.Add(model));
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromForm] PublishYearSearchModel model)
+        public async Task<IActionResult> Put(Guid id, [FromBody] PublishYearSearchModel model)
         {
             return SendResponse(await _service.Update(id, model));
         }

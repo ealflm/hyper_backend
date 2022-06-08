@@ -24,8 +24,6 @@ namespace TourismSmartTransportation.Data.Models
         public decimal HolidayPrice { get; set; }
         public int Status { get; set; }
 
-        public virtual Category Category { get; set; }
-        public virtual PublishYear PublishYear { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
         public virtual ICollection<Vehicle> Vehicles { get; set; }
     }

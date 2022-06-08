@@ -14,8 +14,6 @@ namespace TourismSmartTransportation.Data.Models
 
         public Guid Id { get; set; }
         public Guid VehicleTypeId { get; set; }
-        public decimal MinDistance { get; set; }
-        public decimal MaxDistance { get; set; }
         public decimal FixedPrice { get; set; }
         public decimal FixedDistance { get; set; }
         public decimal PricePerKilometer { get; set; }

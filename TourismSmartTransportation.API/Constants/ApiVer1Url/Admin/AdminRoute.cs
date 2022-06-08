@@ -64,5 +64,8 @@ namespace ApiVer1Url
         // Publish year
         public const string PublishYear = BaseApiUrl + "/publish-year";
 
+        // Price Bus Service Config
+        public const string PriceBookingConfig = BaseApiUrl + "/price-booking-service-config";
+
     }
 }

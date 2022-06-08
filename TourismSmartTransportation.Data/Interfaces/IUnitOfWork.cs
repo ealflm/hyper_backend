@@ -36,7 +36,7 @@ namespace TourismSmartTransportation.Data.Interfaces
         IGenericRepository<VehicleType> VehicleTypeRepository { get; }
         IGenericRepository<Wallet> WalletRepository { get; }
         IGenericRepository<PriceListOfBusService> PriceListOfBusServiceRepository { get; }
-
+        IGenericRepository<PriceListOfBookingService> PriceListOfBookingServiceRepository { get; }
         tourismsmarttransportationContext Context();
 
         DatabaseFacade Database();
