@@ -20,10 +20,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
         }
 
-        public async Task<List<VehicleTypeViewModel>> GetListVehicleTypes()
+        public async Task<List<VehicleTypeViewModel>> GetListVehicleTypes(VehicleTypeSearchModel model)
         {
             var list = await _unitOfWork.VehicleTypeRepository
                         .Query()
+                        .Where(x=> model.Label == null || x.Label.Equals(model.Label))
+                        .Where(x => model.Status == null || x.Status == model.Status.Value)
                         .Select(item => item.AsVehicleTypeViewModel())
                         .ToListAsync();
 
@@ -91,7 +93,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     return false;
                 }
 
-                entity.Status = 2;
+                entity.Status = 0;
                 _unitOfWork.VehicleTypeRepository.Update(entity);
                 await _unitOfWork.SaveChangesAsync();
                 return true;

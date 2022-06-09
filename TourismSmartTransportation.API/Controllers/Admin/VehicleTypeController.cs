@@ -21,9 +21,9 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetListVehicleType()
+        public async Task<IActionResult> GetListVehicleType([FromQuery] VehicleTypeSearchModel model)
         {
-            return SendResponse(await _service.GetListVehicleTypes());
+            return SendResponse(await _service.GetListVehicleTypes(model));
         }
 
         [HttpGet("{id}")]

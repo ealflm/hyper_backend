@@ -84,9 +84,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return entity.AsPublishYearViewModel();
         }
 
-        public async Task<SearchResultViewModel<PublishYearViewModel>> GetAll()
+        public async Task<SearchResultViewModel<PublishYearViewModel>> GetAll(PublishYearSearchModel model)
         {
             var publishYears = await _unitOfWork.PublishYearRepository.Query()
+                .Where(x => model.Name == null || model.Name.Equals(model.Name))
+                .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .Select(x => x.AsPublishYearViewModel())
                 .ToListAsync();
             SearchResultViewModel<PublishYearViewModel> result = null;

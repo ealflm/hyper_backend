@@ -12,7 +12,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
 {
     public interface IPublishYearManagementService
     {
-        Task<SearchResultViewModel<PublishYearViewModel>> GetAll();
+        Task<SearchResultViewModel<PublishYearViewModel>> GetAll(PublishYearSearchModel model);
         Task<PublishYearViewModel> Get(Guid id);
         Task<Response> Add(PublishYearSearchModel model);
         Task<Response> Update(Guid id, PublishYearSearchModel model);

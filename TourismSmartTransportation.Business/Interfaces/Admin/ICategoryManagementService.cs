@@ -12,7 +12,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
 {
     public interface ICategoryManagementService
     {
-        Task<SearchResultViewModel<CategoryViewModel>> GetAll();
+        Task<SearchResultViewModel<CategoryViewModel>> GetAll(CategorySearchModel model);
         Task<CategoryViewModel> Get(Guid id);
         Task<Response> Add(CategorySearchModel model);
         Task<Response> Update(Guid id, CategorySearchModel model);

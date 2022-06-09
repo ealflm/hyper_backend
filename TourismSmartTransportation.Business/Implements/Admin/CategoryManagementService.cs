@@ -84,9 +84,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return entity.AsCategoryViewModel();
         }
 
-        public async Task<SearchResultViewModel<CategoryViewModel>> GetAll()
+        public async Task<SearchResultViewModel<CategoryViewModel>> GetAll(CategorySearchModel model)
         {
             var category = await _unitOfWork.CategoryRepository.Query()
+                .Where(x=> model.Name == null || model.Name.Equals(model.Name))
+                .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .Select(x => x.AsCategoryViewModel())
                 .ToListAsync();
             SearchResultViewModel<CategoryViewModel> result = null;
