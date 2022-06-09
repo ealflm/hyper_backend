@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using TourismSmartTransportation.API.Utilities.Response;
 using TourismSmartTransportation.API.Utilities.Swagger;
 using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Implements;
@@ -32,6 +32,7 @@ using TourismSmartTransportation.Business.Interfaces.Partner;
 using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Data.Context;
 using TourismSmartTransportation.Data.Interfaces;
+using TourismSmartTransportation.Data.MongoDBContext;
 using TourismSmartTransportation.Data.Repositories;
 
 namespace TourismSmartTransportation.API
@@ -68,6 +69,16 @@ namespace TourismSmartTransportation.API
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
                 };
             });
+
+            // Initialize Mongo DB connection
+            services.Configure<MongoCosmosDBSettings>(
+                Configuration.GetSection(nameof(MongoCosmosDBSettings)));
+
+            services.AddSingleton<IMongoCosmosDBSettings>(sp =>
+                sp.GetRequiredService<IOptions<MongoCosmosDBSettings>>().Value);
+
+            services.AddSingleton<MongoDBContext>();
+            //------------------
 
             services.AddScoped<NotAllowedNullPropertiesAttribute>();
 
@@ -162,6 +173,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IPriceBookingServiceConfig, PriceBookingServiceConfigService>();
             services.AddScoped<IPriceRentingServiceConfig, PriceRentingServiceConfigService>();
             services.AddScoped<ICardManagementService, CardManagementService>();
+            services.AddScoped<IDriverCollectionService, DriverCollectionService>();
 
             // Azure blob
             services.AddScoped(_ => new BlobServiceClient(Configuration.GetConnectionString("AzureBlobStorage")));
