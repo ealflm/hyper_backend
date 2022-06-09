@@ -27,9 +27,9 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] PublishYearSearchModel model)
         {
-            return SendResponse(await _service.GetAll());
+            return SendResponse(await _service.GetAll(model));
         }
 
         [HttpGet("{id}")]
