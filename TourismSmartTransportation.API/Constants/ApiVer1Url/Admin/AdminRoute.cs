@@ -70,5 +70,8 @@ namespace ApiVer1Url
         // Price Renting Service Config
         public const string PriceRentingConfig = BaseApiUrl + "/price-renting-service-config";
 
+        // Card
+        public const string Card = BaseApiUrl + "/card";
+
     }
 }

@@ -108,7 +108,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Cards)
                     .HasForeignKey(d => d.CustomerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Card__CustomerId__1BC821DD");
             });
 

@@ -161,6 +161,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IPublishYearManagementService, PublishYearManagementService>();
             services.AddScoped<IPriceBookingServiceConfig, PriceBookingServiceConfigService>();
             services.AddScoped<IPriceRentingServiceConfig, PriceRentingServiceConfigService>();
+            services.AddScoped<ICardManagementService, CardManagementService>();
 
             // Azure blob
             services.AddScoped(_ => new BlobServiceClient(Configuration.GetConnectionString("AzureBlobStorage")));

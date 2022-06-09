@@ -20,6 +20,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.CategoryManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.PublishYearManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceBookingServiceViewModel;
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceRentingServiceViewModel;
+using TourismSmartTransportation.Business.ViewModel.Admin.CardManagement;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -357,6 +358,17 @@ namespace TourismSmartTransportation.Business.Extensions
                 PricePerHour= item.PricePerHour,
                 PublishYearId= item.PublishYearId,
                 WeekendPrice= item.WeekendPrice,
+                Status = item.Status
+            };
+        }
+
+        public static CardViewModel AsCardViewModel(this Card item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                CustomerId= item.CustomerId,
+                Uid=item.Uid,
                 Status = item.Status
             };
         }
