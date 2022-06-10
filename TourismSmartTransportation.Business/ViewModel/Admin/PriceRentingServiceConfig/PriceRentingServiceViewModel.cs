@@ -6,7 +6,9 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.PriceRentingServic
     {
         public Guid Id { get; set; }
         public Guid PublishYearId { get; set; }
+        public string PublishYearName { get; set; }
         public Guid CategoryId { get; set; }
+        public string CategoryName { get; set; }
         public decimal MinTime { get; set; }
         public decimal MaxTime { get; set; }
         public decimal PricePerHour { get; set; }

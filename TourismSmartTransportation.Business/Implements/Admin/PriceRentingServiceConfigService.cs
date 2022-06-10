@@ -97,6 +97,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsPriceListOfRentingService())
                             .ToListAsync();
+            foreach(PriceRentingServiceViewModel x  in entity)
+            {
+                x.CategoryName = (await _unitOfWork.CategoryRepository.GetById(x.CategoryId)).Name;
+                x.PublishYearName = (await _unitOfWork.PublishYearRepository.GetById(x.PublishYearId)).Name;
+            }
             return entity;
 
         }
