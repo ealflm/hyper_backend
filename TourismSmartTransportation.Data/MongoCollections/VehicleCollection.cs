@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace TourismSmartTransportation.Data.MongoCollections
 {
-    public class DriverCollection
+    public class VehicleCollection
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

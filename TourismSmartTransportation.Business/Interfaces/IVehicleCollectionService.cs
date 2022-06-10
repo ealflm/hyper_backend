@@ -5,12 +5,12 @@ using TourismSmartTransportation.Business.CommonModel;
 
 namespace TourismSmartTransportation.Business.Interfaces
 {
-    public interface IDriverCollectionService
+    public interface IVehicleCollectionService
     {
-        public Task<List<DriverCollection>> GetAll();
-        public Task<DriverCollection> GetById(string id);
-        public Task<Response> Create(DriverCollection product);
-        public Task<Response> Update(DriverCollection product);
+        public Task<List<VehicleCollection>> GetAll();
+        public Task<VehicleCollection> GetById(string id);
+        public Task<Response> Create(VehicleCollection product);
+        public Task<Response> Update(VehicleCollection product);
         public Task<Response> Delete(string id);
     }
 }
