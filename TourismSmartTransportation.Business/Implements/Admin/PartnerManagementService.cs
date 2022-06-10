@@ -112,8 +112,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 return null;
             }
-
             PartnerViewModel model = Partner.AsPartnerViewModel();
+            model.DriverQuantity = _unitOfWork.DriverRepository.Query().Where(x => x.PartnerId.Equals(id)).Count();
+            model.VehicleQuantity = _unitOfWork.VehicleRepository.Query().Where(x => x.PartnerId.Equals(id)).Count();
             return model;
         }
 

@@ -13,6 +13,8 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.PartnerManagement
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string CompanyName { get; set; }
+        public int DriverQuantity { get; set; }
+        public int VehicleQuantity { get; set; }
         public string PhotoUrl { get; set; }
         public bool Gender { get; set; }
         public string Phone { get; set; }
