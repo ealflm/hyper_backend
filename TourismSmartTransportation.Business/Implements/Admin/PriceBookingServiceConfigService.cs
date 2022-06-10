@@ -77,7 +77,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<PriceBookingServiceViewModel> GetById(Guid id)
         {
             var entity = await _unitOfWork.PriceListOfBookingServiceRepository.GetById(id);
-            return entity.AsPriceListOfBookingService();
+            var model = entity.AsPriceListOfBookingService();
+            var vehicleType = await _unitOfWork.VehicleTypeRepository.GetById(model.VehicleTypeId);
+            model.VehicleName = vehicleType.Label + " " + vehicleType.Seats + " " + vehicleType.Fuel;
+            return model;
 
         }
 
@@ -91,6 +94,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsPriceListOfBookingService())
                             .ToListAsync();
+            foreach(PriceBookingServiceViewModel x in entity)
+            {
+                var vehicleType = await _unitOfWork.VehicleTypeRepository.GetById(x.VehicleTypeId);
+                x.VehicleName = vehicleType.Label + " " + vehicleType.Seats + " " + vehicleType.Fuel;
+            }
             return entity;
 
         }
