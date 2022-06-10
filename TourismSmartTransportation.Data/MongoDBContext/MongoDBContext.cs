@@ -31,9 +31,9 @@ namespace TourismSmartTransportation.Data.MongoDBContext
             get { return _database; }
         }
 
-        public IMongoCollection<DriverCollection> GetDriversCollection
+        public IMongoCollection<VehicleCollection> GetVehiclesCollection
         {
-            get { return _database.GetCollection<DriverCollection>("Drivers"); }
+            get { return _database.GetCollection<VehicleCollection>("Vehicles"); }
         }
     }
 }

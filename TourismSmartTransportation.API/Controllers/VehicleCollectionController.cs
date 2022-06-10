@@ -7,40 +7,40 @@ using TourismSmartTransportation.Data.MongoCollections;
 namespace TourismSmartTransportation.API.Controllers
 {
     [ApiController]
-    [Route(ApiVer1Url.Admin.BaseApiUrl + "/driver-tracking")]
-    public class DriverCollectionController : BaseController
+    [Route(ApiVer1Url.Admin.TrackingVehicle)]
+    public class VehicleCollectionController : BaseController
     {
 
-        private readonly IDriverCollectionService _service;
+        private readonly IVehicleCollectionService _service;
 
-        public DriverCollectionController(IDriverCollectionService service)
+        public VehicleCollectionController(IVehicleCollectionService service)
         {
             _service = service;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<DriverCollection>> Get()
+        public async Task<IEnumerable<VehicleCollection>> Get()
         {
             return await _service.GetAll();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<DriverCollection>> GetById(string id)
+        public async Task<ActionResult<VehicleCollection>> GetById(string id)
         {
             return SendResponse(await _service.GetById(id));
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(DriverCollection driver)
+        public async Task<IActionResult> Create(VehicleCollection Vehicle)
         {
-            return SendResponse(await _service.Create(driver));
+            return SendResponse(await _service.Create(Vehicle));
 
         }
 
         [HttpPut]
-        public async Task<ActionResult<DriverCollection>> Update(DriverCollection driver)
+        public async Task<ActionResult<VehicleCollection>> Update(VehicleCollection Vehicle)
         {
-            var product = await _service.Update(driver);
+            var product = await _service.Update(Vehicle);
             return Ok();
         }
 

@@ -73,5 +73,8 @@ namespace ApiVer1Url
         // Card
         public const string Card = BaseApiUrl + "/card";
 
+        // Tracking Vehicle
+        public const string TrackingVehicle = BaseApiUrl + "/tracking-vehicle";
+
     }
 }
