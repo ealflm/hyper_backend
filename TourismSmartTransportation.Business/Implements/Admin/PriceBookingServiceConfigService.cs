@@ -84,7 +84,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<List<PriceBookingServiceViewModel>> Search(PriceBookingServiceSearchModel model)
         {
             var entity = await _unitOfWork.PriceListOfBookingServiceRepository.Query()
-                            .Where(x => model.VehicleTypeId == null || x.VehicleTypeId.Equals(model.VehicleTypeId))
+                            .Where(x => model.VehicleTypeId == null || x.VehicleTypeId.Equals(model.VehicleTypeId.Value))
                             .Where(x => model.FixedPrice == null || x.FixedPrice == model.FixedPrice.Value)
                             .Where(x => model.FixedDistance == null || x.FixedDistance == model.FixedDistance.Value)
                             .Where(x => model.PricePerKilometer == null || x.PricePerKilometer == model.PricePerKilometer.Value)

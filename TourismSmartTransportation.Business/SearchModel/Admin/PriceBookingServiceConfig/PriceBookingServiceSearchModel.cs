@@ -7,7 +7,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PriceBookingServ
     public class PriceBookingServiceSearchModel
     {
         
-        public Guid VehicleTypeId { get; set; }
+        public Guid? VehicleTypeId { get; set; }
         public decimal? FixedPrice { get; set; }
         public decimal? FixedDistance { get; set; }
         public decimal? PricePerKilometer { get; set; }
