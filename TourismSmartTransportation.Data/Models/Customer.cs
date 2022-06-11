@@ -10,7 +10,6 @@ namespace TourismSmartTransportation.Data.Models
         public Customer()
         {
             Cards = new HashSet<Card>();
-            CustomerTierHistories = new HashSet<CustomerTierHistory>();
             CustomerTrips = new HashSet<CustomerTrip>();
             Orders = new HashSet<Order>();
             Wallets = new HashSet<Wallet>();
@@ -33,9 +32,7 @@ namespace TourismSmartTransportation.Data.Models
         public DateTime ModifiedDate { get; set; }
         public int Status { get; set; }
 
-        public virtual Tier Tier { get; set; }
         public virtual ICollection<Card> Cards { get; set; }
-        public virtual ICollection<CustomerTierHistory> CustomerTierHistories { get; set; }
         public virtual ICollection<CustomerTrip> CustomerTrips { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
         public virtual ICollection<Wallet> Wallets { get; set; }

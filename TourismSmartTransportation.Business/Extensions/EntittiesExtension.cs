@@ -161,23 +161,12 @@ namespace TourismSmartTransportation.Business.Extensions
                 Amount = item.Amount,
                 CreatedDate = item.CreatedDate,
                 OrderId = item.OrderId,
+                WalletId= item.WalletId,
                 Status = item.Status
             };
         }
 
-        public static TransactionViewModel AsTransactionViewModel(this Transaction item)
-        {
-            return new()
-            {
-                Id = item.Id,
-                Content = item.Content,
-                Amount = item.Amount,
-                CreatedDate = item.CreatedDate,
-                PaymentId = item.PaymentId,
-                WalletId = item.WalletId,
-                Status = item.Status
-            };
-        }
+        
 
         public static CustomerTierHistoryViewModel AsCustomerTierHistoryViewModel(this CustomerTierHistory item)
         {

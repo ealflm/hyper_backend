@@ -9,8 +9,6 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Tier()
         {
-            CustomerTierHistories = new HashSet<CustomerTierHistory>();
-            Customers = new HashSet<Customer>();
             OrderDetails = new HashSet<OrderDetail>();
             Packages = new HashSet<Package>();
         }
@@ -23,8 +21,6 @@ namespace TourismSmartTransportation.Data.Models
         public string PromotedTitle { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<CustomerTierHistory> CustomerTierHistories { get; set; }
-        public virtual ICollection<Customer> Customers { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
         public virtual ICollection<Package> Packages { get; set; }
     }

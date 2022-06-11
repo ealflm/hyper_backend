@@ -30,7 +30,6 @@ namespace TourismSmartTransportation.Data.Interfaces
         IGenericRepository<Station> StationRepository { get; }
         IGenericRepository<StationRoute> StationRouteRepository { get; }
         IGenericRepository<Tier> TierRepository { get; }
-        IGenericRepository<Transaction> TransactionRepository { get; }
         IGenericRepository<Trip> TripRepository { get; }
         IGenericRepository<Vehicle> VehicleRepository { get; }
         IGenericRepository<VehicleType> VehicleTypeRepository { get; }

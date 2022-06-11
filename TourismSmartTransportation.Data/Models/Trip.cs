@@ -7,11 +7,6 @@ namespace TourismSmartTransportation.Data.Models
 {
     public partial class Trip
     {
-        public Trip()
-        {
-            CustomerTrips = new HashSet<CustomerTrip>();
-        }
-
         public Guid Id { get; set; }
         public Guid DriverId { get; set; }
         public Guid PartnerId { get; set; }
@@ -27,6 +22,5 @@ namespace TourismSmartTransportation.Data.Models
         public virtual Partner Partner { get; set; }
         public virtual Route Route { get; set; }
         public virtual Vehicle Vehicle { get; set; }
-        public virtual ICollection<CustomerTrip> CustomerTrips { get; set; }
     }
 }

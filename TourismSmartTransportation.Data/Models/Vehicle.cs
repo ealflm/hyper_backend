@@ -17,14 +17,12 @@ namespace TourismSmartTransportation.Data.Models
         public Guid Id { get; set; }
         public Guid ServiceTypeId { get; set; }
         public Guid VehicleTypeId { get; set; }
-        public Guid RentStationId { get; set; }
+        public Guid? RentStationId { get; set; }
         public Guid PartnerId { get; set; }
-        public Guid PriceRentingId { get; set; }
+        public Guid? PriceRentingId { get; set; }
         public string Name { get; set; }
         public string LicensePlates { get; set; }
         public string Color { get; set; }
-        public decimal Longitude { get; set; }
-        public decimal Latitude { get; set; }
         public int Status { get; set; }
 
         public virtual Partner Partner { get; set; }
