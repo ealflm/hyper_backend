@@ -1,6 +1,6 @@
 using System;
 
-namespace TourismSmartTransportation.Business.ViewModel.Partner.Vehicle
+namespace TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement
 {
     public class VehicleViewModel
     {
@@ -15,8 +15,6 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.Vehicle
         public string Name { get; set; }
         public string LicensePlates { get; set; }
         public string Color { get; set; }
-        public decimal Longitude { get; set; }
-        public decimal Latitude { get; set; }
         public int Status { get; set; }
     }
 }
