@@ -33,7 +33,6 @@ namespace TourismSmartTransportation.Data.Repositories
         public IGenericRepository<Station> StationRepository { get; }
         public IGenericRepository<StationRoute> StationRouteRepository { get; }
         public IGenericRepository<Tier> TierRepository { get; }
-        public IGenericRepository<Transaction> TransactionRepository { get; }
         public IGenericRepository<Trip> TripRepository { get; }
         public IGenericRepository<Vehicle> VehicleRepository { get; }
         public IGenericRepository<VehicleType> VehicleTypeRepository { get; }
@@ -67,7 +66,6 @@ namespace TourismSmartTransportation.Data.Repositories
             IGenericRepository<Station> stationRepository,
             IGenericRepository<StationRoute> stationRouteRepository,
             IGenericRepository<Tier> tierRepository,
-            IGenericRepository<Transaction> transactionRepository,
             IGenericRepository<Trip> tripRepository,
             IGenericRepository<Vehicle> vehicleRepository,
             IGenericRepository<VehicleType> vehicleTypeRepository,
@@ -101,9 +99,7 @@ namespace TourismSmartTransportation.Data.Repositories
             ServiceTypeRepository = serviceTypeRepository;
             StationRepository = stationRepository;
             StationRouteRepository = stationRouteRepository;
-            TransactionRepository = transactionRepository;
             TierRepository = tierRepository;
-            TransactionRepository = transactionRepository;
             TripRepository = tripRepository;
             VehicleRepository = vehicleRepository;
             VehicleTypeRepository = vehicleTypeRepository;

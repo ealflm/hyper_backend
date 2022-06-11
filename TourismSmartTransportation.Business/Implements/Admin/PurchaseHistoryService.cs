@@ -58,13 +58,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 .Where(x => orderId != null && x.OrderId.Equals(new Guid(orderId)))
                 .Select(x => x.AsPaymentViewModel())
                 .ToListAsync();
-            foreach(PaymentViewModel x in paymentList)
-            {
-                x.TransactionList= await _unitOfWork.TransactionRepository.Query()
-                .Where(y => y.PaymentId.Equals(x.Id))
-                .Select(y => y.AsTransactionViewModel())
-                .ToListAsync();
-            }
             SearchResultViewModel<PaymentViewModel> result = null;
             result = new SearchResultViewModel<PaymentViewModel>()
             {

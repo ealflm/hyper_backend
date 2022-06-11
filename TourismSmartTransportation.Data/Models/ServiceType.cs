@@ -9,7 +9,6 @@ namespace TourismSmartTransportation.Data.Models
     {
         public ServiceType()
         {
-            PackageStatuses = new HashSet<PackageStatus>();
             Packages = new HashSet<Package>();
             PartnerServiceTypes = new HashSet<PartnerServiceType>();
             Vehicles = new HashSet<Vehicle>();
@@ -22,7 +21,6 @@ namespace TourismSmartTransportation.Data.Models
         public DateTime ModifiedDate { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<PackageStatus> PackageStatuses { get; set; }
         public virtual ICollection<Package> Packages { get; set; }
         public virtual ICollection<PartnerServiceType> PartnerServiceTypes { get; set; }
         public virtual ICollection<Vehicle> Vehicles { get; set; }

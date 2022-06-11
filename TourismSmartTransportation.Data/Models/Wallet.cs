@@ -9,7 +9,7 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Wallet()
         {
-            Transactions = new HashSet<Transaction>();
+            Payments = new HashSet<Payment>();
         }
 
         public Guid Id { get; set; }
@@ -18,6 +18,6 @@ namespace TourismSmartTransportation.Data.Models
         public int Status { get; set; }
 
         public virtual Customer Customer { get; set; }
-        public virtual ICollection<Transaction> Transactions { get; set; }
+        public virtual ICollection<Payment> Payments { get; set; }
     }
 }
