@@ -109,6 +109,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
 
             CustomerViewModel model = customer.AsCustomerViewModel();
+            var hasCard = await _unitOfWork.CardRepository.Query().AnyAsync(x => x.CustomerId.Equals(model.Id));
+            if (hasCard)
+            {
+                model.CardUid = (await _unitOfWork.CardRepository.Query().Where(x => x.CustomerId.Equals(model.Id)).FirstOrDefaultAsync()).Uid;
+            }
             return model;
         }
 
@@ -127,6 +132,14 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 .OrderBy(x => x.LastName)
                 .Select(x => x.AsCustomerViewModel())
                 .ToListAsync();
+            foreach(CustomerViewModel x in customers)
+            {
+                var hasCard = await _unitOfWork.CardRepository.Query().AnyAsync(y => y.CustomerId.Equals(x.Id));
+                if (hasCard)
+                {
+                    x.CardUid = (await _unitOfWork.CardRepository.Query().Where(y => y.CustomerId.Equals(x.Id)).FirstOrDefaultAsync()).Uid;
+                }
+            }
             var listAfterSorting = GetListAfterSorting(customers, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
