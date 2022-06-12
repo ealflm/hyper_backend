@@ -21,6 +21,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.PublishYearManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceBookingServiceViewModel;
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceRentingServiceViewModel;
 using TourismSmartTransportation.Business.ViewModel.Admin.CardManagement;
+using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -358,6 +359,23 @@ namespace TourismSmartTransportation.Business.Extensions
                 Id = item.Id,
                 CustomerId= item.CustomerId,
                 Uid=item.Uid,
+                Status = item.Status
+            };
+        }
+
+        public static VehicleViewModel AsVehicleViewModel(this Vehicle item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                Color= item.Color,
+                LicensePlates= item.LicensePlates,
+                Name= item.Name,
+                PartnerId= item.PartnerId,
+                PriceRentingId= item.PriceRentingId,
+                RentStationId= item.RentStationId,
+                ServiceTypeId= item.ServiceTypeId,
+                VehicleTypeId= item.VehicleTypeId,
                 Status = item.Status
             };
         }

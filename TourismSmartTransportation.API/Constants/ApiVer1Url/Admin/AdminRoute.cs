@@ -76,5 +76,7 @@ namespace ApiVer1Url
         // Tracking Vehicle
         public const string TrackingVehicle = BaseApiUrl + "/tracking-vehicle";
 
+        // Vehicle
+        public const string Vehicle = BaseApiUrl + "/vehicle";
     }
 }
