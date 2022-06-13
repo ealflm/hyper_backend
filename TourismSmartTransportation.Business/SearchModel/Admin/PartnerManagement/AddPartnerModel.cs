@@ -37,5 +37,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagemen
         /// </summary>
         /// <value></value>
         public bool Gender { get; set; }
+        [Required]
+        public List<Guid> ServiceTypeIdList { get; set; }
     }
 }
