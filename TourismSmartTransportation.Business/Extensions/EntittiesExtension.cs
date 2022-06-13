@@ -22,6 +22,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.PriceBookingServiceVie
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceRentingServiceViewModel;
 using TourismSmartTransportation.Business.ViewModel.Admin.CardManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
+using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -376,6 +377,25 @@ namespace TourismSmartTransportation.Business.Extensions
                 RentStationId= item.RentStationId,
                 ServiceTypeId= item.ServiceTypeId,
                 VehicleTypeId= item.VehicleTypeId,
+                Status = item.Status
+            };
+        }
+
+        public static DriverViewModel AsDriverViewModel(this Driver item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                CreatedDate= item.CreatedDate,
+                DateOfBirth= item.DateOfBirth,
+                FirstName= item.FirstName,
+                Gender= item.Gender,
+                LastName= item.LastName,
+                ModifiedDate= item.ModifiedDate,
+                PartnerId= item.PartnerId,
+                Phone= item.Phone,
+                PhotoUrl= item.PhotoUrl,
+                VehicleId= item.VehicleId,
                 Status = item.Status
             };
         }
