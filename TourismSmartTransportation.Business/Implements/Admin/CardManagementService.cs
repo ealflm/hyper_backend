@@ -72,7 +72,14 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<CardViewModel> GetById(Guid id)
         {
             var entity = await _unitOfWork.CardRepository.GetById(id);
-            return entity.AsCardViewModel();
+            var model = entity.AsCardViewModel();      
+            if (model.CustomerId != null)
+            {
+                var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId.Value);
+                model.CustomerName = customer.FirstName + " " + customer.LastName;
+                model.PhotoUrl = customer.PhotoUrl;
+            }
+            return model;
 
         }
 
@@ -84,6 +91,17 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsCardViewModel())
                             .ToListAsync();
+            foreach(CardViewModel x in entity)
+            {
+                
+                if(x.CustomerId != null)
+                {
+                    var customer = await _unitOfWork.CustomerRepository.GetById(x.CustomerId.Value);
+                    x.CustomerName = customer.FirstName + " " + customer.LastName;
+                    x.PhotoUrl = customer.PhotoUrl;
+                }
+                
+            }
             return entity;
 
         }
