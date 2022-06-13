@@ -13,6 +13,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagemen
         public string Name { get; set; }
         public string LicensePlates { get; set; }
         public string ServiceTypeName { get; set; }
+        public string CompanyName { get; set; }
         public string Color { get; set; }
         public int Status { get; set; }
     }

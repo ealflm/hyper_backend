@@ -81,6 +81,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             var entity = await _unitOfWork.VehicleRepository.GetById(id);
             var model = entity.AsVehicleViewModel();
             model.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(model.ServiceTypeId)).Name;
+            model.CompanyName = (await _unitOfWork.PartnerRepository.GetById(model.PartnerId)).CompanyName;
             return model;
 
         }
@@ -102,6 +103,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             foreach(VehicleViewModel x in entity)
             {
                 x.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId)).Name;
+                x.CompanyName = (await _unitOfWork.PartnerRepository.GetById(x.PartnerId)).CompanyName;
             }
             return entity;
 
