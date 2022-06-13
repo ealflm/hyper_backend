@@ -17,5 +17,8 @@ namespace ApiVer1Url
 
         // Driver
         public const string Driver = BaseApiUrl + "/driver";
+
+        // RentStation
+        public const string RentStation = BaseApiUrl + "/rent-station";
     }
 }

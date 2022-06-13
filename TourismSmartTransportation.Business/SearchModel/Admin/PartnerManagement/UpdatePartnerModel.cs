@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using TourismSmartTransportation.Business.Validation;
 using TourismSmartTransportation.Business.ViewModel.Common;
@@ -19,6 +20,8 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagemen
         public string Email { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public bool Gender { get; set; }
+        public List<Guid> AddServiceTypeIdList { get; set; }
+        public List<Guid> DeleteServiceTypeIdList { get; set; }
         public int? Status { get; set; }
     }
 }

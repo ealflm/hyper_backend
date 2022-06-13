@@ -13,6 +13,7 @@ using TourismSmartTransportation.Business.Extensions;
 using Azure.Storage.Blobs;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.CommonModel;
+using TourismSmartTransportation.Business.ViewModel.Admin.ServiceTypeManagement;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -61,6 +62,20 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Status = 1
             };
             await _unitOfWork.PartnerRepository.Add(partner);
+            if (model.ServiceTypeIdList != null)
+            {
+                foreach (Guid x in model.ServiceTypeIdList)
+                {
+                    var partnerService = new PartnerServiceType()
+                    {
+                        Id = new Guid(),
+                        PartnerId = partner.Id,
+                        ServiceTypeId = x,
+                        Status = 1
+                    };
+                    await _unitOfWork.PartnerServiceTypeRepository.Add(partnerService);
+                }
+            }
             await _unitOfWork.SaveChangesAsync();
 
             return new()
@@ -91,6 +106,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             partner.Status = 0;
             _unitOfWork.PartnerRepository.Update(partner);
+            var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.Id)).ToListAsync();
+            foreach (PartnerServiceType x in serviceTypes)
+            {
+                    x.Status = 0;
+                    _unitOfWork.PartnerServiceTypeRepository.Update(x);
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             return new()
@@ -115,6 +137,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             PartnerViewModel model = Partner.AsPartnerViewModel();
             model.DriverQuantity = _unitOfWork.DriverRepository.Query().Where(x => x.PartnerId.Equals(id)).Count();
             model.VehicleQuantity = _unitOfWork.VehicleRepository.Query().Where(x => x.PartnerId.Equals(id)).Count();
+            var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(model.Id)).ToListAsync();
+            model.ServiceTypeList = new List<ServiceTypeViewModel>();
+            foreach(PartnerServiceType x in serviceTypes)
+            {
+                var serviecType = await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId);
+                model.ServiceTypeList.Add(serviecType.AsServiceTypeViewModel());
+            }
             return model;
         }
 
@@ -180,6 +209,29 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             partner.Gender = UpdateTypeOfNotNullAbleObject<bool>(partner.Gender, model.Gender);
             partner.Status = UpdateTypeOfNotNullAbleObject<int>(partner.Status, model.Status);
             partner.ModifiedDate = DateTime.Now;
+            if (model.DeleteServiceTypeIdList != null)
+            {
+                foreach (Guid x in model.DeleteServiceTypeIdList)
+                {
+                    var serviceType = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.Id) && x.ServiceTypeId.Equals(x)).FirstOrDefaultAsync();
+                    await _unitOfWork.PartnerServiceTypeRepository.Remove(serviceType.Id);
+                }
+            }
+
+            if (model.AddServiceTypeIdList != null)
+            {
+                foreach (Guid x in model.AddServiceTypeIdList)
+                {
+                    var serviceType = new PartnerServiceType()
+                    {
+                        Id = new Guid(),
+                        PartnerId = partner.Id,
+                        ServiceTypeId = x,
+                        Status = 1
+                    };
+                    await _unitOfWork.PartnerServiceTypeRepository.Add(serviceType);
+                }
+            }
             _unitOfWork.PartnerRepository.Update(partner);
             await _unitOfWork.SaveChangesAsync();
 
