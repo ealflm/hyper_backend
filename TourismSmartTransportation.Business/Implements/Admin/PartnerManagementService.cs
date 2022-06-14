@@ -14,15 +14,19 @@ using Azure.Storage.Blobs;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.ViewModel.Admin.ServiceTypeManagement;
+using Vonage.Request;
+using System.Net.Http;
+using TourismSmartTransportation.Business.ViewModel.Admin.EmailManagement;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class PartnerManagementService : AccountService, IPartnerManagementService
     {
-        public PartnerManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        public PartnerManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials, HttpClient client) : base(unitOfWork, blobServiceClient, credentials, client)
         {
         }
 
+        private readonly string SUBJECT = "Thông Báo Tài Khoản Đăng Nhập";
         /// <summary>
         /// Create a new partner account
         /// </summary>
@@ -92,7 +96,20 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 }
             }
             await _unitOfWork.SaveChangesAsync();
-
+            if (partner.Email != null)
+            {
+                var email = new EmailViewModel()
+                {
+                    Subject = SUBJECT,
+                    ToAddress = partner.Email,
+                    Body = "Tên tài khoản: " + username + "\nMật khẩu: " + password
+                };
+                await SendEmail(email);
+            }
+            else
+            {
+                SendSMS(partner.Phone, "Ten tai khoan: " + username + "& Mat khau: " + password);
+            }
             return new()
             {
                 StatusCode = 201,

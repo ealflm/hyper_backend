@@ -12,6 +12,7 @@ using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.DriverManagement;
 using Vonage.Request;
+using System.Net.Http;
 
 namespace TourismSmartTransportation.Business.Implements.Partner
 {
@@ -19,7 +20,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
     {
         private readonly string MESSAGE = "Dang nhap bang SDT da dang ky voi MAT KHAU: ";
 
-        public DriverManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials) : base(unitOfWork, blobServiceClient, credentials)
+        public DriverManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials, HttpClient client) : base(unitOfWork, blobServiceClient, credentials, client)
         {
         }
 
