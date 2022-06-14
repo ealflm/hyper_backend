@@ -163,12 +163,12 @@ namespace TourismSmartTransportation.Business.Extensions
                 Amount = item.Amount,
                 CreatedDate = item.CreatedDate,
                 OrderId = item.OrderId,
-                WalletId= item.WalletId,
+                WalletId = item.WalletId,
                 Status = item.Status
             };
         }
 
-        
+
 
         public static CustomerTierHistoryViewModel AsCustomerTierHistoryViewModel(this CustomerTierHistory item)
         {
@@ -306,8 +306,8 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                Name= item.Name,
-                Description= item.Description,
+                Name = item.Name,
+                Description = item.Description,
                 Status = item.Status
             };
         }
@@ -328,10 +328,10 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                FixedDistance= item.FixedDistance,
-                FixedPrice=item.FixedPrice,
-                PricePerKilometer=item.PricePerKilometer,
-                VehicleTypeId= item.VehicleTypeId,
+                FixedDistance = item.FixedDistance,
+                FixedPrice = item.FixedPrice,
+                PricePerKilometer = item.PricePerKilometer,
+                VehicleTypeId = item.VehicleTypeId,
                 Status = item.Status
             };
         }
@@ -341,14 +341,14 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                CategoryId= item.CategoryId,
-                FixedPrice= item.FixedPrice,
-                HolidayPrice= item.HolidayPrice,
-                MaxTime= item.MaxTime,
-                MinTime= item.MinTime,
-                PricePerHour= item.PricePerHour,
-                PublishYearId= item.PublishYearId,
-                WeekendPrice= item.WeekendPrice,
+                CategoryId = item.CategoryId,
+                FixedPrice = item.FixedPrice,
+                HolidayPrice = item.HolidayPrice,
+                MaxTime = item.MaxTime,
+                MinTime = item.MinTime,
+                PricePerHour = item.PricePerHour,
+                PublishYearId = item.PublishYearId,
+                WeekendPrice = item.WeekendPrice,
                 Status = item.Status
             };
         }
@@ -358,8 +358,8 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                CustomerId= item.CustomerId,
-                Uid=item.Uid,
+                CustomerId = item.CustomerId,
+                Uid = item.Uid,
                 Status = item.Status
             };
         }
@@ -369,14 +369,14 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                Color= item.Color,
-                LicensePlates= item.LicensePlates,
-                Name= item.Name,
-                PartnerId= item.PartnerId,
-                PriceRentingId= item.PriceRentingId,
-                RentStationId= item.RentStationId,
-                ServiceTypeId= item.ServiceTypeId,
-                VehicleTypeId= item.VehicleTypeId,
+                Color = item.Color,
+                LicensePlates = item.LicensePlates,
+                Name = item.Name,
+                PartnerId = item.PartnerId,
+                PriceRentingId = item.PriceRentingId,
+                RentStationId = item.RentStationId,
+                ServiceTypeId = item.ServiceTypeId,
+                VehicleTypeId = item.VehicleTypeId,
                 Status = item.Status
             };
         }
@@ -386,16 +386,16 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
-                CreatedDate= item.CreatedDate,
-                DateOfBirth= item.DateOfBirth,
-                FirstName= item.FirstName,
-                Gender= item.Gender,
-                LastName= item.LastName,
-                ModifiedDate= item.ModifiedDate,
-                PartnerId= item.PartnerId,
-                Phone= item.Phone,
-                PhotoUrl= item.PhotoUrl,
-                VehicleId= item.VehicleId,
+                CreatedDate = item.CreatedDate,
+                DateOfBirth = item.DateOfBirth,
+                FirstName = item.FirstName,
+                Gender = item.Gender,
+                LastName = item.LastName,
+                ModifiedDate = item.ModifiedDate,
+                PartnerId = item.PartnerId,
+                Phone = item.Phone,
+                PhotoUrl = item.PhotoUrl,
+                VehicleId = item.VehicleId,
                 Status = item.Status
             };
         }
