@@ -178,5 +178,33 @@ namespace TourismSmartTransportation.Business.Implements
             }
             return photoUrl;
         }
+
+        /// <summary>
+        /// return username by firstname and lastname given.
+        /// </summary>
+        /// <returns></returns>
+        public static string GenerateUserNameAuto(string firstname, string lastname)
+        {
+            string[] lastnameArr = lastname.Split(' ');
+            string firstLetter = "";
+            for (int i = 0; i < lastnameArr.Length; i++)
+            {
+                firstLetter += lastnameArr[i][0];
+            }
+            string username = firstname + firstLetter;
+            return username;
+        }
+
+        /// <summary>
+        /// return a random string
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static string GeneratePasswordAuto(int lengthOfString)
+        {
+            var random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+            return new string(Enumerable.Repeat(chars, lengthOfString).Select(s => s[random.Next(s.Length)]).ToArray());
+        }
     }
 }

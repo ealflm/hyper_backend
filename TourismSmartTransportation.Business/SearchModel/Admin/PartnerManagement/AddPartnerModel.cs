@@ -11,17 +11,17 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagemen
 {
     public class AddPartnerModel : FileViewModel
     {
-        [StringLength(255)]
-        [Required]
-        public string Username { get; set; }
+        // [StringLength(255)]
+        // [Required]
+        // public string Username { get; set; }
         [Required]
         public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
         [Required]
         public string CompanyName { get; set; }
-        [Required]
-        public string Password { get; set; }
+        // [Required]
+        // public string Password { get; set; }
         public string Address1 { get; set; }
         public string Address2 { get; set; }
         [Required]

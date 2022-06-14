@@ -30,20 +30,35 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         /// <returns></returns>
         public async Task<Response> AddPartner(AddPartnerModel model)
         {
-            bool isExist = await _unitOfWork.PartnerRepository.Query()
-                .AnyAsync(x => x.Username == model.Username);
-            if (isExist)
+            string username = GenerateUserNameAuto(model.FirstName, model.LastName);
+            if (string.IsNullOrWhiteSpace(username))
             {
                 return new()
                 {
                     StatusCode = 400,
-                    Message = "Tài khoản đăng nhập đã tồn tại!"
+                    Message = "Thông tin không phù hợp!"
                 };
             }
-
-            CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            int i = 0;
+            while (i != -1)
+            {
+                bool checkExistedUsername = await _unitOfWork.PartnerRepository
+                                                .Query()
+                                                .AnyAsync(x => x.Username.ToLower() == username.ToLower());
+                if (!checkExistedUsername)
+                {
+                    i = -1;
+                }
+                else
+                {
+                    username += ++i;
+                }
+            }
+            string password = GeneratePasswordAuto(6);
+            CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             var partner = new TourismSmartTransportation.Data.Models.Partner()
             {
+                Id = Guid.NewGuid(),
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 CompanyName = model.CompanyName,
@@ -57,7 +72,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Salt = passwordSalt,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
-                Username = model.Username,
+                Username = username,
                 PhotoUrl = UploadFile(model.UploadFile, Container.Partner).Result,
                 Status = 1
             };
@@ -109,8 +124,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.Id)).ToListAsync();
             foreach (PartnerServiceType x in serviceTypes)
             {
-                    x.Status = 0;
-                    _unitOfWork.PartnerServiceTypeRepository.Update(x);
+                x.Status = 0;
+                _unitOfWork.PartnerServiceTypeRepository.Update(x);
             }
 
             await _unitOfWork.SaveChangesAsync();
@@ -139,7 +154,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             model.VehicleQuantity = _unitOfWork.VehicleRepository.Query().Where(x => x.PartnerId.Equals(id)).Count();
             var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(model.Id)).ToListAsync();
             model.ServiceTypeList = new List<ServiceTypeViewModel>();
-            foreach(PartnerServiceType x in serviceTypes)
+            foreach (PartnerServiceType x in serviceTypes)
             {
                 var serviecType = await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId);
                 model.ServiceTypeList.Add(serviecType.AsServiceTypeViewModel());
@@ -163,6 +178,20 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var listAfterSorting = GetListAfterSorting(companies, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
+            foreach (var c in listItemsAfterPaging)
+            {
+                var listServiceType = await _unitOfWork.PartnerServiceTypeRepository
+                                    .Query()
+                                    .Where(p => p.PartnerId == c.Id)
+                                    .ToListAsync();
+                c.ServiceTypeList = new List<ServiceTypeViewModel>();
+                foreach (PartnerServiceType x in listServiceType)
+                {
+                    var serviecType = await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId);
+                    c.ServiceTypeList.Add(serviecType.AsServiceTypeViewModel());
+                }
+            }
+
             SearchResultViewModel<PartnerViewModel> result = null;
             result = new SearchResultViewModel<PartnerViewModel>()
             {
