@@ -11,12 +11,15 @@ using Azure.Storage.Blobs;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.DriverManagement;
+using Vonage.Request;
 
 namespace TourismSmartTransportation.Business.Implements.Partner
 {
     public class DriverManagementService : AccountService, IDriverManagementService
     {
-        public DriverManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private readonly string MESSAGE = "Dang nhap bang SDT da dang ky voi MAT KHAU: ";
+
+        public DriverManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials) : base(unitOfWork, blobServiceClient, credentials)
         {
         }
 
@@ -51,7 +54,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
             await _unitOfWork.DriverRepository.Add(driver);
             await _unitOfWork.SaveChangesAsync();
-
+            SendSMS(driver.Phone, MESSAGE + model.Password);
             return new()
             {
                 StatusCode = 201,

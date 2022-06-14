@@ -34,6 +34,7 @@ using TourismSmartTransportation.Data.Context;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.MongoDBContext;
 using TourismSmartTransportation.Data.Repositories;
+using Vonage.Request;
 
 namespace TourismSmartTransportation.API
 {
@@ -186,6 +187,9 @@ namespace TourismSmartTransportation.API
                 options.InvalidModelStateResponseFactory = actionContext => new CustomErrorResponse().ErrorResponse(actionContext);
             });
 
+            // SMS
+            var sms = Configuration.GetSection("SMS");
+            services.AddScoped(_ => Credentials.FromApiKeyAndSecret(sms.GetSection("SMS_API_KEY").Value, sms.GetSection("SMS_API_Secret").Value));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
