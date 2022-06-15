@@ -19,7 +19,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.DriverManageme
         public bool Gender { get; set; }
         [Required]
         public string Phone { get; set; }
-        [Required]
         public string Password { get; set; }
         [Required]
         public DateTime? DateOfBirth { get; set; }
