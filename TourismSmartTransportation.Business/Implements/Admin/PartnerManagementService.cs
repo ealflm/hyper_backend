@@ -265,11 +265,26 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     await _unitOfWork.PartnerServiceTypeRepository.Remove(serviceType.Id);
                 }
             }
+            var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.Id)).ToListAsync();
 
             if (model.AddServiceTypeIdList != null)
             {
+                
                 foreach (Guid x in model.AddServiceTypeIdList)
                 {
+                    var isExist = false;
+                    foreach(PartnerServiceType y in serviceTypes)
+                    {
+                        if (x.Equals(y.ServiceTypeId))
+                        {
+                            isExist = true;
+                            break;
+                        }
+                    }
+                    if (isExist)
+                    {
+                        continue;
+                    }
                     var serviceType = new PartnerServiceType()
                     {
                         Id = new Guid(),

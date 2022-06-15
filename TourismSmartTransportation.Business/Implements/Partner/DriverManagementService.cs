@@ -35,7 +35,9 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     Message = "Tài xế đã tồn tại!"
                 };
             }
-            CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            var random = new Random(DateTime.Now.Second);
+            string password= random.Next(0,10).ToString()+ random.Next(0, 10).ToString()+ random.Next(0, 10).ToString()+ random.Next(0, 10).ToString();
+            CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             var driver = new Driver()
             {
                 Id = Guid.NewGuid(),
@@ -55,7 +57,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
             await _unitOfWork.DriverRepository.Add(driver);
             await _unitOfWork.SaveChangesAsync();
-            SendSMS(driver.Phone, MESSAGE + model.Password);
+            SendSMS(driver.Phone, MESSAGE + password);
             return new()
             {
                 StatusCode = 201,
