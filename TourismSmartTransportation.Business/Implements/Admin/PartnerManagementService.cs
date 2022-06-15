@@ -46,16 +46,18 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             int i = 0;
             while (i != -1)
             {
+                string temp = i == 0 ? username : username + i;
                 bool checkExistedUsername = await _unitOfWork.PartnerRepository
                                                 .Query()
-                                                .AnyAsync(x => x.Username.ToLower() == username.ToLower());
+                                                .AnyAsync(x => x.Username.ToLower() == temp.ToLower());
                 if (!checkExistedUsername)
                 {
                     i = -1;
+                    username = temp;
                 }
                 else
                 {
-                    username += ++i;
+                    ++i;
                 }
             }
             string password = GeneratePasswordAuto(6);
