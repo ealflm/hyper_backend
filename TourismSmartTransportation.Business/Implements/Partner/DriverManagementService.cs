@@ -40,16 +40,16 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 Id = Guid.NewGuid(),
                 CreatedDate = DateTime.Now,
-                DateOfBirth= model.DateOfBirth,
-                FirstName= model.FirstName,
-                Gender= model.Gender,
+                DateOfBirth = model.DateOfBirth,
+                FirstName = model.FirstName,
+                Gender = model.Gender,
                 LastName = model.LastName,
-                ModifiedDate= DateTime.Now,
-                PartnerId= model.PartnerId,
+                ModifiedDate = DateTime.Now,
+                PartnerId = model.PartnerId,
                 Phone = model.Phone,
-                VehicleId= model.VehicleId,
-                Password= passwordHash,
-                Salt= passwordSalt,
+                VehicleId = model.VehicleId,
+                Password = passwordHash,
+                Salt = passwordSalt,
                 Status = 1
             };
 
@@ -105,7 +105,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsDriverViewModel())
                             .ToListAsync();
-            foreach(DriverViewModel x in entity)
+            foreach (DriverViewModel x in entity)
             {
                 x.LicensePlates = (await _unitOfWork.VehicleRepository.GetById(x.VehicleId)).LicensePlates;
             }
@@ -115,15 +115,6 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         public async Task<Response> Update(Guid id, UpdateDriverModel model)
         {
-            var isExistCode = await _unitOfWork.DriverRepository.Query().AnyAsync(x => x.Phone.Equals(model.Phone));
-            if (isExistCode)
-            {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Tài xế đã tồn tại!"
-                };
-            }
             var entity = await _unitOfWork.DriverRepository.GetById(id);
             if (entity == null)
             {
@@ -133,6 +124,20 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     Message = "Không tìm thấy!"
                 };
             }
+
+            if (model.Phone != entity.Phone)
+            {
+                var isExistCode = await _unitOfWork.DriverRepository.Query().AnyAsync(x => x.Phone.Equals(model.Phone));
+                if (isExistCode)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Tài xế đã tồn tại!"
+                    };
+                }
+            }
+
             entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
             entity.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(entity.DateOfBirth, model.DateOfBirth);
             entity.Gender = UpdateTypeOfNotNullAbleObject<bool>(entity.Gender, model.Gender);
