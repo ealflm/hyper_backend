@@ -24,7 +24,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
             var list = await _unitOfWork.VehicleTypeRepository
                         .Query()
-                        .Where(x=> model.Label == null || x.Label.Equals(model.Label))
+                        .Where(x => model.Label == null || x.Label.Contains(model.Label))
                         .Where(x => model.Status == null || x.Status == model.Status.Value)
                         .Select(item => item.AsVehicleTypeViewModel())
                         .ToListAsync();

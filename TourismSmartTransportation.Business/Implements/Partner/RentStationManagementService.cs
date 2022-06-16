@@ -59,31 +59,53 @@ namespace TourismSmartTransportation.Business.Implements.Company
             return model;
         }
 
+        // public async Task<SearchResultViewModel<RentStationViewModel>> SearchRentStation(RentStationSearchModel model)
+        // {
+        //     Func<object, SearchResultViewModel<RentStationViewModel>> returnFunc = (param) =>
+        //     {
+        //         RentStationSearchModel model = (RentStationSearchModel)param;
+        //         var source = _unitOfWork.RentStationRepository
+        //                     .FindAsNoTracking()
+        //                     .FilterFunc(model);
+        //         var totalItems = source.Count();
+        //         var items = source
+        //                         .OrderByCustomFunc(model.SortBy)
+        //                         .PaginateFunc(model.PageIndex, model.ItemsPerPage)
+        //                         .Select(item => item.AsRentStationViewModel())
+        //                         .ToList();
+        //         foreach(RentStationViewModel x in items)
+        //         {
+        //             x.companyName= ( _unitOfWork.PartnerRepository.GetById(x.PartnerId)).Result.CompanyName;
+        //         }
+        //         var pageSize = GetPageSize(model.ItemsPerPage, totalItems);
+        //         return new SearchResultViewModel<RentStationViewModel>(items, pageSize, totalItems);
+        //     };
+
+        //     Task<SearchResultViewModel<RentStationViewModel>> task = new Task<SearchResultViewModel<RentStationViewModel>>(returnFunc, model);
+        //     task.Start();
+        //     return await task;
+        // }
+
         public async Task<SearchResultViewModel<RentStationViewModel>> SearchRentStation(RentStationSearchModel model)
         {
-            Func<object, SearchResultViewModel<RentStationViewModel>> returnFunc = (param) =>
+            var discount = await _unitOfWork.RentStationRepository.Query()
+                .Where(x => model.Title == null || x.Title.Contains(model.Title))
+                .Where(x => model.Address == null || x.Address.Contains(model.Address))
+                .Where(x => model.Status == null || x.Status == model.Status.Value)
+                .OrderBy(x => x.ModifiedDate)
+                .Select(x => x.AsRentStationViewModel())
+                .ToListAsync();
+            var listAfterSorting = GetListAfterSorting(discount, model.SortBy);
+            var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
+            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
+            SearchResultViewModel<RentStationViewModel> result = null;
+            result = new SearchResultViewModel<RentStationViewModel>()
             {
-                RentStationSearchModel model = (RentStationSearchModel)param;
-                var source = _unitOfWork.RentStationRepository
-                            .FindAsNoTracking()
-                            .FilterFunc(model);
-                var totalItems = source.Count();
-                var items = source
-                                .OrderByCustomFunc(model.SortBy)
-                                .PaginateFunc(model.PageIndex, model.ItemsPerPage)
-                                .Select(item => item.AsRentStationViewModel())
-                                .ToList();
-                foreach(RentStationViewModel x in items)
-                {
-                    x.companyName= ( _unitOfWork.PartnerRepository.GetById(x.PartnerId)).Result.CompanyName;
-                }
-                var pageSize = GetPageSize(model.ItemsPerPage, totalItems);
-                return new SearchResultViewModel<RentStationViewModel>(items, pageSize, totalItems);
+                Items = listItemsAfterPaging,
+                PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
+                TotalItems = totalRecord
             };
-
-            Task<SearchResultViewModel<RentStationViewModel>> task = new Task<SearchResultViewModel<RentStationViewModel>>(returnFunc, model);
-            task.Start();
-            return await task;
+            return result;
         }
 
         public async Task<bool> UpdateRentStaion(Guid id, AddRentStationViewModel model)

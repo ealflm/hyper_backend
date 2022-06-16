@@ -100,7 +100,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<SearchResultViewModel<TierViewModel>> SearchTier(TierSearchModel model)
         {
             var tier = await _unitOfWork.TierRepository.Query()
-                            .Where(x => model.Name == null || x.Name.Equals(model.Name))
+                            .Where(x => model.Name == null || x.Name.Contains(model.Name))
                             .Where(x => model.Description == null || x.Description.Contains(model.Description))
                             .Where(x => model.PromotedTitle == null || x.PromotedTitle.Contains(model.PromotedTitle))
                             .Where(x => model.Status == null || x.Status == model.Status.Value)

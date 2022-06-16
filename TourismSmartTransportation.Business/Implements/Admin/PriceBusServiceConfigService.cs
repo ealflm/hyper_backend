@@ -83,7 +83,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(x => model.MaxDistance == null || x.MaxDistance == model.MaxDistance.Value)
                             .Where(x => model.MinStation == null || x.MinStation == model.MinStation.Value)
                             .Where(x => model.MaxStation == null || x.MaxStation == model.MaxStation.Value)
-                            .Where(x => model.Mode == null || x.Mode == model.Mode)
+                            .Where(x => model.Mode == null || x.Mode.Contains(model.Mode))
                             .Where(x => model.Price == null || x.Price == model.Price.Value)
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsPriceListOfBusService())

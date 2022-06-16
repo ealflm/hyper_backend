@@ -34,7 +34,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var card = new Card()
             {
                 Id = Guid.NewGuid(),
-                Uid= uid,
+                Uid = uid,
                 Status = 1
             };
 
@@ -72,7 +72,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<CardViewModel> GetById(Guid id)
         {
             var entity = await _unitOfWork.CardRepository.GetById(id);
-            var model = entity.AsCardViewModel();      
+            var model = entity.AsCardViewModel();
             if (model.CustomerId != null)
             {
                 var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId.Value);
@@ -86,21 +86,21 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<List<CardViewModel>> Search(CardSearchModel model)
         {
             var entity = await _unitOfWork.CardRepository.Query()
-                            .Where(x => model.Uid == null || x.Uid.Equals(model.Uid))
+                            .Where(x => model.Uid == null || x.Uid.Contains(model.Uid))
                             .Where(x => model.CustomerId == null || x.CustomerId == model.CustomerId.Value)
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsCardViewModel())
                             .ToListAsync();
-            foreach(CardViewModel x in entity)
+            foreach (CardViewModel x in entity)
             {
-                
-                if(x.CustomerId != null)
+
+                if (x.CustomerId != null)
                 {
                     var customer = await _unitOfWork.CustomerRepository.GetById(x.CustomerId.Value);
                     x.CustomerName = customer.FirstName + " " + customer.LastName;
                     x.PhotoUrl = customer.PhotoUrl;
                 }
-                
+
             }
             return entity;
 

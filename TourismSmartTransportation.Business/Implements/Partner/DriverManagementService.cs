@@ -36,7 +36,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 };
             }
             var random = new Random(DateTime.Now.Second);
-            string password= random.Next(0,10).ToString()+ random.Next(0, 10).ToString()+ random.Next(0, 10).ToString()+ random.Next(0, 10).ToString();
+            string password = random.Next(0, 10).ToString() + random.Next(0, 10).ToString() + random.Next(0, 10).ToString() + random.Next(0, 10).ToString();
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             var driver = new Driver()
             {
@@ -98,9 +98,9 @@ namespace TourismSmartTransportation.Business.Implements.Partner
         public async Task<List<DriverViewModel>> Search(DriverSearchModel model)
         {
             var entity = await _unitOfWork.DriverRepository.Query()
-                            .Where(x => model.FirstName == null || x.FirstName.Equals(model.FirstName))
-                            .Where(x => model.LastName == null || x.LastName.Equals(model.LastName))
-                            .Where(x => model.Phone == null || x.Phone.Equals(model.Phone))
+                            .Where(x => model.FirstName == null || x.FirstName.Contains(model.FirstName))
+                            .Where(x => model.LastName == null || x.LastName.Contains(model.LastName))
+                            .Where(x => model.Phone == null || x.Phone.Contains(model.Phone))
                             .Where(x => model.DateOfBirth == null || x.DateOfBirth.Equals(model.DateOfBirth))
                             .Where(x => model.PartnerId == null || x.PartnerId.Equals(model.PartnerId.Value))
                             .Where(x => model.VehicleId == null || x.VehicleId.Equals(model.VehicleId))

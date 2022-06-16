@@ -37,8 +37,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var entity = new PublishYear()
             {
                 Id = Guid.NewGuid(),
-                Name= model.Name,
-                Description= model.Description,
+                Name = model.Name,
+                Description = model.Description,
                 Status = 1
             };
             await _unitOfWork.PublishYearRepository.Add(entity);
@@ -87,7 +87,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<SearchResultViewModel<PublishYearViewModel>> GetAll(PublishYearSearchModel model)
         {
             var publishYears = await _unitOfWork.PublishYearRepository.Query()
-                .Where(x => model.Name == null || model.Name.Equals(model.Name))
+                .Where(x => model.Name == null || model.Name.Contains(model.Name))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .Select(x => x.AsPublishYearViewModel())
                 .ToListAsync();
@@ -121,7 +121,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Không tìm thấy"
                 };
             }
-            
+
             entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);

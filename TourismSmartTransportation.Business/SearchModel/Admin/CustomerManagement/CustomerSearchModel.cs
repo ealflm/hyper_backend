@@ -14,6 +14,8 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.CustomerManageme
         public string TierId { get; set; }
         [StringLength(50)]
         public string LastName { get; set; }
+        [StringLength(50)]
+        public string FirstName { get; set; }
         [AllowNullOrEmptyAndCheckValidPhone]
         public string Phone { get; set; }
         public int? Status { get; set; }
