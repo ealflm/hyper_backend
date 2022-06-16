@@ -104,6 +104,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 x.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId)).Name;
                 x.CompanyName = (await _unitOfWork.PartnerRepository.GetById(x.PartnerId)).CompanyName;
+                x.VehicleTypeName = (await _unitOfWork.VehicleTypeRepository.GetById(x.VehicleTypeId)).Label;
             }
             return entity;
 

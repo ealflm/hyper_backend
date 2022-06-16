@@ -11,6 +11,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagemen
         public Guid PartnerId { get; set; }
         public Guid? PriceRentingId { get; set; }
         public string Name { get; set; }
+        public string VehicleTypeName { get; set; }
         public string LicensePlates { get; set; }
         public string ServiceTypeName { get; set; }
         public string CompanyName { get; set; }
