@@ -15,6 +15,8 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.RentStationManag
         public string companyName { get; set; }
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
         public int Status { get; set; }
     }
 }

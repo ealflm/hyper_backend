@@ -40,13 +40,13 @@ namespace TourismSmartTransportation.API.Controllers.Partner
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] AddRentStationViewModel model)
+        public async Task<IActionResult> Create([FromBody] AddRentStationModel model)
         {
             return SendResponse(await _service.AddRentStation(model));
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] AddRentStationViewModel model)
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRentStation model)
         {
             return SendResponse(await _service.UpdateRentStaion(id, model));
         }

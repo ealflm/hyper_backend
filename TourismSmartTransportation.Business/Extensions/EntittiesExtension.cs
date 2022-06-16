@@ -120,11 +120,13 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.Id,
+                PartnerId = item.PartnerId,
                 Title = item.Title,
                 Address = item.Address,
-                PartnerId = item.PartnerId,
                 Latitude = item.Latitude,
                 Longitude = item.Longitude,
+                CreatedDate = item.CreatedDate,
+                ModifiedDate = item.ModifiedDate,
                 Status = item.Status
             };
         }
