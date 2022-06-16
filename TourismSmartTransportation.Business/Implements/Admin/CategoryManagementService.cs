@@ -37,8 +37,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var entity = new Category()
             {
                 Id = Guid.NewGuid(),
-                Name= model.Name,
-                Description= model.Description,
+                Name = model.Name,
+                Description = model.Description,
                 Status = 1
             };
             await _unitOfWork.CategoryRepository.Add(entity);
@@ -87,7 +87,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<SearchResultViewModel<CategoryViewModel>> GetAll(CategorySearchModel model)
         {
             var category = await _unitOfWork.CategoryRepository.Query()
-                .Where(x=> model.Name == null || model.Name.Equals(model.Name))
+                .Where(x => model.Name == null || x.Name.Contains(model.Name))
+                .Where(x => model.Description == null || x.Description.Contains(model.Description))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
                 .Select(x => x.AsCategoryViewModel())
                 .ToListAsync();
@@ -121,7 +122,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Không tìm thấy"
                 };
             }
-            
+
             entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);

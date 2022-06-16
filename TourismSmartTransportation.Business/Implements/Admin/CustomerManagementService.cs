@@ -125,14 +125,14 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<SearchResultViewModel<CustomerViewModel>> SearchCustomer(CustomerSearchModel model)
         {
             var customers = await _unitOfWork.CustomerRepository.Query()
-                .Where(x => model.TierId == null || x.Phone.Equals(model.TierId))
-                .Where(x => model.Phone == null || x.Phone.Equals(model.Phone))
+                .Where(x => model.Phone == null || x.Phone.Contains(model.Phone))
                 .Where(x => model.LastName == null || x.LastName.Contains(model.LastName))
+                .Where(x => model.FirstName == null || x.FirstName.Contains(model.FirstName))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
-                .OrderBy(x => x.LastName)
+                .OrderBy(x => x.FirstName)
                 .Select(x => x.AsCustomerViewModel())
                 .ToListAsync();
-            foreach(CustomerViewModel x in customers)
+            foreach (CustomerViewModel x in customers)
             {
                 var hasCard = await _unitOfWork.CardRepository.Query().AnyAsync(y => y.CustomerId.Equals(x.Id));
                 if (hasCard)

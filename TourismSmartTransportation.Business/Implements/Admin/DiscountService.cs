@@ -117,7 +117,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
             var discount = await _unitOfWork.DiscountRepository.Query()
                 .Where(x => model.Title == null || x.Title.Contains(model.Title))
-                .Where(x => model.Code == null || x.Code == model.Code)
+                .Where(x => model.Code == null || x.Code.Contains(model.Code))
                 .Where(x => model.TimeStart == null || DateTime.Compare(x.TimeStart, model.TimeStart.Value) >= 0)
                 .Where(x => model.TimeEnd == null || DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) <= 0)
                 .Where(x => model.Value == null || x.Value == model.Value.Value)

@@ -34,14 +34,14 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             var price = new Vehicle()
             {
                 Id = Guid.NewGuid(),
-                Color= model.Color,
-                LicensePlates= model.LicensePlates,
-                Name= model.Name,
-                PartnerId= model.PartnerId,
-                PriceRentingId= model.PriceRentingId,
-                RentStationId= model.RentStationId,
-                ServiceTypeId= model.ServiceTypeId,
-                VehicleTypeId= model.VehicleTypeId,
+                Color = model.Color,
+                LicensePlates = model.LicensePlates,
+                Name = model.Name,
+                PartnerId = model.PartnerId,
+                PriceRentingId = model.PriceRentingId,
+                RentStationId = model.RentStationId,
+                ServiceTypeId = model.ServiceTypeId,
+                VehicleTypeId = model.VehicleTypeId,
                 Status = 1
             };
 
@@ -94,13 +94,13 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             .Where(x => model.RentStationId == null || x.RentStationId == model.RentStationId.Value)
                             .Where(x => model.PriceRentingId == null || x.PriceRentingId == model.PriceRentingId.Value)
                             .Where(x => model.PartnerId == null || x.PartnerId == model.PartnerId.Value)
-                            .Where(x => model.Color == null || x.Color.Equals(model.Color))
-                            .Where(x => model.LicensePlates == null || x.LicensePlates.Equals(model.LicensePlates))
-                            .Where(x => model.Name == null || x.Name.Equals(model.Name))
+                            .Where(x => model.Color == null || x.Color.Contains(model.Color))
+                            .Where(x => model.LicensePlates == null || x.LicensePlates.Contains(model.LicensePlates))
+                            .Where(x => model.Name == null || x.Name.Contains(model.Name))
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsVehicleViewModel())
                             .ToListAsync();
-            foreach(VehicleViewModel x in entity)
+            foreach (VehicleViewModel x in entity)
             {
                 x.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId)).Name;
                 x.CompanyName = (await _unitOfWork.PartnerRepository.GetById(x.PartnerId)).CompanyName;
