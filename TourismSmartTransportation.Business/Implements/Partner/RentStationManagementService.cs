@@ -12,6 +12,7 @@ using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.Extensions;
+using TourismSmartTransportation.Business.CommonModel;
 
 namespace TourismSmartTransportation.Business.Implements.Company
 {
@@ -21,30 +22,49 @@ namespace TourismSmartTransportation.Business.Implements.Company
         {
         }
 
-        public async Task<bool> AddRentStation(AddRentStationViewModel model)
+        public async Task<Response> AddRentStation(AddRentStationModel model)
         {
-
             var rentStation = new RentStation()
             {
+                Id = Guid.NewGuid(),
+                PartnerId = model.PartnerId,
+                Title = model.Title,
+                Address = model.Address,
                 Latitude = model.Latitude,
                 Longitude = model.Longitude,
+                CreatedDate = DateTime.Now,
+                ModifiedDate = DateTime.Now,
                 Status = 1
             };
             await _unitOfWork.RentStationRepository.Add(rentStation);
             await _unitOfWork.SaveChangesAsync();
 
-            return true;
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Tạo trạm thuê xe thành công!"
+            };
         }
 
-        public async Task<bool> DeleteRentStation(Guid id)
+        public async Task<Response> DeleteRentStation(Guid id)
         {
-
             var rentStation = await _unitOfWork.RentStationRepository.GetById(id);
-            if (rentStation == null) return false;
-            rentStation.Status = 1;
+            if (rentStation == null)
+            {
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Không tìm thấy"
+                };
+            }
+            rentStation.Status = 0;
             _unitOfWork.RentStationRepository.Update(rentStation);
             await _unitOfWork.SaveChangesAsync();
-            return true;
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Cập nhật trạng thái thành công!"
+            };
         }
 
         public async Task<RentStationViewModel> GetRentStation(Guid id)
@@ -89,6 +109,7 @@ namespace TourismSmartTransportation.Business.Implements.Company
         public async Task<SearchResultViewModel<RentStationViewModel>> SearchRentStation(RentStationSearchModel model)
         {
             var discount = await _unitOfWork.RentStationRepository.Query()
+                .Where(x => model.PartnerId == null || x.PartnerId.ToString().Contains(model.PartnerId.Value.ToString()))
                 .Where(x => model.Title == null || x.Title.Contains(model.Title))
                 .Where(x => model.Address == null || x.Address.Contains(model.Address))
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
@@ -98,6 +119,10 @@ namespace TourismSmartTransportation.Business.Implements.Company
             var listAfterSorting = GetListAfterSorting(discount, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
+            foreach (var p in listItemsAfterPaging)
+            {
+                p.companyName = (await _unitOfWork.PartnerRepository.GetById(p.PartnerId)).CompanyName;
+            }
             SearchResultViewModel<RentStationViewModel> result = null;
             result = new SearchResultViewModel<RentStationViewModel>()
             {
@@ -108,22 +133,31 @@ namespace TourismSmartTransportation.Business.Implements.Company
             return result;
         }
 
-        public async Task<bool> UpdateRentStaion(Guid id, AddRentStationViewModel model)
+        public async Task<Response> UpdateRentStaion(Guid id, UpdateRentStation model)
         {
-            try
+            var rentStation = await _unitOfWork.RentStationRepository.GetById(id);
+            if (rentStation == null)
             {
-                var rentStation = await _unitOfWork.RentStationRepository.GetById(id);
-                rentStation.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Latitude, model.Latitude);
-                rentStation.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Longitude, model.Longitude);
-                rentStation.Status = UpdateTypeOfNotNullAbleObject<int>(rentStation.Status, model.Status);
-                _unitOfWork.RentStationRepository.Update(rentStation);
-                await _unitOfWork.SaveChangesAsync();
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Không tìm thấy!"
+                };
             }
-            catch
+            rentStation.PartnerId = UpdateTypeOfNotNullAbleObject<Guid>(rentStation.PartnerId, model.PartnerId);
+            rentStation.Title = UpdateTypeOfNullAbleObject<string>(rentStation.Title, model.Title);
+            rentStation.Address = UpdateTypeOfNullAbleObject<string>(rentStation.Address, model.Address);
+            rentStation.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Latitude, model.Latitude);
+            rentStation.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Longitude, model.Longitude);
+            rentStation.ModifiedDate = DateTime.Now;
+            rentStation.Status = UpdateTypeOfNotNullAbleObject<int>(rentStation.Status, model.Status);
+            _unitOfWork.RentStationRepository.Update(rentStation);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
             {
-                return false;
-            }
-            return true;
+                StatusCode = 201,
+                Message = "Cập nhật thành công!"
+            };
         }
     }
 }
