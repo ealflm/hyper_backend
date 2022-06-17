@@ -16,6 +16,7 @@ using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Partner.Authorization;
 using TourismSmartTransportation.Data.Interfaces;
+using TourismSmartTransportation.Data.Models;
 using AdminModel = TourismSmartTransportation.Data.Models.Admin;
 
 
@@ -169,9 +170,14 @@ namespace TourismSmartTransportation.Business.Implements
         private string GetToken<T>(T model, int loginType) where T : class
         {
             var authClaims = new List<Claim>();
+            var id= new Guid();
             foreach (var x in model.GetType().GetProperties())
             {
                 authClaims.Add(new Claim(x.Name, (x.GetValue(model) ?? "").ToString()));
+                if (x.Name.Equals("Id"))
+                {
+                    id = new Guid((x.GetValue(model)).ToString());
+                }
             }
 
             switch ((int)loginType)
@@ -184,6 +190,13 @@ namespace TourismSmartTransportation.Business.Implements
                 case 1:
                     {
                         authClaims.Add(new Claim("Role", "Partner"));
+                        var serviceTypeList = _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(id)).ToList();
+                        string serviceTypeIds = null;
+                        foreach(PartnerServiceType x in serviceTypeList)
+                        {
+                            serviceTypeIds += x.ServiceTypeId + "|";
+                        }
+                        authClaims.Add(new Claim("ServiceTypeList", serviceTypeIds));
                         break;
                     }
                 case 2:
