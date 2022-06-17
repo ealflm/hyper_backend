@@ -14,7 +14,12 @@ namespace TourismSmartTransportation.API.Controllers
         public ObjectResult SendResponse(object result)
         {
             int statusCode = 200;
-            string message = "Success";
+            string message = "Thành công";
+            if (result == null)
+            {
+                statusCode = 404;
+                message = "Không tìm thấy";
+            }
             return HandleObjectResponse(statusCode, message, result);
         }
 
@@ -22,7 +27,7 @@ namespace TourismSmartTransportation.API.Controllers
         public ObjectResult SendResponse(bool result)
         {
             int statusCode = result ? 201 : 400;
-            string message = result ? "Success" : "Bad request!";
+            string message = result ? "Thành công" : "Dữ liệu không phù hợp";
             return HandleObjectResponse(statusCode, message, null);
         }
 

@@ -2,7 +2,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using TourismSmartTransportation.Business.Interfaces;
-using TourismSmartTransportation.Data.MongoCollections;
+using TourismSmartTransportation.Data.MongoCollections.Vehicle;
+using System;
+using TourismSmartTransportation.Business.Interfaces.Shared;
 
 namespace TourismSmartTransportation.API.Controllers
 {
@@ -30,22 +32,29 @@ namespace TourismSmartTransportation.API.Controllers
             return SendResponse(await _service.GetById(id));
         }
 
+        [HttpGet]
+        [Route(ApiVer1Url.Admin.TrackingVehicle + "/vehicle")]
+        public async Task<ActionResult<VehicleCollection>> GetByVehicleId([FromQuery] Guid vehicleId)
+        {
+            return SendResponse(await _service.GetByVehicleId(vehicleId));
+        }
+
         [HttpPost]
-        public async Task<IActionResult> Create(VehicleCollection Vehicle)
+        public async Task<IActionResult> Create(AddVehicleCollectionModel Vehicle)
         {
             return SendResponse(await _service.Create(Vehicle));
 
         }
 
-        [HttpPut]
-        public async Task<ActionResult<VehicleCollection>> Update(VehicleCollection Vehicle)
-        {
-            var product = await _service.Update(Vehicle);
-            return Ok();
-        }
+        // [HttpPut("{id}")]
+        // public async Task<ActionResult<VehicleCollection>> Update(VehicleCollection Vehicle)
+        // {
+        //     var product = await _service.Update(Vehicle);
+        //     return Ok();
+        // }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        [HttpDelete]
+        public async Task<IActionResult> Delete([FromQuery] string id)
         {
             return SendResponse(await _service.Delete(id));
         }
