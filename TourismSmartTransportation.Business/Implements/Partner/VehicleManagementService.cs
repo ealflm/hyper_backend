@@ -49,7 +49,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 price.PriceRentingId = priceRenting.Id;
             }
             await _unitOfWork.VehicleRepository.Add(price);
-            
+
             await _unitOfWork.SaveChangesAsync();
 
             return new()
@@ -135,10 +135,10 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 };
             }
             var priceRenting = await _unitOfWork.PriceListOfRentingServiceRepository.GetById(entity.PriceRentingId.Value);
-            if (priceRenting !=null &&(priceRenting.CategoryId != model.CategoryId || priceRenting.PublishYearId != model.PublishYearId ))
+            if (priceRenting != null && (priceRenting.CategoryId != model.CategoryId || priceRenting.PublishYearId != model.PublishYearId))
             {
-                priceRenting.CategoryId = model.CategoryId!= null ? model.CategoryId.Value: priceRenting.CategoryId;
-                priceRenting.PublishYearId = model.PublishYearId!=null? model.PublishYearId.Value : priceRenting.PublishYearId;
+                priceRenting.CategoryId = model.CategoryId != null ? model.CategoryId.Value : priceRenting.CategoryId;
+                priceRenting.PublishYearId = model.PublishYearId != null ? model.PublishYearId.Value : priceRenting.PublishYearId;
                 priceRenting = await _unitOfWork.PriceListOfRentingServiceRepository.Query().Where(x => x.CategoryId.Equals(priceRenting.CategoryId) && x.PublishYearId.Equals(priceRenting.PublishYearId)).FirstOrDefaultAsync();
                 entity.PriceRentingId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PriceRentingId, priceRenting.Id);
             }
@@ -150,6 +150,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             entity.LicensePlates = UpdateTypeOfNullAbleObject<string>(entity.LicensePlates, model.LicensePlates);
             entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
+            entity.IsRunning = UpdateTypeOfNotNullAbleObject<int>(entity.IsRunning, model.IsRunning);
             _unitOfWork.VehicleRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()

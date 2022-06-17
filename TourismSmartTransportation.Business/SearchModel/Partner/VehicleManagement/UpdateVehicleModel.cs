@@ -15,5 +15,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagem
         public int? Status { get; set; }
         public Guid? CategoryId { get; set; }
         public Guid? PublishYearId { get; set; }
+        public int? IsRunning { get; set; }
     }
 }

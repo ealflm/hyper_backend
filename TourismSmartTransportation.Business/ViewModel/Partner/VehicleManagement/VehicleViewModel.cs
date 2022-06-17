@@ -16,6 +16,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagemen
         public string ServiceTypeName { get; set; }
         public string CompanyName { get; set; }
         public string Color { get; set; }
+        public int? IsRunning { get; set; }
         public int Status { get; set; }
     }
 }

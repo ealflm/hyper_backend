@@ -195,8 +195,8 @@ namespace TourismSmartTransportation.API
             services.AddScoped(_ => Credentials.FromApiKeyAndSecret(sms.GetSection("SMS_API_KEY").Value, sms.GetSection("SMS_API_Secret").Value));
 
             // Email
-            
-            services.AddScoped(_ => {
+            services.AddScoped(_ =>
+            {
                 var client = new HttpClient() { BaseAddress = new Uri(Configuration.GetSection("SendEmailFunction").GetSection("Uri").Value) };
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

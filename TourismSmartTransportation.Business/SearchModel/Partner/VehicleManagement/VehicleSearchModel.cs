@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using TourismSmartTransportation.Business.Validation;
 
 namespace TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement
-{     
+{
     public class VehicleSearchModel
     {
         public Guid? ServiceTypeId { get; set; }
@@ -14,6 +14,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagem
         public string Name { get; set; }
         public string LicensePlates { get; set; }
         public string Color { get; set; }
+        public int? IsRunning { get; set; }
         public int? Status { get; set; }
     }
 }

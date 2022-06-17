@@ -753,6 +753,8 @@ namespace TourismSmartTransportation.Data.Context
                     .HasMaxLength(255)
                     .IsUnicode(false);
 
+                entity.Property(e => e.IsRunning).HasColumnName("isRunning");
+
                 entity.Property(e => e.LicensePlates)
                     .IsRequired()
                     .HasMaxLength(255)
