@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces;
@@ -179,20 +180,64 @@ namespace TourismSmartTransportation.Business.Implements
             return photoUrl;
         }
 
+        public static string convertVietnameseStringToEnglish(string str)
+        {
+            string[] vietnameseSigns = new String[]
+            {
+                "aAeEoOuUiIdDyY",
+
+                "áàạảãâấầậẩẫăắằặẳẵ",
+
+                "ÁÀẠẢÃÂẤẦẬẨẪĂẮẰẶẲẴ",
+
+                "éèẹẻẽêếềệểễ",
+
+                "ÉÈẸẺẼÊẾỀỆỂỄ",
+
+                "óòọỏõôốồộổỗơớờợởỡ",
+
+                "ÓÒỌỎÕÔỐỒỘỔỖƠỚỜỢỞỠ",
+
+                "úùụủũưứừựửữ",
+
+                "ÚÙỤỦŨƯỨỪỰỬỮ",
+
+                "íìịỉĩ",
+
+                "ÍÌỊỈĨ",
+
+                "đ",
+
+                "Đ",
+
+                "ýỳỵỷỹ",
+
+                "ÝỲỴỶỸ"
+            };
+            for (int i = 1; i < vietnameseSigns.Length; i++)
+            {
+                for (int j = 0; j < vietnameseSigns[i].Length; j++)
+                {
+                    str = str.Replace(vietnameseSigns[i][j], vietnameseSigns[0][i - 1]);
+                }
+            }
+            return str;
+        }
+
         /// <summary>
         /// return username by firstname and lastname given.
         /// </summary>
         /// <returns></returns>
         public static string GenerateUserNameAuto(string firstname, string lastname)
         {
-            string[] lastnameArr = lastname.Split(' ');
+            string[] lastnameArr = Regex.Split(lastname.Trim(), @"\s+");
             string firstLetter = "";
             for (int i = 0; i < lastnameArr.Length; i++)
             {
                 firstLetter += lastnameArr[i][0];
             }
-            string username = firstname + firstLetter;
-            return username;
+            string username = firstname.Trim() + firstLetter;
+            return convertVietnameseStringToEnglish(username);
         }
 
         /// <summary>
