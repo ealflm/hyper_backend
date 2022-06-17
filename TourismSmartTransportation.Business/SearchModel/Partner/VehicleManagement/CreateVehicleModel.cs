@@ -13,12 +13,13 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagem
         public Guid? RentStationId { get; set; }
         [Required]
         public Guid PartnerId { get; set; }
-        public Guid? PriceRentingId { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]
         public string LicensePlates { get; set; }
         [Required]
         public string Color { get; set; }
+        public Guid? CategoryId { get; set; }
+        public Guid? PublishYearId { get; set; }
     }
 }

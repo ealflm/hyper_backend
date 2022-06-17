@@ -38,14 +38,18 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 LicensePlates = model.LicensePlates,
                 Name = model.Name,
                 PartnerId = model.PartnerId,
-                PriceRentingId = model.PriceRentingId,
                 RentStationId = model.RentStationId,
                 ServiceTypeId = model.ServiceTypeId,
                 VehicleTypeId = model.VehicleTypeId,
                 Status = 1
             };
-
+            if (model.RentStationId != null)
+            {
+                var priceRenting = await _unitOfWork.PriceListOfRentingServiceRepository.Query().Where(x => x.CategoryId.Equals(model.CategoryId) && x.PublishYearId.Equals(model.PublishYearId)).FirstOrDefaultAsync();
+                price.PriceRentingId = priceRenting.Id;
+            }
             await _unitOfWork.VehicleRepository.Add(price);
+            
             await _unitOfWork.SaveChangesAsync();
 
             return new()
@@ -130,8 +134,15 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     Message = "Không tìm thấy!"
                 };
             }
+            var priceRenting = await _unitOfWork.PriceListOfRentingServiceRepository.GetById(entity.PriceRentingId.Value);
+            if (priceRenting !=null &&(priceRenting.CategoryId != model.CategoryId || priceRenting.PublishYearId != model.PublishYearId ))
+            {
+                priceRenting.CategoryId = model.CategoryId!= null ? model.CategoryId.Value: priceRenting.CategoryId;
+                priceRenting.PublishYearId = model.PublishYearId!=null? model.PublishYearId.Value : priceRenting.PublishYearId;
+                priceRenting = await _unitOfWork.PriceListOfRentingServiceRepository.Query().Where(x => x.CategoryId.Equals(priceRenting.CategoryId) && x.PublishYearId.Equals(priceRenting.PublishYearId)).FirstOrDefaultAsync();
+                entity.PriceRentingId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PriceRentingId, priceRenting.Id);
+            }
             entity.PartnerId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PartnerId, model.PartnerId);
-            entity.PriceRentingId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PriceRentingId, model.PriceRentingId);
             entity.RentStationId = UpdateTypeOfNotNullAbleObject<Guid>(entity.RentStationId, model.RentStationId);
             entity.ServiceTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.ServiceTypeId, model.ServiceTypeId);
             entity.VehicleTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleTypeId, model.VehicleTypeId);
