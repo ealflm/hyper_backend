@@ -9,10 +9,11 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagem
         public Guid? VehicleTypeId { get; set; }
         public Guid? RentStationId { get; set; }
         public Guid? PartnerId { get; set; }
-        public Guid? PriceRentingId { get; set; }
         public string Name { get; set; }
         public string LicensePlates { get; set; }
         public string Color { get; set; }
         public int? Status { get; set; }
+        public Guid? CategoryId { get; set; }
+        public Guid? PublishYearId { get; set; }
     }
 }
