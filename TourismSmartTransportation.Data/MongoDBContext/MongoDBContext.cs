@@ -1,5 +1,5 @@
 using MongoDB.Driver;
-using TourismSmartTransportation.Data.MongoCollections;
+using TourismSmartTransportation.Data.MongoCollections.Vehicle;
 
 namespace TourismSmartTransportation.Data.MongoDBContext
 {

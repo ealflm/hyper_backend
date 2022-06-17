@@ -31,7 +31,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     Message = "Phương tiện đã tồn tại!"
                 };
             }
-            var price = new Vehicle()
+            var price = new TourismSmartTransportation.Data.Models.Vehicle()
             {
                 Id = Guid.NewGuid(),
                 Color = model.Color,
