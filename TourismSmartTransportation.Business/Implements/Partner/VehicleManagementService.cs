@@ -86,6 +86,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             var model = entity.AsVehicleViewModel();
             model.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(model.ServiceTypeId)).Name;
             model.CompanyName = (await _unitOfWork.PartnerRepository.GetById(model.PartnerId)).CompanyName;
+            model.VehicleTypeName = (await _unitOfWork.VehicleTypeRepository.GetById(model.VehicleTypeId)).Label;
             return model;
 
         }
