@@ -49,7 +49,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 price.PriceRentingId = priceRenting.Id;
             }
             await _unitOfWork.VehicleRepository.Add(price);
-            
+
             await _unitOfWork.SaveChangesAsync();
 
             return new()
@@ -86,6 +86,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             var model = entity.AsVehicleViewModel();
             model.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(model.ServiceTypeId)).Name;
             model.CompanyName = (await _unitOfWork.PartnerRepository.GetById(model.PartnerId)).CompanyName;
+            model.VehicleTypeName = (await _unitOfWork.VehicleTypeRepository.GetById(model.VehicleTypeId)).Label;
             return model;
 
         }
@@ -152,6 +153,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             entity.LicensePlates = UpdateTypeOfNullAbleObject<string>(entity.LicensePlates, model.LicensePlates);
             entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
+            entity.IsRunning = UpdateTypeOfNotNullAbleObject<int>(entity.IsRunning, model.IsRunning);
             _unitOfWork.VehicleRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()

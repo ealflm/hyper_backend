@@ -24,6 +24,7 @@ namespace TourismSmartTransportation.Data.Models
         public string LicensePlates { get; set; }
         public string Color { get; set; }
         public int Status { get; set; }
+        public int? IsRunning { get; set; }
 
         public virtual Partner Partner { get; set; }
         public virtual PriceListOfRentingService PriceRenting { get; set; }
