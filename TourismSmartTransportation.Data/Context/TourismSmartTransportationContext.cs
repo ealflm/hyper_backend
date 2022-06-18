@@ -750,8 +750,7 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Color)
                     .IsRequired()
-                    .HasMaxLength(255)
-                    .IsUnicode(false);
+                    .HasMaxLength(255);
 
                 entity.Property(e => e.IsRunning).HasColumnName("isRunning");
 
