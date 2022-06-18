@@ -73,6 +73,18 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return model;
         }
 
+        public async Task<List<ServiceTypeViewModel>> GetListByPartnerId(Guid id)
+        {
+            var serviceTypies = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x=> x.PartnerId.Equals(id)).ToListAsync();
+            var serviceTypeList = new List<ServiceTypeViewModel>();
+            foreach(PartnerServiceType x in serviceTypies)
+            {
+                var model = await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId);
+                serviceTypeList.Add(model.AsServiceTypeViewModel());
+            }
+            return serviceTypeList;
+        }
+
         public async Task<SearchResultViewModel<ServiceTypeViewModel>> GetAll()
         {
             var serviceTypeList = await _unitOfWork.ServiceTypeRepository.Query()

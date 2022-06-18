@@ -23,5 +23,8 @@ namespace ApiVer1Url
 
         // Configuration
         public const string GetConfiguration = BaseApiUrl + "/get-config";
+
+        // Service type
+        public const string ServiceType = BaseApiUrl + "/service-type";
     }
 }

@@ -16,5 +16,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
         Task<bool> Update(Guid id, ServiceTypeSearchModel model);
         Task<bool> Delete(Guid id);
         Task<SearchResultViewModel<ServiceTypeViewModel>> GetAll();
+        Task<List<ServiceTypeViewModel>> GetListByPartnerId(Guid id);
     }
 }
