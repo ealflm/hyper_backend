@@ -269,11 +269,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             if (model.AddServiceTypeIdList != null)
             {
-                
                 foreach (Guid x in model.AddServiceTypeIdList)
                 {
                     var isExist = false;
-                    foreach(PartnerServiceType y in serviceTypes)
+                    foreach (PartnerServiceType y in serviceTypes)
                     {
                         if (x.Equals(y.ServiceTypeId))
                         {

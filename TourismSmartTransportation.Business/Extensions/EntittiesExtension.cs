@@ -379,6 +379,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 RentStationId = item.RentStationId,
                 ServiceTypeId = item.ServiceTypeId,
                 VehicleTypeId = item.VehicleTypeId,
+                IsRunning = item.IsRunning == null ? item.IsRunning : item.IsRunning.Value,
                 Status = item.Status
             };
         }
