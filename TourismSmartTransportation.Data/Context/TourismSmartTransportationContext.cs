@@ -566,6 +566,8 @@ namespace TourismSmartTransportation.Data.Context
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
+                entity.Property(e => e.Description).IsRequired();
+
                 entity.Property(e => e.Latitude).HasColumnType("decimal(18, 15)");
 
                 entity.Property(e => e.Longitude).HasColumnType("decimal(18, 14)");

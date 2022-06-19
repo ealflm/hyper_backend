@@ -122,6 +122,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 Id = item.Id,
                 PartnerId = item.PartnerId,
                 Title = item.Title,
+                Description= item.Description,
                 Address = item.Address,
                 Latitude = item.Latitude,
                 Longitude = item.Longitude,

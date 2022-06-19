@@ -29,6 +29,7 @@ namespace TourismSmartTransportation.Business.Implements.Company
                 Id = Guid.NewGuid(),
                 PartnerId = model.PartnerId,
                 Title = model.Title,
+                Description= model.Description,
                 Address = model.Address,
                 Latitude = model.Latitude,
                 Longitude = model.Longitude,
@@ -147,6 +148,7 @@ namespace TourismSmartTransportation.Business.Implements.Company
             rentStation.PartnerId = UpdateTypeOfNotNullAbleObject<Guid>(rentStation.PartnerId, model.PartnerId);
             rentStation.Title = UpdateTypeOfNullAbleObject<string>(rentStation.Title, model.Title);
             rentStation.Address = UpdateTypeOfNullAbleObject<string>(rentStation.Address, model.Address);
+            rentStation.Description = UpdateTypeOfNullAbleObject<string>(rentStation.Description, model.Description);
             rentStation.Latitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Latitude, model.Latitude);
             rentStation.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(rentStation.Longitude, model.Longitude);
             rentStation.ModifiedDate = DateTime.Now;
