@@ -9,15 +9,15 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Wallet()
         {
-            Payments = new HashSet<Payment>();
+            Transactions = new HashSet<Transaction>();
         }
 
-        public Guid Id { get; set; }
+        public Guid WalletId { get; set; }
         public Guid CustomerId { get; set; }
         public decimal AccountBalance { get; set; }
         public int Status { get; set; }
 
         public virtual Customer Customer { get; set; }
-        public virtual ICollection<Payment> Payments { get; set; }
+        public virtual ICollection<Transaction> Transactions { get; set; }
     }
 }

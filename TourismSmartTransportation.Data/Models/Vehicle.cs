@@ -11,10 +11,11 @@ namespace TourismSmartTransportation.Data.Models
         {
             CustomerTrips = new HashSet<CustomerTrip>();
             Drivers = new HashSet<Driver>();
+            FeedbackForVehicles = new HashSet<FeedbackForVehicle>();
             Trips = new HashSet<Trip>();
         }
 
-        public Guid Id { get; set; }
+        public Guid VehicleId { get; set; }
         public Guid ServiceTypeId { get; set; }
         public Guid VehicleTypeId { get; set; }
         public Guid? RentStationId { get; set; }
@@ -27,12 +28,13 @@ namespace TourismSmartTransportation.Data.Models
         public int? IsRunning { get; set; }
 
         public virtual Partner Partner { get; set; }
-        public virtual PriceListOfRentingService PriceRenting { get; set; }
+        public virtual PriceOfRentingService PriceRenting { get; set; }
         public virtual RentStation RentStation { get; set; }
         public virtual ServiceType ServiceType { get; set; }
         public virtual VehicleType VehicleType { get; set; }
         public virtual ICollection<CustomerTrip> CustomerTrips { get; set; }
         public virtual ICollection<Driver> Drivers { get; set; }
+        public virtual ICollection<FeedbackForVehicle> FeedbackForVehicles { get; set; }
         public virtual ICollection<Trip> Trips { get; set; }
     }
 }

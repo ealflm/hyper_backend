@@ -50,7 +50,7 @@ namespace ApiVer1Url
         public const string CustomerTierHistory = BaseApiUrl + "/cus-tier-his";
 
         // Tier
-        public const string Tier = BaseApiUrl + "/tier";
+        public const string Package = BaseApiUrl + "/package";
 
         //Route
         public const string Route = BaseApiUrl + "/route";

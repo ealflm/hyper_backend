@@ -26,10 +26,10 @@ namespace TourismSmartTransportation.Business.Implements.Company
         {
             var rentStation = new RentStation()
             {
-                Id = Guid.NewGuid(),
+                RentStationId = Guid.NewGuid(),
                 PartnerId = model.PartnerId,
                 Title = model.Title,
-                Description= model.Description,
+                Description = model.Description,
                 Address = model.Address,
                 Latitude = model.Latitude,
                 Longitude = model.Longitude,

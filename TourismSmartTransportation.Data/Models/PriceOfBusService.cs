@@ -5,17 +5,15 @@ using System.Collections.Generic;
 
 namespace TourismSmartTransportation.Data.Models
 {
-    public partial class PriceBusing
+    public partial class PriceOfBusService
     {
-        public PriceBusing()
+        public PriceOfBusService()
         {
-            OrderDetails = new HashSet<OrderDetail>();
+            OrderDetailOfBusServices = new HashSet<OrderDetailOfBusService>();
             RoutePriceBusings = new HashSet<RoutePriceBusing>();
         }
 
-        public Guid Id { get; set; }
-        public decimal MinRouteDistance { get; set; }
-        public decimal MaxRouteDistance { get; set; }
+        public Guid PriceOfBusServiceId { get; set; }
         public decimal MinDistance { get; set; }
         public decimal MaxDistance { get; set; }
         public decimal Price { get; set; }
@@ -23,8 +21,10 @@ namespace TourismSmartTransportation.Data.Models
         public decimal MaxStation { get; set; }
         public string Mode { get; set; }
         public int Status { get; set; }
+        public Guid BasePriceId { get; set; }
 
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+        public virtual BasePriceOfBusService BasePrice { get; set; }
+        public virtual ICollection<OrderDetailOfBusService> OrderDetailOfBusServices { get; set; }
         public virtual ICollection<RoutePriceBusing> RoutePriceBusings { get; set; }
     }
 }

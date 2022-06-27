@@ -1,9 +1,9 @@
 using System;
 using TourismSmartTransportation.Business.SearchModel.Common;
 
-namespace TourismSmartTransportation.Business.SearchModel.Admin.Tier
+namespace TourismSmartTransportation.Business.SearchModel.Admin.Package
 {
-    public class TierSearchModel : PagingSearchModel
+    public class PackageSearchModel : PagingSearchModel
     {
         public string Name { get; set; }
         public string Description { get; set; }
