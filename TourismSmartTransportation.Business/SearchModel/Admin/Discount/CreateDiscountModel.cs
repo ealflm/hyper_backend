@@ -8,10 +8,10 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
     public class CreateDiscountModel : FileViewModel
     {
         [Required]
-        public string Title { get; set; }
+        public Guid ServiceTypeId { get; set; }
 
         [Required]
-        public string Code { get; set; }
+        public string Title { get; set; }
 
         [Required]
         public string Description { get; set; }

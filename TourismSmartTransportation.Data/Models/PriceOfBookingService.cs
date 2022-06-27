@@ -5,14 +5,14 @@ using System.Collections.Generic;
 
 namespace TourismSmartTransportation.Data.Models
 {
-    public partial class PriceListOfBookingService
+    public partial class PriceOfBookingService
     {
-        public PriceListOfBookingService()
+        public PriceOfBookingService()
         {
-            OrderDetails = new HashSet<OrderDetail>();
+            OrderDetailOfBookingServices = new HashSet<OrderDetailOfBookingService>();
         }
 
-        public Guid Id { get; set; }
+        public Guid PriceOfBookingServiceId { get; set; }
         public Guid VehicleTypeId { get; set; }
         public decimal FixedPrice { get; set; }
         public decimal FixedDistance { get; set; }
@@ -20,6 +20,6 @@ namespace TourismSmartTransportation.Data.Models
         public int Status { get; set; }
 
         public virtual VehicleType VehicleType { get; set; }
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+        public virtual ICollection<OrderDetailOfBookingService> OrderDetailOfBookingServices { get; set; }
     }
 }

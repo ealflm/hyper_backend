@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
@@ -26,7 +25,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
         {
             var entity = new Route()
             {
-                Id = Guid.NewGuid(),
+                RouteId = Guid.NewGuid(),
                 PartnerId = model.PartnerId,
                 Name = model.Name,
                 TotalStation = model.TotalStation,
@@ -38,8 +37,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             await _unitOfWork.RouteRepository.Add(entity);
             foreach (var p in model.StationList)
             {
-                p.RouteId = entity.Id;
-                await _unitOfWork.StationRouteRepository.Add(p.AsStationRoute());
+                p.RouteId = entity.RouteId;
+                await _unitOfWork.StationRouteRepository.Add(p.AsStationRouteData());
             }
             await _unitOfWork.SaveChangesAsync();
             return new()
@@ -83,7 +82,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 return null;
             }
-            var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(entity.Id)).ToListAsync();
+            var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(entity.RouteId)).ToListAsync();
             var route = entity.AsRouteViewModel();
             route.StationList = new List<ViewModel.Admin.StationManagement.StationViewModel>();
             foreach (StationRoute s in stationRouteList)

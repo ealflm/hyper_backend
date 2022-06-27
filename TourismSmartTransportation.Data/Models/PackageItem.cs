@@ -5,17 +5,16 @@ using System.Collections.Generic;
 
 namespace TourismSmartTransportation.Data.Models
 {
-    public partial class PackageStatus
+    public partial class PackageItem
     {
-        public Guid Id { get; set; }
-        public Guid CustomerTierHistoryId { get; set; }
+        public Guid PackageId { get; set; }
         public Guid ServiceTypeId { get; set; }
         public string Name { get; set; }
         public decimal Limit { get; set; }
         public decimal Value { get; set; }
         public int Status { get; set; }
 
-        public virtual CustomerTierHistory CustomerTierHistory { get; set; }
+        public virtual Package Package { get; set; }
         public virtual ServiceType ServiceType { get; set; }
     }
 }
