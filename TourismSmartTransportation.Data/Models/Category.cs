@@ -9,14 +9,14 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Category()
         {
-            PriceOfRentingServices = new HashSet<PriceOfRentingService>();
+            PriceListOfRentingServices = new HashSet<PriceListOfRentingService>();
         }
 
-        public Guid CategoryId { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public int Status { get; set; }
 
-        public virtual ICollection<PriceOfRentingService> PriceOfRentingServices { get; set; }
+        public virtual ICollection<PriceListOfRentingService> PriceListOfRentingServices { get; set; }
     }
 }

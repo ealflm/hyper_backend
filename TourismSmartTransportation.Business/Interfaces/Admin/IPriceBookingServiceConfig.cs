@@ -9,8 +9,8 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
 {
     public interface IPriceBookingServiceConfig
     {
-        Task<List<PriceOfBookingServiceViewModel>> Search(PriceBookingServiceSearchModel model);
-        Task<PriceOfBookingServiceViewModel> GetById(Guid id);
+        Task<List<PriceBookingServiceViewModel>> Search(PriceBookingServiceSearchModel model);
+        Task<PriceBookingServiceViewModel> GetById(Guid id);
         Task<Response> CreatePrice(CreatePriceBookingServiceModel model);
         Task<Response> UpdatePrice(Guid id, UpdatePriceBookingServiceModel model);
         Task<Response> DeletePrice(Guid id);

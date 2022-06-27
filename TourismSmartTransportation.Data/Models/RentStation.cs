@@ -12,7 +12,7 @@ namespace TourismSmartTransportation.Data.Models
             Vehicles = new HashSet<Vehicle>();
         }
 
-        public Guid RentStationId { get; set; }
+        public Guid Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Address { get; set; }

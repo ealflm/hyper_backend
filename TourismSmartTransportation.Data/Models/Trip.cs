@@ -7,6 +7,7 @@ namespace TourismSmartTransportation.Data.Models
 {
     public partial class Trip
     {
+        public Guid Id { get; set; }
         public Guid DriverId { get; set; }
         public Guid PartnerId { get; set; }
         public Guid VehicleId { get; set; }

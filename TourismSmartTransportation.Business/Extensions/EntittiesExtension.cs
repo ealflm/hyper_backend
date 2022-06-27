@@ -1,6 +1,7 @@
 using TourismSmartTransportation.Business.ViewModel.Admin.PartnerManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.CustomerManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.Discount;
+//using TourismSmartTransportation.Business.ViewModel.Admin.Service;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.VehicleType;
 using TourismSmartTransportation.Business.ViewModel.Partner.RentStationManagement;
@@ -8,7 +9,10 @@ using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.ViewModel.Admin.PurchaseHistory;
 using TourismSmartTransportation.Business.SearchModel.Admin.ServiceType;
 using TourismSmartTransportation.Business.ViewModel.Admin.ServiceTypeManagement;
+using TourismSmartTransportation.Business.ViewModel.Shared;
+using TourismSmartTransportation.Business.ViewModel.Admin.Tier;
 using TourismSmartTransportation.Business.ViewModel.Admin.Package;
+using System;
 using TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.Route;
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceViewModel;
@@ -19,7 +23,6 @@ using TourismSmartTransportation.Business.ViewModel.Admin.PriceRentingServiceVie
 using TourismSmartTransportation.Business.ViewModel.Admin.CardManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
-using TourismSmartTransportation.Business.ViewModel.Admin.PackageItem;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -31,8 +34,9 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.DiscountId,
+                Id = item.Id,
                 Title = item.Title,
+                Code = item.Code,
                 Description = item.Description,
                 TimeStart = item.TimeStart,
                 TimeEnd = item.TimeEnd,
@@ -46,7 +50,7 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.VehicleTypeId,
+                Id = item.Id,
                 Label = item.Label,
                 Fuel = item.Fuel,
                 Seats = item.Seats,
@@ -58,7 +62,7 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.PartnerId,
+                Id = item.Id,
                 Username = item.Username,
                 FirstName = item.FirstName,
                 LastName = item.LastName,
@@ -80,7 +84,7 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.StationId,
+                Id = item.Id,
                 Title = item.Title,
                 Address = item.Address,
                 Description = item.Description,
@@ -94,7 +98,8 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.CustomerId,
+                Id = item.Id,
+                TierId = item.TierId,
                 FirstName = item.FirstName,
                 LastName = item.LastName,
                 Gender = item.Gender,
@@ -114,10 +119,10 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.RentStationId,
+                Id = item.Id,
                 PartnerId = item.PartnerId,
                 Title = item.Title,
-                Description = item.Description,
+                Description= item.Description,
                 Address = item.Address,
                 Latitude = item.Latitude,
                 Longitude = item.Longitude,
@@ -131,74 +136,52 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.OrderId,
+                Id = item.Id,
                 CreatedDate = item.CreatedDate,
                 CustomerId = item.CustomerId,
                 TotalPrice = item.TotalPrice,
                 Status = item.Status
             };
         }
-        public static OrderDetailOfPackageViewModel AsOrderDetailOfPackageViewModel(this OrderDetailOfPackage item)
+        public static OrderDetailViewModel AsOrderDetailViewModel(this OrderDetail item)
         {
             return new()
             {
-                OrderId = item.OrderId,
-                PackageId = item.PackageId,
+                Id = item.Id,
                 Content = item.Content,
+                OrderId = item.OrderId,
                 Price = item.Price,
                 Quantity = item.Quantity,
+                TierId = item.TierId.GetValueOrDefault(),
                 Status = item.Status
             };
         }
 
-        public static OrderDetailOfBookingServiceViewModel AsOrderDetailOfBookingServiceViewModel(this OrderDetailOfBookingService item)
+        public static PaymentViewModel AsPaymentViewModel(this Payment item)
         {
             return new()
             {
-                OrderId = item.OrderId,
-                PriceOfBookingServiceId = item.PriceOfBookingServiceId,
-                Content = item.Content,
-                Price = item.Price,
-                Quantity = item.Quantity,
-                Status = item.Status
-            };
-        }
-
-        public static OrderDetailOfBusServiceViewModel AsOrderDetailOfBusServiceViewModel(this OrderDetailOfBusService item)
-        {
-            return new()
-            {
-                OrderId = item.OrderId,
-                PriceOfBusServiceId = item.PriceOfBusServiceId,
-                Content = item.Content,
-                Price = item.Price,
-                Quantity = item.Quantity,
-                Status = item.Status
-            };
-        }
-
-        public static OrderDetailOfRentingServiceViewModel AsOrderDetailOfRentingServiceViewModel(this OrderDetailOfRentingService item)
-        {
-            return new()
-            {
-                OrderId = item.OrderId,
-                PriceOfRentingServiceId = item.PriceOfRentingService,
-                Content = item.Content,
-                Price = item.Price,
-                Quantity = item.Quantity,
-                Status = item.Status
-            };
-        }
-
-        public static TransactionViewModel AsTransactionViewModel(this Transaction item)
-        {
-            return new()
-            {
-                OrderId = item.OrderId,
-                WalletId = item.WalletId,
+                Id = item.Id,
                 Content = item.Content,
                 Amount = item.Amount,
                 CreatedDate = item.CreatedDate,
+                OrderId = item.OrderId,
+                WalletId = item.WalletId,
+                Status = item.Status
+            };
+        }
+
+
+
+        public static CustomerTierHistoryViewModel AsCustomerTierHistoryViewModel(this CustomerTierHistory item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                CustomerId = item.CustomerId,
+                TierId = item.TierId,
+                TimeStart = item.TimeStart,
+                TimeEnd = item.TimeEnd,
                 Status = item.Status
             };
         }
@@ -216,21 +199,19 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.ServiceTypeId,
+                Id = item.Id,
                 Content = item.Content,
                 Name = item.Name,
                 Status = item.Status
             };
         }
 
-        public static PackageViewModel AsPackageViewModel(this Package item)
+        public static TierViewModel AsTierViewModel(this Tier item)
         {
             return new()
             {
-                Id = item.PackageId,
+                Id = item.Id,
                 Name = item.Name,
-                PeopleQuanitty = item.PeopleQuanitty,
-                Duration = item.Duration,
                 Description = item.Description,
                 PhotoUrl = item.PhotoUrl,
                 PromotedTitle = item.PromotedTitle,
@@ -239,37 +220,40 @@ namespace TourismSmartTransportation.Business.Extensions
             };
         }
 
-        public static PackageItemViewModel AsPackageItemViewModel(this PackageItem item)
+        public static PackageViewModel AsPackageViewModel(this Package item)
         {
             return new()
             {
-                PackageId = item.PackageId,
-                ServiceTypeId = item.ServiceTypeId,
+                Id = item.Id,
                 Name = item.Name,
                 Limit = item.Limit,
+                ServiceTypeId = item.ServiceTypeId,
+                TierId = item.TierId,
                 Value = item.Value,
                 Status = item.Status
             };
         }
 
-        public static PackageItem AsPackageItemData(this CreatePackageItemModel item)
+        public static Package AsPackageData(this CreatePackageModel item)
         {
             return new()
             {
-                PackageId = item.PackageId,
-                ServiceTypeId = item.ServiceTypeId,
+                Id = Guid.NewGuid(),
                 Name = item.Name,
                 Limit = item.Limit,
+                ServiceTypeId = item.ServiceTypeId.Value,
+                TierId = item.TierId.Value,
                 Value = item.Value,
                 Status = item.Status.Value
             };
         }
 
-        public static PackageItem AsPackageItemData(this UpdatePackageItemModel item)
+        public static Package AsPackageData(this UpdatePackageModel item)
         {
             return new()
             {
-                PackageId = item.PackageId.Value,
+                Id = item.Id,
+                TierId = item.TierId.Value,
                 ServiceTypeId = item.ServiceTypeId.Value,
                 Name = item.Name,
                 Limit = item.Limit.Value,
@@ -282,7 +266,7 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.RouteId,
+                Id = item.Id,
                 PartnerId = item.PartnerId,
                 Distance = item.Distance,
                 Name = item.Name,
@@ -291,24 +275,25 @@ namespace TourismSmartTransportation.Business.Extensions
             };
         }
 
-        public static StationRoute AsStationRouteData(this CreateStationRoute item)
+        public static StationRoute AsStationRoute(this CreateStationRoute item)
         {
             return new()
             {
-                OrderNumber = item.OrderNumber,
+                Id = Guid.NewGuid(),
                 StationId = item.StationId,
-                RouteId = item.RouteId,
-                Distance = item.Distance,
+                RouteId = item.RouteId.Value,
+                OrderNumber = item.OrderNumber,
                 Status = 1
             };
         }
 
-        public static PriceOfBusServiceViewModel AsPriceOfBusServiceViewModel(this PriceOfBusService item)
+        public static PriceBusServiceViewModel AsPriceListOfBusService(this PriceListOfBusService item)
         {
             return new()
             {
-                Id = item.PriceOfBusServiceId,
-                BasePriceId = item.BasePriceId,
+                Id = item.Id,
+                MinRouteDistance = item.MinRouteDistance,
+                MaxRouteDistance = item.MaxRouteDistance,
                 MinDistance = item.MinDistance,
                 MaxDistance = item.MaxDistance,
                 MinStation = item.MinStation,
@@ -319,41 +304,11 @@ namespace TourismSmartTransportation.Business.Extensions
             };
         }
 
-        public static PriceOfBookingServiceViewModel AsPriceOfBookingServiceViewModel(this PriceOfBookingService item)
-        {
-            return new()
-            {
-                Id = item.PriceOfBookingServiceId,
-                FixedDistance = item.FixedDistance,
-                FixedPrice = item.FixedPrice,
-                PricePerKilometer = item.PricePerKilometer,
-                VehicleTypeId = item.VehicleTypeId,
-                Status = item.Status
-            };
-        }
-
-        public static PriceOfRentingServiceViewModel AsPriceOfRentingService(this PriceOfRentingService item)
-        {
-            return new()
-            {
-                Id = item.PriceOfRentingServiceId,
-                CategoryId = item.CategoryId,
-                PublishYearId = item.PublishYearId,
-                FixedPrice = item.FixedPrice,
-                HolidayPrice = item.HolidayPrice,
-                MaxTime = item.MaxTime,
-                MinTime = item.MinTime,
-                PricePerHour = item.PricePerHour,
-                WeekendPrice = item.WeekendPrice,
-                Status = item.Status
-            };
-        }
-
         public static CategoryViewModel AsCategoryViewModel(this Category item)
         {
             return new()
             {
-                Id = item.CategoryId,
+                Id = item.Id,
                 Name = item.Name,
                 Description = item.Description,
                 Status = item.Status
@@ -364,9 +319,39 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.PublishYearId,
+                Id = item.Id,
                 Name = item.Name,
                 Description = item.Description,
+                Status = item.Status
+            };
+        }
+
+        public static PriceBookingServiceViewModel AsPriceListOfBookingService(this PriceListOfBookingService item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                FixedDistance = item.FixedDistance,
+                FixedPrice = item.FixedPrice,
+                PricePerKilometer = item.PricePerKilometer,
+                VehicleTypeId = item.VehicleTypeId,
+                Status = item.Status
+            };
+        }
+
+        public static PriceRentingServiceViewModel AsPriceListOfRentingService(this PriceListOfRentingService item)
+        {
+            return new()
+            {
+                Id = item.Id,
+                CategoryId = item.CategoryId,
+                FixedPrice = item.FixedPrice,
+                HolidayPrice = item.HolidayPrice,
+                MaxTime = item.MaxTime,
+                MinTime = item.MinTime,
+                PricePerHour = item.PricePerHour,
+                PublishYearId = item.PublishYearId,
+                WeekendPrice = item.WeekendPrice,
                 Status = item.Status
             };
         }
@@ -375,7 +360,7 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.CardId,
+                Id = item.Id,
                 CustomerId = item.CustomerId,
                 Uid = item.Uid,
                 Status = item.Status
@@ -386,7 +371,7 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.VehicleId,
+                Id = item.Id,
                 Color = item.Color,
                 LicensePlates = item.LicensePlates,
                 Name = item.Name,
@@ -404,7 +389,7 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.DriverId,
+                Id = item.Id,
                 CreatedDate = item.CreatedDate,
                 DateOfBirth = item.DateOfBirth,
                 FirstName = item.FirstName,

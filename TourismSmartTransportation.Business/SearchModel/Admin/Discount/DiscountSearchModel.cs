@@ -9,6 +9,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
     {
         public string Title { get; set; }
 
+        public string Code { get; set; }
 
         [ValidStartDateTimeAttribute("TimeEnd", ErrorMessage = "Time start cannot be greater than Time end")]
         public DateTime? TimeStart { get; set; }

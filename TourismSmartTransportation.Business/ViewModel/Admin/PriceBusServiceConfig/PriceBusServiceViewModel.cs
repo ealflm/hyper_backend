@@ -2,10 +2,11 @@ using System;
 
 namespace TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceViewModel
 {
-    public class PriceOfBusServiceViewModel
+    public class PriceBusServiceViewModel
     {
         public Guid Id { get; set; }
-        public Guid BasePriceId { get; set; }
+        public decimal MinRouteDistance { get; set; }
+        public decimal MaxRouteDistance { get; set; }
         public decimal MinDistance { get; set; }
         public decimal MaxDistance { get; set; }
         public decimal Price { get; set; }

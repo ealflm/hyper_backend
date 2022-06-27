@@ -12,7 +12,7 @@ namespace TourismSmartTransportation.Data.Models
             StationRoutes = new HashSet<StationRoute>();
         }
 
-        public Guid StationId { get; set; }
+        public Guid Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Address { get; set; }

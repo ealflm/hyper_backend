@@ -11,6 +11,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.CustomerManageme
 {
     public class CustomerSearchModel : PagingSearchModel
     {
+        public string TierId { get; set; }
         [StringLength(50)]
         public string LastName { get; set; }
         [StringLength(50)]

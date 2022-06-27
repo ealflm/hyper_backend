@@ -11,113 +11,102 @@ namespace TourismSmartTransportation.Data.Repositories
         private readonly tourismsmarttransportationContext _dbContext;
 
         public IGenericRepository<Admin> AdminRepository { get; }
-        public IGenericRepository<BasePriceOfBusService> BasePriceOfBusServiceRepository { get; }
+        public IGenericRepository<ActivityDate> ActivityDateRepository { get; }
         public IGenericRepository<Card> CardRepository { get; }
         public IGenericRepository<Category> CategoryRepository { get; }
         public IGenericRepository<Customer> CustomerRepository { get; }
+        public IGenericRepository<CustomerTierHistory> CustomerTierHistoryRepository { get; }
         public IGenericRepository<CustomerTrip> CustomerTripRepository { get; }
         public IGenericRepository<Discount> DiscountRepository { get; }
         public IGenericRepository<Driver> DriverRepository { get; }
-        public IGenericRepository<FeedbackForDriver> FeedbackForDriverRepository { get; }
-        public IGenericRepository<FeedbackForVehicle> FeedbackForVehicleRepository { get; }
         public IGenericRepository<Order> OrderRepository { get; }
-        public IGenericRepository<OrderDetailOfBookingService> OrderDetailOfBookingServiceRepository { get; }
-        public IGenericRepository<OrderDetailOfBusService> OrderDetailOfBusServiceRepository { get; }
-        public IGenericRepository<OrderDetailOfPackage> OrderDetailOfPackageRepository { get; }
-        public IGenericRepository<OrderDetailOfRentingService> OrderDetailOfRentingServiceRepository { get; }
+        public IGenericRepository<OrderDetail> OrderDetailRepository { get; }
         public IGenericRepository<Package> PackageRepository { get; }
-        public IGenericRepository<PackageItem> PackageItemRepository { get; }
+        public IGenericRepository<PackageStatus> PackageStatusRepository { get; }
         public IGenericRepository<Partner> PartnerRepository { get; }
         public IGenericRepository<PartnerServiceType> PartnerServiceTypeRepository { get; }
-        public IGenericRepository<PriceOfBookingService> PriceOfBookingServiceRepository { get; }
-        public IGenericRepository<PriceOfBusService> PriceOfBusServiceRepository { get; }
-        public IGenericRepository<PriceOfRentingService> PriceOfRentingServiceRepository { get; }
+        public IGenericRepository<Payment> PaymentRepository { get; }
         public IGenericRepository<PublishYear> PublishYearRepository { get; }
         public IGenericRepository<RentStation> RentStationRepository { get; }
         public IGenericRepository<Route> RouteRepository { get; }
-        public IGenericRepository<RoutePriceBusing> RoutePriceBusingRepository { get; }
         public IGenericRepository<ServiceType> ServiceTypeRepository { get; }
         public IGenericRepository<Station> StationRepository { get; }
         public IGenericRepository<StationRoute> StationRouteRepository { get; }
-        public IGenericRepository<Transaction> TransactionRepository { get; }
+        public IGenericRepository<Tier> TierRepository { get; }
         public IGenericRepository<Trip> TripRepository { get; }
         public IGenericRepository<Vehicle> VehicleRepository { get; }
         public IGenericRepository<VehicleType> VehicleTypeRepository { get; }
         public IGenericRepository<Wallet> WalletRepository { get; }
+        public IGenericRepository<PriceListOfBusService> PriceListOfBusServiceRepository { get; }
+        public IGenericRepository<PriceListOfBookingService> PriceListOfBookingServiceRepository { get; }
+        public IGenericRepository<PriceListOfRentingService> PriceListOfRentingServiceRepository { get; }
 
         public UnitOfWork(
             tourismsmarttransportationContext dbContext,
             IGenericRepository<Admin> adminRepository,
-            IGenericRepository<BasePriceOfBusService> basePriceOfBusServiceRepository,
+            IGenericRepository<ActivityDate> activityDateRepository,
             IGenericRepository<Card> cardRepository,
             IGenericRepository<Category> categoryRepository,
             IGenericRepository<Customer> customerRepository,
+            IGenericRepository<CustomerTierHistory> customerTierHistoryRepository,
             IGenericRepository<CustomerTrip> customerTripRepository,
             IGenericRepository<Discount> discountRepository,
             IGenericRepository<Driver> driverRepository,
-            IGenericRepository<FeedbackForDriver> feedbackForDriverRepository,
-            IGenericRepository<FeedbackForVehicle> feedbackForVehicleRepository,
             IGenericRepository<Order> orderRepository,
-            IGenericRepository<OrderDetailOfBookingService> orderDetailOfBookingServiceRepository,
-            IGenericRepository<OrderDetailOfBusService> orderDetailOfBusServiceRepository,
-            IGenericRepository<OrderDetailOfPackage> orderDetailOfPackageRepository,
-            IGenericRepository<OrderDetailOfRentingService> orderDetailOfRentingServiceRepository,
+            IGenericRepository<OrderDetail> orderDetailRepository,
             IGenericRepository<Package> packageRepository,
-            IGenericRepository<PackageItem> packageItemRepository,
+            IGenericRepository<PackageStatus> packageStatusRepository,
             IGenericRepository<Partner> partnerRepository,
             IGenericRepository<PartnerServiceType> partnerServiceTypeRepository,
-            IGenericRepository<PriceOfBookingService> priceOfBookingServiceRepository,
-            IGenericRepository<PriceOfBusService> priceOfBusServiceRepository,
-            IGenericRepository<PriceOfRentingService> priceOfRentingServiceRepository,
+            IGenericRepository<Payment> paymentRepository,
             IGenericRepository<PublishYear> publishYearRepository,
             IGenericRepository<RentStation> rentStationRepository,
             IGenericRepository<Route> routeRepository,
-            IGenericRepository<RoutePriceBusing> routePriceBusingRepository,
             IGenericRepository<ServiceType> serviceTypeRepository,
             IGenericRepository<Station> stationRepository,
             IGenericRepository<StationRoute> stationRouteRepository,
-            IGenericRepository<Transaction> transactionRepository,
+            IGenericRepository<Tier> tierRepository,
             IGenericRepository<Trip> tripRepository,
             IGenericRepository<Vehicle> vehicleRepository,
             IGenericRepository<VehicleType> vehicleTypeRepository,
-            IGenericRepository<Wallet> walletRepository
+            IGenericRepository<Wallet> walletRepository,
+            IGenericRepository<PriceListOfBusService> priceListOfBusService,
+            IGenericRepository<PriceListOfBookingService> priceListOfBookingService,
+            IGenericRepository<PriceListOfRentingService> priceListOfRentingService
             )
         {
             _dbContext = dbContext;
 
             AdminRepository = adminRepository;
-            BasePriceOfBusServiceRepository = basePriceOfBusServiceRepository;
+            ActivityDateRepository = activityDateRepository;
             CardRepository = cardRepository;
             CategoryRepository = categoryRepository;
             CustomerRepository = customerRepository;
+            CustomerTierHistoryRepository = customerTierHistoryRepository;
             CustomerTripRepository = customerTripRepository;
             DiscountRepository = discountRepository;
             DriverRepository = driverRepository;
-            FeedbackForDriverRepository = feedbackForDriverRepository;
-            FeedbackForVehicleRepository = feedbackForVehicleRepository;
             OrderRepository = orderRepository;
-            OrderDetailOfBookingServiceRepository = orderDetailOfBookingServiceRepository;
-            OrderDetailOfBusServiceRepository = orderDetailOfBusServiceRepository;
-            OrderDetailOfPackageRepository = orderDetailOfPackageRepository;
-            OrderDetailOfRentingServiceRepository = orderDetailOfRentingServiceRepository;
+            OrderDetailRepository = orderDetailRepository;
             PackageRepository = packageRepository;
-            PackageItemRepository = packageItemRepository;
+            PackageStatusRepository = packageStatusRepository;
             PartnerRepository = partnerRepository;
             PartnerServiceTypeRepository = partnerServiceTypeRepository;
-            PriceOfBookingServiceRepository = priceOfBookingServiceRepository;
-            PriceOfBusServiceRepository = priceOfBusServiceRepository;
-            PriceOfRentingServiceRepository = priceOfRentingServiceRepository;
+            PaymentRepository = paymentRepository;
             PublishYearRepository = publishYearRepository;
             RentStationRepository = rentStationRepository;
             RouteRepository = routeRepository;
-            RoutePriceBusingRepository = routePriceBusingRepository;
             ServiceTypeRepository = serviceTypeRepository;
             StationRepository = stationRepository;
             StationRouteRepository = stationRouteRepository;
+            TierRepository = tierRepository;
             TripRepository = tripRepository;
             VehicleRepository = vehicleRepository;
             VehicleTypeRepository = vehicleTypeRepository;
             WalletRepository = walletRepository;
+            PriceListOfBusServiceRepository = priceListOfBusService;
+            PriceListOfBookingServiceRepository = priceListOfBookingService;
+            PriceListOfRentingServiceRepository = priceListOfRentingService;
         }
 
         public tourismsmarttransportationContext Context()

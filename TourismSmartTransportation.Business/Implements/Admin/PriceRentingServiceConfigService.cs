@@ -22,7 +22,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> CreatePrice(CreatePriceRentingServiceModel model)
         {
-            var isExistCode = await _unitOfWork.PriceOfRentingServiceRepository.Query().AnyAsync(x => x.CategoryId == model.CategoryId && x.PublishYearId == model.PublishYearId);
+            var isExistCode = await _unitOfWork.PriceListOfRentingServiceRepository.Query().AnyAsync(x => x.CategoryId == model.CategoryId && x.PublishYearId == model.PublishYearId);
             if (isExistCode)
             {
                 return new()
@@ -31,21 +31,21 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Giá đã tồn tại!"
                 };
             }
-            var price = new PriceOfRentingService()
+            var price = new PriceListOfRentingService()
             {
-                PriceOfRentingServiceId = Guid.NewGuid(),
-                CategoryId = model.CategoryId,
-                FixedPrice = model.FixedPrice,
-                HolidayPrice = model.HolidayPrice,
-                MaxTime = model.MaxTime,
-                MinTime = model.MinTime,
-                PricePerHour = model.PricePerHour,
-                PublishYearId = model.PublishYearId,
-                WeekendPrice = model.WeekendPrice,
+                Id = Guid.NewGuid(),
+                CategoryId= model.CategoryId,
+                FixedPrice= model.FixedPrice,
+                HolidayPrice= model.HolidayPrice,
+                MaxTime= model.MaxTime,
+                MinTime= model.MinTime,
+                PricePerHour= model.PricePerHour,
+                PublishYearId= model.PublishYearId,
+                WeekendPrice= model.WeekendPrice,
                 Status = 1
             };
 
-            await _unitOfWork.PriceOfRentingServiceRepository.Add(price);
+            await _unitOfWork.PriceListOfRentingServiceRepository.Add(price);
             await _unitOfWork.SaveChangesAsync();
 
             return new()
@@ -57,7 +57,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> DeletePrice(Guid id)
         {
-            var entity = await _unitOfWork.PriceOfRentingServiceRepository.GetById(id);
+            var entity = await _unitOfWork.PriceListOfRentingServiceRepository.GetById(id);
             if (entity == null)
             {
                 return new()
@@ -67,7 +67,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
             entity.Status = 0;
-            _unitOfWork.PriceOfRentingServiceRepository.Update(entity);
+            _unitOfWork.PriceListOfRentingServiceRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()
             {
@@ -76,16 +76,16 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-        public async Task<PriceOfRentingServiceViewModel> GetById(Guid id)
+        public async Task<PriceRentingServiceViewModel> GetById(Guid id)
         {
-            var entity = await _unitOfWork.PriceOfRentingServiceRepository.GetById(id);
-            return entity.AsPriceOfRentingService();
+            var entity = await _unitOfWork.PriceListOfRentingServiceRepository.GetById(id);
+            return entity.AsPriceListOfRentingService();
 
         }
 
-        public async Task<List<PriceOfRentingServiceViewModel>> Search(PriceRentingServiceSearchModel model)
+        public async Task<List<PriceRentingServiceViewModel>> Search(PriceRentingServiceSearchModel model)
         {
-            var entity = await _unitOfWork.PriceOfRentingServiceRepository.Query()
+            var entity = await _unitOfWork.PriceListOfRentingServiceRepository.Query()
                             .Where(x => model.CategoryId == null || x.CategoryId.Equals(model.CategoryId))
                             .Where(x => model.PublishYearId == null || x.PublishYearId.Equals(model.PublishYearId))
                             .Where(x => model.FixedPrice == null || x.FixedPrice == model.FixedPrice.Value)
@@ -95,9 +95,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(x => model.PricePerHour == null || x.PricePerHour == model.PricePerHour.Value)
                             .Where(x => model.WeekendPrice == null || x.WeekendPrice == model.WeekendPrice.Value)
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
-                            .Select(x => x.AsPriceOfRentingService())
+                            .Select(x => x.AsPriceListOfRentingService())
                             .ToListAsync();
-            foreach (PriceOfRentingServiceViewModel x in entity)
+            foreach(PriceRentingServiceViewModel x  in entity)
             {
                 x.CategoryName = (await _unitOfWork.CategoryRepository.GetById(x.CategoryId)).Name;
                 x.PublishYearName = (await _unitOfWork.PublishYearRepository.GetById(x.PublishYearId)).Name;
@@ -108,7 +108,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> UpdatePrice(Guid id, UpdatePriceRentingServiceModel model)
         {
-            var isExistCode = await _unitOfWork.PriceOfRentingServiceRepository.Query().AnyAsync(x => x.CategoryId == model.CategoryId && x.PublishYearId == model.PublishYearId);
+            var isExistCode = await _unitOfWork.PriceListOfRentingServiceRepository.Query().AnyAsync(x => x.CategoryId == model.CategoryId && x.PublishYearId == model.PublishYearId);
             if (isExistCode)
             {
                 return new()
@@ -117,7 +117,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Giá đã tồn tại!"
                 };
             }
-            var entity = await _unitOfWork.PriceOfRentingServiceRepository.GetById(id);
+            var entity = await _unitOfWork.PriceListOfRentingServiceRepository.GetById(id);
             if (entity == null)
             {
                 return new()
@@ -135,7 +135,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             entity.CategoryId = UpdateTypeOfNotNullAbleObject<Guid>(entity.CategoryId, model.CategoryId);
             entity.PublishYearId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PublishYearId, model.PublishYearId);
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
-            _unitOfWork.PriceOfRentingServiceRepository.Update(entity);
+            _unitOfWork.PriceListOfRentingServiceRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()
             {

@@ -33,7 +33,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             }
             var price = new TourismSmartTransportation.Data.Models.Vehicle()
             {
-                VehicleId = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 Color = model.Color,
                 LicensePlates = model.LicensePlates,
                 Name = model.Name,
@@ -45,8 +45,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             };
             if (model.RentStationId != null)
             {
-                var priceRenting = await _unitOfWork.PriceOfRentingServiceRepository.Query().Where(x => x.CategoryId.Equals(model.CategoryId) && x.PublishYearId.Equals(model.PublishYearId)).FirstOrDefaultAsync();
-                price.PriceRentingId = priceRenting.PriceOfRentingServiceId;
+                var priceRenting = await _unitOfWork.PriceListOfRentingServiceRepository.Query().Where(x => x.CategoryId.Equals(model.CategoryId) && x.PublishYearId.Equals(model.PublishYearId)).FirstOrDefaultAsync();
+                price.PriceRentingId = priceRenting.Id;
             }
             await _unitOfWork.VehicleRepository.Add(price);
 
@@ -137,13 +137,13 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             }
             if (entity.PriceRentingId != null)
             {
-                var priceRenting = await _unitOfWork.PriceOfRentingServiceRepository.GetById(entity.PriceRentingId.Value);
+                var priceRenting = await _unitOfWork.PriceListOfRentingServiceRepository.GetById(entity.PriceRentingId.Value);
                 if (priceRenting != null && (priceRenting.CategoryId != model.CategoryId || priceRenting.PublishYearId != model.PublishYearId))
                 {
                     priceRenting.CategoryId = model.CategoryId != null ? model.CategoryId.Value : priceRenting.CategoryId;
                     priceRenting.PublishYearId = model.PublishYearId != null ? model.PublishYearId.Value : priceRenting.PublishYearId;
-                    priceRenting = await _unitOfWork.PriceOfRentingServiceRepository.Query().Where(x => x.CategoryId.Equals(priceRenting.CategoryId) && x.PublishYearId.Equals(priceRenting.PublishYearId)).FirstOrDefaultAsync();
-                    entity.PriceRentingId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PriceRentingId, priceRenting.PriceOfRentingServiceId);
+                    priceRenting = await _unitOfWork.PriceListOfRentingServiceRepository.Query().Where(x => x.CategoryId.Equals(priceRenting.CategoryId) && x.PublishYearId.Equals(priceRenting.PublishYearId)).FirstOrDefaultAsync();
+                    entity.PriceRentingId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PriceRentingId, priceRenting.Id);
                 }
             }
             entity.RentStationId = UpdateTypeOfNotNullAbleObject<Guid>(entity.RentStationId, model.RentStationId);

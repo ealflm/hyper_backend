@@ -36,7 +36,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             var entity = new PublishYear()
             {
-                PublishYearId = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 Name = model.Name,
                 Description = model.Description,
                 Status = 1
