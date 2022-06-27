@@ -8,6 +8,8 @@ using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.Extensions;
 using Azure.Storage.Blobs;
+using TourismSmartTransportation.Business.SearchModel.Admin.PriceBusServiceConfig;
+using TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceViewModel;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Admin.PriceBookingServiceConfig;
 using TourismSmartTransportation.Business.ViewModel.Admin.PriceBookingServiceViewModel;
@@ -22,7 +24,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> CreatePrice(CreatePriceBookingServiceModel model)
         {
-            var isExistCode = await _unitOfWork.PriceOfBookingServiceRepository.Query().AnyAsync(x => x.VehicleTypeId == model.VehicleTypeId);
+            var isExistCode = await _unitOfWork.PriceListOfBookingServiceRepository.Query().AnyAsync(x => x.VehicleTypeId == model.VehicleTypeId);
             if (isExistCode)
             {
                 return new()
@@ -31,17 +33,17 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Giá đã tồn tại!"
                 };
             }
-            var price = new PriceOfBookingService()
+            var price = new PriceListOfBookingService()
             {
-                PriceOfBookingServiceId = Guid.NewGuid(),
-                FixedDistance = model.FixedDistance,
-                FixedPrice = model.FixedPrice,
-                PricePerKilometer = model.PricePerKilometer,
-                VehicleTypeId = model.VehicleTypeId,
+                Id = Guid.NewGuid(),
+                FixedDistance= model.FixedDistance,
+                FixedPrice= model.FixedPrice,
+                PricePerKilometer= model.PricePerKilometer,
+                VehicleTypeId= model.VehicleTypeId,
                 Status = 1
             };
 
-            await _unitOfWork.PriceOfBookingServiceRepository.Add(price);
+            await _unitOfWork.PriceListOfBookingServiceRepository.Add(price);
             await _unitOfWork.SaveChangesAsync();
 
             return new()
@@ -53,7 +55,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> DeletePrice(Guid id)
         {
-            var entity = await _unitOfWork.PriceOfBookingServiceRepository.GetById(id);
+            var entity = await _unitOfWork.PriceListOfBookingServiceRepository.GetById(id);
             if (entity == null)
             {
                 return new()
@@ -63,7 +65,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
             entity.Status = 0;
-            _unitOfWork.PriceOfBookingServiceRepository.Update(entity);
+            _unitOfWork.PriceListOfBookingServiceRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()
             {
@@ -72,27 +74,27 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-        public async Task<PriceOfBookingServiceViewModel> GetById(Guid id)
+        public async Task<PriceBookingServiceViewModel> GetById(Guid id)
         {
-            var entity = await _unitOfWork.PriceOfBookingServiceRepository.GetById(id);
-            var model = entity.AsPriceOfBookingServiceViewModel();
+            var entity = await _unitOfWork.PriceListOfBookingServiceRepository.GetById(id);
+            var model = entity.AsPriceListOfBookingService();
             var vehicleType = await _unitOfWork.VehicleTypeRepository.GetById(model.VehicleTypeId);
             model.VehicleName = vehicleType.Label + " " + vehicleType.Seats + " " + vehicleType.Fuel;
             return model;
 
         }
 
-        public async Task<List<PriceOfBookingServiceViewModel>> Search(PriceBookingServiceSearchModel model)
+        public async Task<List<PriceBookingServiceViewModel>> Search(PriceBookingServiceSearchModel model)
         {
-            var entity = await _unitOfWork.PriceOfBookingServiceRepository.Query()
+            var entity = await _unitOfWork.PriceListOfBookingServiceRepository.Query()
                             .Where(x => model.VehicleTypeId == null || x.VehicleTypeId.Equals(model.VehicleTypeId.Value))
                             .Where(x => model.FixedPrice == null || x.FixedPrice == model.FixedPrice.Value)
                             .Where(x => model.FixedDistance == null || x.FixedDistance == model.FixedDistance.Value)
                             .Where(x => model.PricePerKilometer == null || x.PricePerKilometer == model.PricePerKilometer.Value)
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
-                            .Select(x => x.AsPriceOfBookingServiceViewModel())
+                            .Select(x => x.AsPriceListOfBookingService())
                             .ToListAsync();
-            foreach (PriceOfBookingServiceViewModel x in entity)
+            foreach(PriceBookingServiceViewModel x in entity)
             {
                 var vehicleType = await _unitOfWork.VehicleTypeRepository.GetById(x.VehicleTypeId);
                 x.VehicleName = vehicleType.Label + " " + vehicleType.Seats + " " + vehicleType.Fuel;
@@ -103,7 +105,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> UpdatePrice(Guid id, UpdatePriceBookingServiceModel model)
         {
-            var isExistCode = await _unitOfWork.PriceOfBookingServiceRepository.Query().AnyAsync(x => x.VehicleTypeId == model.VehicleTypeId.Value);
+            var isExistCode = await _unitOfWork.PriceListOfBookingServiceRepository.Query().AnyAsync(x => x.VehicleTypeId == model.VehicleTypeId.Value);
             if (isExistCode)
             {
                 return new()
@@ -112,7 +114,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Giá đã tồn tại!"
                 };
             }
-            var entity = await _unitOfWork.PriceOfBookingServiceRepository.GetById(id);
+            var entity = await _unitOfWork.PriceListOfBookingServiceRepository.GetById(id);
             if (entity == null)
             {
                 return new()
@@ -126,7 +128,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             entity.PricePerKilometer = UpdateTypeOfNotNullAbleObject<decimal>(entity.PricePerKilometer, model.PricePerKilometer);
             entity.VehicleTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleTypeId, model.VehicleTypeId);
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
-            _unitOfWork.PriceOfBookingServiceRepository.Update(entity);
+            _unitOfWork.PriceListOfBookingServiceRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()
             {

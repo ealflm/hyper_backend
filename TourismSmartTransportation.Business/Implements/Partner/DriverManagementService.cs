@@ -40,7 +40,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             var driver = new Driver()
             {
-                DriverId = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 CreatedDate = DateTime.Now,
                 DateOfBirth = model.DateOfBirth,
                 FirstName = model.FirstName,

@@ -44,15 +44,10 @@ namespace TourismSmartTransportation.Data.Repositories
         {
             _dbSet.Attach(entity);
 
-            // Cover case primary key table like as <Tablename>Id
-            var entityType = typeof(TEntity);
-            string tablename = _dbContext.Model.FindEntityType(entityType).GetSchemaQualifiedTableName();
-            string primaryKey = tablename + "Id";
-
             foreach (PropertyInfo prop in entity.GetType().GetProperties())
             {
                 if (prop.GetGetMethod().IsVirtual) continue;
-                if (prop.Name == primaryKey) continue;
+                if (prop.Name == "Id") continue;
                 if (prop.GetValue(entity, null) != null)
                 {
                     _dbContext.Entry(entity).Property(prop.Name).IsModified = true;

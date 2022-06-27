@@ -5,16 +5,17 @@ using System.Collections.Generic;
 
 namespace TourismSmartTransportation.Data.Models
 {
-    public partial class OrderDetailOfRentingService
+    public partial class Payment
     {
+        public Guid Id { get; set; }
         public Guid OrderId { get; set; }
-        public Guid PriceOfRentingService { get; set; }
-        public decimal Price { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime CreatedDate { get; set; }
         public string Content { get; set; }
-        public int Quantity { get; set; }
         public int Status { get; set; }
+        public Guid WalletId { get; set; }
 
         public virtual Order Order { get; set; }
-        public virtual PriceOfRentingService PriceOfRentingServiceNavigation { get; set; }
+        public virtual Wallet Wallet { get; set; }
     }
 }

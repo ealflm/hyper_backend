@@ -23,21 +23,21 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> CreateDiscount(CreateDiscountModel model)
         {
-            var serviceType = await _unitOfWork.ServiceTypeRepository.GetById(model.ServiceTypeId);
-            if (serviceType == null)
+            var isExistCode = await _unitOfWork.DiscountRepository.Query().AnyAsync(x => x.Code == model.Code);
+            if (isExistCode)
             {
                 return new()
                 {
                     StatusCode = 400,
-                    Message = "Loại dịch vụ không tồn tại!"
+                    Message = "Mã khuyến mãi đã tồn tại!"
                 };
             }
 
             var entity = new Discount()
             {
-                DiscountId = Guid.NewGuid(),
-                ServiceTypeId = model.ServiceTypeId,
+                Id = Guid.NewGuid(),
                 Title = model.Title,
+                Code = model.Code,
                 Description = model.Description,
                 TimeStart = model.TimeStart,
                 TimeEnd = model.TimeEnd,
@@ -58,7 +58,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<Response> DeleteDiscount(Guid id)
         {
             var entity = await _unitOfWork.DiscountRepository.GetById(id);
-            if (entity == null)
+            if (entity is null)
             {
                 return new()
                 {
@@ -117,11 +117,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
             var discount = await _unitOfWork.DiscountRepository.Query()
                 .Where(x => model.Title == null || x.Title.Contains(model.Title))
+                .Where(x => model.Code == null || x.Code.Contains(model.Code))
                 .Where(x => model.TimeStart == null || DateTime.Compare(x.TimeStart, model.TimeStart.Value) >= 0)
                 .Where(x => model.TimeEnd == null || DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) <= 0)
                 .Where(x => model.Value == null || x.Value == model.Value.Value)
                 .Where(x => model.Status == null || x.Status == model.Status.Value)
-                .OrderBy(x => x.Value)
+                .OrderBy(x => x.Code)
                 .Select(x => x.AsDiscountViewModel())
                 .ToListAsync();
             var listAfterSorting = GetListAfterSorting(discount, model.SortBy);
@@ -139,8 +140,17 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> UpdateDiscount(Guid id, UpdateDiscountModel model)
         {
+            var isExistedCode = await _unitOfWork.DiscountRepository.Query().AnyAsync(x => x.Code == model.Code);
+            if (isExistedCode)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Mã khuyến mãi đã tồn tại!"
+                };
+            }
             var entity = await _unitOfWork.DiscountRepository.GetById(id);
-            if (entity == null)
+            if (entity is null)
             {
                 return new()
                 {
@@ -169,6 +179,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             entity.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Admin, entity.PhotoUrl);
             entity.PhotoUrl += await UploadFile(model.UploadFile, Container.Admin);
             entity.Title = UpdateTypeOfNullAbleObject<string>(entity.Title, model.Title);
+            entity.Code = UpdateTypeOfNullAbleObject<string>(entity.Code, model.Code);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
             entity.TimeStart = UpdateTypeOfNotNullAbleObject<DateTime>(entity.TimeStart, model.TimeStart);
             entity.TimeEnd = UpdateTypeOfNotNullAbleObject<DateTime>(entity.TimeEnd, model.TimeEnd);

@@ -22,9 +22,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> CreatePrice(CreatePriceBusServiceModel model)
         {
-            var price = new PriceOfBusService()
+            var price = new PriceListOfBusService()
             {
-                PriceOfBusServiceId = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
+                MinRouteDistance = model.MinRouteDistance,
+                MaxRouteDistance = model.MaxRouteDistance,
                 MinDistance = model.MinDistance,
                 MaxDistance = model.MaxDistance,
                 Price = model.Price,
@@ -34,7 +36,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Status = 1
             };
 
-            await _unitOfWork.PriceOfBusServiceRepository.Add(price);
+            await _unitOfWork.PriceListOfBusServiceRepository.Add(price);
             await _unitOfWork.SaveChangesAsync();
 
             return new()
@@ -46,7 +48,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> DeletePrice(Guid id)
         {
-            var entity = await _unitOfWork.PriceOfBusServiceRepository.GetById(id);
+            var entity = await _unitOfWork.PriceListOfBusServiceRepository.GetById(id);
             if (entity == null)
             {
                 return new()
@@ -56,7 +58,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
             entity.Status = 0;
-            _unitOfWork.PriceOfBusServiceRepository.Update(entity);
+            _unitOfWork.PriceListOfBusServiceRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()
             {
@@ -65,16 +67,18 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-        public async Task<PriceOfBusServiceViewModel> GetById(Guid id)
+        public async Task<PriceBusServiceViewModel> GetById(Guid id)
         {
-            var entity = await _unitOfWork.PriceOfBusServiceRepository.GetById(id);
-            return entity.AsPriceOfBusServiceViewModel();
+            var entity = await _unitOfWork.PriceListOfBusServiceRepository.GetById(id);
+            return entity.AsPriceListOfBusService();
 
         }
 
-        public async Task<List<PriceOfBusServiceViewModel>> Search(PriceBusServiceSearchModel model)
+        public async Task<List<PriceBusServiceViewModel>> Search(PriceBusServiceSearchModel model)
         {
-            var entity = await _unitOfWork.PriceOfBusServiceRepository.Query()
+            var entity = await _unitOfWork.PriceListOfBusServiceRepository.Query()
+                            .Where(x => model.MinRouteDistance == null || x.MinRouteDistance == model.MinRouteDistance.Value)
+                            .Where(x => model.MaxRouteDistance == null || x.MaxRouteDistance == model.MaxRouteDistance.Value)
                             .Where(x => model.MinDistance == null || x.MinDistance == model.MinDistance.Value)
                             .Where(x => model.MaxDistance == null || x.MaxDistance == model.MaxDistance.Value)
                             .Where(x => model.MinStation == null || x.MinStation == model.MinStation.Value)
@@ -82,7 +86,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(x => model.Mode == null || x.Mode.Contains(model.Mode))
                             .Where(x => model.Price == null || x.Price == model.Price.Value)
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
-                            .Select(x => x.AsPriceOfBusServiceViewModel())
+                            .Select(x => x.AsPriceListOfBusService())
                             .ToListAsync();
             return entity;
 
@@ -90,7 +94,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> UpdatePrice(Guid id, UpdatePriceBusServiceModel model)
         {
-            var entity = await _unitOfWork.PriceOfBusServiceRepository.GetById(id);
+            var entity = await _unitOfWork.PriceListOfBusServiceRepository.GetById(id);
             if (entity == null)
             {
                 return new()
@@ -100,6 +104,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
+            entity.MinRouteDistance = UpdateTypeOfNotNullAbleObject<decimal>(entity.MinRouteDistance, model.MinRouteDistance);
+            entity.MaxRouteDistance = UpdateTypeOfNotNullAbleObject<decimal>(entity.MaxRouteDistance, model.MaxRouteDistance);
             entity.MinDistance = UpdateTypeOfNotNullAbleObject<decimal>(entity.MinDistance, model.MinDistance);
             entity.MaxDistance = UpdateTypeOfNotNullAbleObject<decimal>(entity.MaxDistance, model.MaxDistance);
             entity.MinStation = UpdateTypeOfNotNullAbleObject<decimal>(entity.MinStation, model.MinStation);
@@ -107,7 +113,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             entity.Price = UpdateTypeOfNotNullAbleObject<decimal>(entity.Price, model.Price);
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
             entity.Mode = UpdateTypeOfNullAbleObject<string>(entity.Mode, model.Mode);
-            _unitOfWork.PriceOfBusServiceRepository.Update(entity);
+            _unitOfWork.PriceListOfBusServiceRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()
             {

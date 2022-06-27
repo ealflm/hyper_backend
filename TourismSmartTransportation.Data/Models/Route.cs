@@ -15,7 +15,7 @@ namespace TourismSmartTransportation.Data.Models
             Trips = new HashSet<Trip>();
         }
 
-        public Guid RouteId { get; set; }
+        public Guid Id { get; set; }
         public Guid PartnerId { get; set; }
         public string Name { get; set; }
         public int TotalStation { get; set; }

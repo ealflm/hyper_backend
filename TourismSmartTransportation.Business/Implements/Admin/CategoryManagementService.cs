@@ -1,7 +1,9 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
@@ -34,7 +36,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             var entity = new Category()
             {
-                CategoryId = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 Name = model.Name,
                 Description = model.Description,
                 Status = 1
@@ -52,7 +54,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<Response> Delete(Guid id)
         {
             var entity = await _unitOfWork.CategoryRepository.GetById(id);
-            if (entity == null)
+            if (entity is null)
             {
                 return new()
                 {
@@ -112,7 +114,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
             var entity = await _unitOfWork.CategoryRepository.GetById(id);
-            if (entity == null)
+            if (entity is null)
             {
                 return new()
                 {

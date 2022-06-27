@@ -9,6 +9,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.CustomerManagement
     public class CustomerViewModel
     {
         public Guid Id { get; set; }
+        public Guid? TierId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public bool Gender { get; set; }

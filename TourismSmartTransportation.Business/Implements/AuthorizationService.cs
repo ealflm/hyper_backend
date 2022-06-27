@@ -170,7 +170,7 @@ namespace TourismSmartTransportation.Business.Implements
         private string GetToken<T>(T model, int loginType) where T : class
         {
             var authClaims = new List<Claim>();
-            var id = new Guid();
+            var id= new Guid();
             foreach (var x in model.GetType().GetProperties())
             {
                 authClaims.Add(new Claim(x.Name, (x.GetValue(model) ?? "").ToString()));
@@ -192,7 +192,7 @@ namespace TourismSmartTransportation.Business.Implements
                         authClaims.Add(new Claim("Role", "Partner"));
                         var serviceTypeList = _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(id)).ToList();
                         string serviceTypeIds = null;
-                        foreach (PartnerServiceType x in serviceTypeList)
+                        foreach(PartnerServiceType x in serviceTypeList)
                         {
                             serviceTypeIds += x.ServiceTypeId + "|";
                         }

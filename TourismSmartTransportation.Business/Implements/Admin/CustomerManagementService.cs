@@ -1,7 +1,9 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
@@ -41,20 +43,20 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
             var customer = new CustomerModel()
             {
-                CustomerId = Guid.NewGuid(),
+                TierId = model.TierId,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                Password = passwordHash,
-                Salt = passwordSalt,
-                Gender = model.Gender,
-                Phone = model.Phone,
+                DateOfBirth = model.Birthday != null ? model.Birthday.Value : null,
                 Address1 = model.Address1,
                 Address2 = model.Address2,
-                PhotoUrl = UploadFile(model.UploadFile, Container.Customer).Result,
-                DateOfBirth = model.Birthday != null ? model.Birthday.Value : null,
                 Email = model.Email,
+                Gender = model.Gender,
+                Phone = model.Phone,
+                Password = passwordHash,
+                Salt = passwordSalt,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
+                PhotoUrl = UploadFile(model.UploadFile, Container.Customer).Result,
                 Status = 1
             };
             await _unitOfWork.CustomerRepository.Add(customer);
@@ -179,6 +181,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 customer.Password = UpdateTypeOfNullAbleObject<byte[]>(customer.Password, passwordHash);
                 customer.Salt = UpdateTypeOfNullAbleObject<byte[]>(customer.Salt, passwordSalt);
             }
+            customer.TierId = model.TierId; // Customer cannot need tier, so we always need add value tier when updating data.
             customer.Phone = UpdateTypeOfNullAbleObject<string>(customer.Phone, model.Phone);
             customer.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Customer, customer.PhotoUrl);
             customer.PhotoUrl += await UploadFile(model.UploadFile, Container.Customer);
@@ -196,7 +199,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             return new()
             {
-                StatusCode = 201,
+                StatusCode = 200,
                 Message = "Cập nhật thành công!"
             };
         }
