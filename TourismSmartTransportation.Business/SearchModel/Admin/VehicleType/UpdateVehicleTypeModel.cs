@@ -3,17 +3,17 @@ using TourismSmartTransportation.Business.Validation;
 
 namespace TourismSmartTransportation.Business.SearchModel.Admin.VehicleType
 {
-    public class CreateVehicleTypeModel
+    public class UpdateVehicleTypeModel
     {
-        [Required]
-        [StringLength(255)]
+        [NotAllowedEmptyStringValidator]
         public string Label { get; set; }
 
-        [Required]
         [Range(1, 70)]
-        public int Seats { get; set; }
+        public int? Seats { get; set; }
 
-        [Required]
+        [NotAllowedEmptyStringValidator]
         public string Fuel { get; set; }
+
+        public int? Status { get; set; }
     }
 }

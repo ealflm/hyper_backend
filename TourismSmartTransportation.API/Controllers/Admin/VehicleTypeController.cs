@@ -42,7 +42,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> UpdateVehicleType(Guid id, CreateVehicleTypeModel model)
+        public async Task<IActionResult> UpdateVehicleType(Guid id, UpdateVehicleTypeModel model)
         {
             return SendResponse(await _service.UpdateVehicleType(id, model));
         }

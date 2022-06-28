@@ -14,8 +14,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.VehicleType
 
         public string Fuel { get; set; }
 
-        public decimal? Price { get; set; }
-
         public int? Status { get; set; }
     }
 }

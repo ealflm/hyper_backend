@@ -12,7 +12,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
         Task<List<VehicleTypeViewModel>> GetListVehicleTypes(VehicleTypeSearchModel model);
         Task<VehicleTypeViewModel> GetVehicleType(Guid id);
         Task<Response> CreateVehicleType(CreateVehicleTypeModel model);
-        Task<Response> UpdateVehicleType(Guid id, CreateVehicleTypeModel model);
+        Task<Response> UpdateVehicleType(Guid id, UpdateVehicleTypeModel model);
         Task<Response> DeleteVehicleType(Guid id);
     }
 }
