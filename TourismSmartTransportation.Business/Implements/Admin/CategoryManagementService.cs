@@ -61,14 +61,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
-            bool isNotAllowed = await UpdateStatusToInactive(id);
-            if (isNotAllowed)
+            var result = await CheckReferenceToOther(id);
+            if (result.StatusCode != 0)
             {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
-                };
+                return result;
             }
 
             entity.Status = 0;
@@ -137,14 +133,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
             else if (model.Status.Value == 0)
             {
-                bool isNotAllowed = await UpdateStatusToInactive(id);
-                if (isNotAllowed)
+                var result = await CheckReferenceToOther(id);
+                if (result.StatusCode != 0)
                 {
-                    return new()
-                    {
-                        StatusCode = 400,
-                        Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
-                    };
+                    return result;
                 }
                 entity.Status = 0;
             }
@@ -167,17 +159,26 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-        private async Task<bool> UpdateStatusToInactive(Guid id)
+        private async Task<Response> CheckReferenceToOther(Guid id)
         {
+            var obj = new Response()
+            {
+                StatusCode = 400,
+                Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
+            };
+
             var checkExistedReferenceToVehicle = await _unitOfWork.PriceOfRentingServiceRepository
                                                                 .Query()
                                                                 .AnyAsync(x => x.CategoryId == id && x.Status == 1);
             if (checkExistedReferenceToVehicle)
             {
-                return true;
+                return obj;
             }
 
-            return false;
+            return new()
+            {
+                StatusCode = 0
+            };
         }
     }
 }

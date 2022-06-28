@@ -22,33 +22,26 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         public async Task<Response> Create(CreateVehicleModel model)
         {
-            var isExistCode = await _unitOfWork.VehicleRepository.Query().AnyAsync(x => x.LicensePlates.Equals(model.LicensePlates));
-            if (isExistCode)
+            var validatorResult = await CheckValidationData(model);
+            if (validatorResult.StatusCode != 0)
             {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Phương tiện đã tồn tại!"
-                };
+                return validatorResult;
             }
-            var price = new TourismSmartTransportation.Data.Models.Vehicle()
+
+            var vehicle = new TourismSmartTransportation.Data.Models.Vehicle()
             {
                 VehicleId = Guid.NewGuid(),
-                Color = model.Color,
-                LicensePlates = model.LicensePlates,
-                Name = model.Name,
-                PartnerId = model.PartnerId,
+                ServiceTypeId = model.ServiceTypeId.Value,
+                VehicleTypeId = model.VehicleTypeId.Value,
                 RentStationId = model.RentStationId,
-                ServiceTypeId = model.ServiceTypeId,
-                VehicleTypeId = model.VehicleTypeId,
+                PartnerId = model.PartnerId.Value,
+                PriceRentingId = model.PriceRentingId.Value,
+                Name = model.Name,
+                LicensePlates = model.LicensePlates,
+                Color = model.Color,
                 Status = 1
             };
-            if (model.RentStationId != null)
-            {
-                var priceRenting = await _unitOfWork.PriceOfRentingServiceRepository.Query().Where(x => x.CategoryId.Equals(model.CategoryId) && x.PublishYearId.Equals(model.PublishYearId)).FirstOrDefaultAsync();
-                price.PriceRentingId = priceRenting.PriceOfRentingServiceId;
-            }
-            await _unitOfWork.VehicleRepository.Add(price);
+            await _unitOfWork.VehicleRepository.Add(vehicle);
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -70,6 +63,13 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     Message = "Không tìm thấy!"
                 };
             }
+
+            var result = await CheckReferenceToOther(id);
+            if (result.StatusCode != 0)
+            {
+                return result;
+            }
+
             entity.Status = 0;
             _unitOfWork.VehicleRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -117,15 +117,6 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         public async Task<Response> Update(Guid id, UpdateVehicleModel model)
         {
-            var isExistCode = await _unitOfWork.VehicleRepository.Query().AnyAsync(x => x.LicensePlates.Equals(model.LicensePlates));
-            if (isExistCode)
-            {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Phương tiện đã tồn tại!"
-                };
-            }
             var entity = await _unitOfWork.VehicleRepository.GetById(id);
             if (entity == null)
             {
@@ -135,20 +126,36 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     Message = "Không tìm thấy!"
                 };
             }
-            if (entity.PriceRentingId != null)
+
+            var validatorResult = await CheckValidationData(model);
+            if (validatorResult.StatusCode != 0)
             {
-                var priceRenting = await _unitOfWork.PriceOfRentingServiceRepository.GetById(entity.PriceRentingId.Value);
-                if (priceRenting != null && (priceRenting.CategoryId != model.CategoryId || priceRenting.PublishYearId != model.PublishYearId))
-                {
-                    priceRenting.CategoryId = model.CategoryId != null ? model.CategoryId.Value : priceRenting.CategoryId;
-                    priceRenting.PublishYearId = model.PublishYearId != null ? model.PublishYearId.Value : priceRenting.PublishYearId;
-                    priceRenting = await _unitOfWork.PriceOfRentingServiceRepository.Query().Where(x => x.CategoryId.Equals(priceRenting.CategoryId) && x.PublishYearId.Equals(priceRenting.PublishYearId)).FirstOrDefaultAsync();
-                    entity.PriceRentingId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PriceRentingId, priceRenting.PriceOfRentingServiceId);
-                }
+                return validatorResult;
             }
+
+            // Check status
+            if (model.Status == null)
+            {
+                entity.Status = entity.Status;
+            }
+            else if (model.Status.Value == 0)
+            {
+                var result = await CheckReferenceToOther(id);
+                if (result.StatusCode != 0)
+                {
+                    return result;
+                }
+                entity.Status = 0;
+            }
+            else
+            {
+                entity.Status = model.Status.Value;
+            }
+
             entity.RentStationId = UpdateTypeOfNotNullAbleObject<Guid>(entity.RentStationId, model.RentStationId);
             entity.ServiceTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.ServiceTypeId, model.ServiceTypeId);
             entity.VehicleTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleTypeId, model.VehicleTypeId);
+            entity.PriceRentingId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PriceRentingId, model.PriceRentingId);
             entity.Color = UpdateTypeOfNullAbleObject<string>(entity.Color, model.Color);
             entity.LicensePlates = UpdateTypeOfNullAbleObject<string>(entity.LicensePlates, model.LicensePlates);
             entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
@@ -160,6 +167,160 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
+            };
+        }
+
+        private async Task<Response> CheckReferenceToOther(Guid id)
+        {
+            var checkExistedReferenceToTrip = await _unitOfWork.TripRepository
+                                            .Query()
+                                            .AnyAsync(
+                                                            x => x.VehicleId == id &&
+                                                            DateTime.Compare(DateTime.Now, x.TimeStart) >= 0 &&
+                                                            DateTime.Compare(DateTime.Now, x.TimeEnd) <= 0
+                                                    );
+            if (checkExistedReferenceToTrip)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
+                };
+            }
+
+            return new()
+            {
+                StatusCode = 0
+            };
+        }
+
+        private async Task<Response> CheckValidationData(VehicleModel model)
+        {
+            // Check LicensePlates
+            var isExistCode = await _unitOfWork.VehicleRepository.Query().AnyAsync(x => x.LicensePlates.Equals(model.LicensePlates));
+            if (isExistCode)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Phương tiện đã tồn tại!"
+                };
+            }
+
+            // Check Partner
+            if (model.PartnerId != null)
+            {
+                var partner = await _unitOfWork.PartnerRepository.GetById(model.PartnerId.Value);
+                if (partner == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Đối tác không tồn tại"
+                    };
+                }
+                else if (partner.Status == 0)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Không thể thực hiện thao tác với đối tác đã bị vô hiệu hóa"
+                    };
+                }
+            }
+
+            // Check ServiceType
+            if (model.ServiceTypeId != null)
+            {
+                var serviceType = await _unitOfWork.ServiceTypeRepository.GetById(model.ServiceTypeId.Value);
+                if (serviceType == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Loại dịch vụ không tồn tại"
+                    };
+                }
+                else if (serviceType.Status == 0)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Không thể thực hiện thao tác với loại dịch vụ đã bị vô hiệu hóa"
+                    };
+                }
+            }
+
+            // Check VehicleType
+            if (model.VehicleTypeId != null)
+            {
+                var vehicleType = await _unitOfWork.VehicleTypeRepository.GetById(model.VehicleTypeId.Value);
+                if (vehicleType == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Loại xe không tồn tại"
+                    };
+                }
+                else if (vehicleType.Status == 0)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Không thể thực hiện thao tác với loại xe đã bị vô hiệu hóa"
+                    };
+                }
+            }
+
+            // Check Rent station
+            if (model.RentStationId != null)
+            {
+                var rentStation = await _unitOfWork.RentStationRepository.GetById(model.RentStationId.Value);
+                if (rentStation == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Trạm thuê xe không tồn tại"
+                    };
+                }
+                else if (rentStation.Status == 0)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Không thể thực hiện thao tác với trạm thuê xe đã bị vô hiệu hóa"
+                    };
+                }
+            }
+
+            // Check price renting
+            if (model.PriceRentingId != null)
+            {
+                var priceRenting = await _unitOfWork.PriceOfRentingServiceRepository.GetById(model.PriceRentingId.Value);
+                if (priceRenting == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Giá thuê xe không tồn tại"
+                    };
+                }
+                else if (priceRenting.Status == 0)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Không thể thực hiện thao tác với giá thuê xe đã bị vô hiệu hóa"
+                    };
+                }
+            }
+
+            // Data is availiable
+            return new()
+            {
+                StatusCode = 0, // No Error
             };
         }
     }

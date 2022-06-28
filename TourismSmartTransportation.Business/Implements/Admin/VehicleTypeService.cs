@@ -82,14 +82,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
             else if (model.Status.Value == 0)
             {
-                bool isNotAllowed = await UpdateStatusToInactive(id);
-                if (isNotAllowed)
+                var result = await CheckReferenceToOther(id);
+                if (result.StatusCode != 0)
                 {
-                    return new()
-                    {
-                        StatusCode = 400,
-                        Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
-                    };
+                    return result;
                 }
                 entity.Status = 0;
             }
@@ -101,7 +97,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             entity.Label = UpdateTypeOfNullAbleObject<string>(entity.Label, model.Label);
             entity.Seats = UpdateTypeOfNotNullAbleObject<int>(entity.Seats, model.Seats);
             entity.Fuel = UpdateTypeOfNullAbleObject<string>(entity.Fuel, model.Fuel);
-            
+
             _unitOfWork.VehicleTypeRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()
@@ -123,14 +119,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
-            bool isNotAllowed = await UpdateStatusToInactive(id);
-            if (isNotAllowed)
+            var result = await CheckReferenceToOther(id);
+            if (result.StatusCode != 0)
             {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
-                };
+                return result;
             }
 
             entity.Status = 0;
@@ -143,14 +135,20 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-        private async Task<bool> UpdateStatusToInactive(Guid id)
+        private async Task<Response> CheckReferenceToOther(Guid id)
         {
+            var obj = new Response()
+            {
+                StatusCode = 400,
+                Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
+            };
+
             var checkExistedReferenceToVehicle = await _unitOfWork.VehicleRepository
                                                                 .Query()
                                                                 .AnyAsync(x => x.VehicleId == id && x.Status == 1);
             if (checkExistedReferenceToVehicle)
             {
-                return true;
+                return obj;
             }
 
             var checkExistedReferenceToPriceOfBookingService = await _unitOfWork.PriceOfBookingServiceRepository
@@ -158,10 +156,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                                                                     .AnyAsync(x => x.VehicleTypeId == id && x.Status == 1);
             if (checkExistedReferenceToPriceOfBookingService)
             {
-                return true;
+                return obj;
             }
 
-            return false;
+            return new()
+            {
+                StatusCode = 0
+            };
         }
     }
 }
