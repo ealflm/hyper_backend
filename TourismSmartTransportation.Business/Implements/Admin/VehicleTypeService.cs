@@ -85,7 +85,16 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
             else if (model.Status.Value == 0)
             {
-                await DeleteVehicleType(id);
+                bool isNotAllowed = await UpdateStatusToInactive(id);
+                if (isNotAllowed)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
+                    };
+                }
+                entity.Status = 0;
             }
             else
             {
@@ -103,21 +112,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> DeleteVehicleType(Guid id)
         {
-            var checkExistedReferenceToVehicle = await _unitOfWork.VehicleRepository
-                                                    .Query()
-                                                    .AnyAsync(x => x.VehicleId == id && x.Status == 1);
-            if (checkExistedReferenceToVehicle)
-            {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
-                };
-            }
-            var checkExistedReferenceToPriceOfBookingService = await _unitOfWork.PriceOfBookingServiceRepository
-                                                                    .Query()
-                                                                    .AnyAsync(x => x.VehicleTypeId == id && x.Status == 1);
-            if (checkExistedReferenceToPriceOfBookingService)
+            bool isNotAllowed = await UpdateStatusToInactive(id);
+            if (isNotAllowed)
             {
                 return new()
                 {
@@ -144,6 +140,27 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 StatusCode = 201,
                 Message = "Cập nhật trạng thái thành công!"
             };
+        }
+
+        private async Task<bool> UpdateStatusToInactive(Guid id)
+        {
+            var checkExistedReferenceToVehicle = await _unitOfWork.VehicleRepository
+                                                                .Query()
+                                                                .AnyAsync(x => x.VehicleId == id && x.Status == 1);
+            if (checkExistedReferenceToVehicle)
+            {
+                return true;
+            }
+
+            var checkExistedReferenceToPriceOfBookingService = await _unitOfWork.PriceOfBookingServiceRepository
+                                                                    .Query()
+                                                                    .AnyAsync(x => x.VehicleTypeId == id && x.Status == 1);
+            if (checkExistedReferenceToPriceOfBookingService)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
