@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.CategoryManagement;
@@ -24,8 +22,6 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             _service = service;
         }
 
-
-        
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] CategorySearchModel model)
         {
@@ -40,13 +36,13 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         // POST api/<CategoryManagementController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CategorySearchModel model)
+        public async Task<IActionResult> Post([FromBody] CreateCategoryModel model)
         {
             return SendResponse(await _service.Add(model));
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] CategorySearchModel model)
+        public async Task<IActionResult> Put(Guid id, [FromBody] UpdateCategoryModel model)
         {
             return SendResponse(await _service.Update(id, model));
         }

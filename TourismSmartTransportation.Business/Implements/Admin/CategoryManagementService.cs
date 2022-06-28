@@ -20,7 +20,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
         }
 
-        public async Task<Response> Add(CategorySearchModel model)
+        public async Task<Response> Add(CreateCategoryModel model)
         {
             var isExistCode = await _unitOfWork.CategoryRepository.Query().AnyAsync(x => x.Name == model.Name);
             if (isExistCode)
@@ -110,7 +110,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return result;
         }
 
-        public async Task<Response> Update(Guid id, CategorySearchModel model)
+        public async Task<Response> Update(Guid id, UpdateCategoryModel model)
         {
             var isExistedCode = await _unitOfWork.CategoryRepository.Query().AnyAsync(x => x.Name == model.Name);
             if (isExistedCode)
@@ -154,7 +154,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
 
             entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
-            entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
             // entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
 
