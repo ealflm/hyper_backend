@@ -22,6 +22,17 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         public async Task<Response> Create(CreateVehicleModel model)
         {
+            // Check LicensePlates
+            var isExistCode = await _unitOfWork.VehicleRepository.Query().AnyAsync(x => x.LicensePlates.Equals(model.LicensePlates));
+            if (isExistCode)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Phương tiện đã tồn tại!"
+                };
+            }
+
             var validatorResult = await CheckValidationData(model);
             if (validatorResult.StatusCode != 0)
             {
@@ -127,6 +138,21 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 };
             }
 
+            // if license plates does not edit, we still continute to update the other fileds
+            // else we need to check other license plates
+            if (entity.LicensePlates != model.LicensePlates && model.LicensePlates != null)
+            {
+                var isExistCode = await _unitOfWork.VehicleRepository.Query().AnyAsync(x => x.LicensePlates.Equals(model.LicensePlates));
+                if (isExistCode)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Phương tiện đã tồn tại!"
+                    };
+                }
+            }
+
             var validatorResult = await CheckValidationData(model);
             if (validatorResult.StatusCode != 0)
             {
@@ -196,17 +222,6 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         private async Task<Response> CheckValidationData(VehicleModel model)
         {
-            // Check LicensePlates
-            var isExistCode = await _unitOfWork.VehicleRepository.Query().AnyAsync(x => x.LicensePlates.Equals(model.LicensePlates));
-            if (isExistCode)
-            {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Phương tiện đã tồn tại!"
-                };
-            }
-
             // Check Partner
             if (model.PartnerId != null)
             {

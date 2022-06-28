@@ -31,13 +31,20 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Giá đã tồn tại!"
                 };
             }
+
+            var validatorResult = await CheckValidationData(model);
+            if (validatorResult.StatusCode != 0)
+            {
+                return validatorResult;
+            }
+
             var price = new PriceOfBookingService()
             {
                 PriceOfBookingServiceId = Guid.NewGuid(),
-                FixedDistance = model.FixedDistance,
-                FixedPrice = model.FixedPrice,
-                PricePerKilometer = model.PricePerKilometer,
-                VehicleTypeId = model.VehicleTypeId,
+                FixedDistance = model.FixedDistance.Value,
+                FixedPrice = model.FixedPrice.Value,
+                PricePerKilometer = model.PricePerKilometer.Value,
+                VehicleTypeId = model.VehicleTypeId.Value,
                 Status = 1
             };
 
@@ -77,7 +84,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var entity = await _unitOfWork.PriceOfBookingServiceRepository.GetById(id);
             var model = entity.AsPriceOfBookingServiceViewModel();
             var vehicleType = await _unitOfWork.VehicleTypeRepository.GetById(model.VehicleTypeId);
-            model.VehicleName = vehicleType.Label + " " + vehicleType.Seats + " " + vehicleType.Fuel;
+            model.VehicleLabel = vehicleType.Label;
+            model.VehicleSeats = vehicleType.Seats;
+            model.VehicleFuel = vehicleType.Fuel;
             return model;
 
         }
@@ -95,7 +104,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             foreach (PriceOfBookingServiceViewModel x in entity)
             {
                 var vehicleType = await _unitOfWork.VehicleTypeRepository.GetById(x.VehicleTypeId);
-                x.VehicleName = vehicleType.Label + " " + vehicleType.Seats + " " + vehicleType.Fuel;
+                x.VehicleLabel = vehicleType.Label;
+                x.VehicleSeats = vehicleType.Seats;
+                x.VehicleFuel = vehicleType.Fuel;
             }
             return entity;
 
@@ -103,15 +114,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> UpdatePrice(Guid id, UpdatePriceBookingServiceModel model)
         {
-            var isExistCode = await _unitOfWork.PriceOfBookingServiceRepository.Query().AnyAsync(x => x.VehicleTypeId == model.VehicleTypeId.Value);
-            if (isExistCode)
-            {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Giá đã tồn tại!"
-                };
-            }
             var entity = await _unitOfWork.PriceOfBookingServiceRepository.GetById(id);
             if (entity == null)
             {
@@ -121,10 +123,30 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Không tìm thấy!"
                 };
             }
+
+            if (model.VehicleTypeId != null && entity.VehicleTypeId != model.VehicleTypeId.Value)
+            {
+                var isExistCode = await _unitOfWork.PriceOfBookingServiceRepository.Query().AnyAsync(x => x.VehicleTypeId == model.VehicleTypeId);
+                if (isExistCode)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Giá đã tồn tại!"
+                    };
+                }
+            }
+
+            var validatorResult = await CheckValidationData(model);
+            if (validatorResult.StatusCode != 0)
+            {
+                return validatorResult;
+            }
+
+            entity.VehicleTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleTypeId, model.VehicleTypeId);
             entity.FixedDistance = UpdateTypeOfNotNullAbleObject<decimal>(entity.FixedDistance, model.FixedDistance);
             entity.FixedPrice = UpdateTypeOfNotNullAbleObject<decimal>(entity.FixedPrice, model.FixedPrice);
             entity.PricePerKilometer = UpdateTypeOfNotNullAbleObject<decimal>(entity.PricePerKilometer, model.PricePerKilometer);
-            entity.VehicleTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleTypeId, model.VehicleTypeId);
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
             _unitOfWork.PriceOfBookingServiceRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -132,6 +154,34 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
+            };
+        }
+
+        private async Task<Response> CheckValidationData(PriceBookingModel model)
+        {
+            if (model.VehicleTypeId != null)
+            {
+                var vehicleType = await _unitOfWork.VehicleTypeRepository.GetById(model.VehicleTypeId.Value);
+                if (vehicleType == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Loại xe không tồn tại!"
+                    };
+                }
+                else if (vehicleType.Status == 0)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Không thể thực hiện thao tác với loại xe đã bị vô hiệu hóa"
+                    };
+                }
+            }
+            return new()
+            {
+                StatusCode = 0,
             };
         }
     }
