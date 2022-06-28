@@ -22,7 +22,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
         }
 
-        public async Task<Response> Add(PublishYearSearchModel model)
+        public async Task<Response> Add(CreatePublishYearModel model)
         {
             var isExistCode = await _unitOfWork.PublishYearRepository.Query().AnyAsync(x => x.Name == model.Name);
             if (isExistCode)
@@ -60,6 +60,16 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     StatusCode = 404,
                     Message = "Không tìm thấy!"
+                };
+            }
+
+            bool isNotAllowed = await UpdateStatusToInactive(id);
+            if (isNotAllowed)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
                 };
             }
 
@@ -101,17 +111,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return result;
         }
 
-        public async Task<Response> Update(Guid id, PublishYearSearchModel model)
+        public async Task<Response> Update(Guid id, UpdatePublishYearModel model)
         {
-            var isExistedCode = await _unitOfWork.CategoryRepository.Query().AnyAsync(x => x.Name == model.Name);
-            if (isExistedCode)
-            {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Năm sản xuất đã tồn tại!"
-                };
-            }
             var entity = await _unitOfWork.PublishYearRepository.GetById(id);
             if (entity is null)
             {
@@ -122,10 +123,49 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
+            if (entity.Name != model.Name)
+            {
+                var isExistedCode = await _unitOfWork.PublishYearRepository.Query().AnyAsync(x => x.Name.Equals(model.Name));
+                if (isExistedCode)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Năm sản xuất đã tồn tại!"
+                    };
+                }
+            }
+            else
+            {
+                entity.Name = model.Name;
+            }
+
+            if (model.Status == null)
+            {
+                entity.Status = entity.Status;
+            }
+            else if (model.Status.Value == 0)
+            {
+                bool isNotAllowed = await UpdateStatusToInactive(id);
+                if (isNotAllowed)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
+                    };
+                }
+                entity.Status = 0;
+            }
+            else
+            {
+                entity.Status = model.Status.Value;
+            }
+
             entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
-            entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
+            // entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
 
             _unitOfWork.PublishYearRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -135,6 +175,19 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
             };
+        }
+
+        private async Task<bool> UpdateStatusToInactive(Guid id)
+        {
+            var checkExistedReferenceToPriceOfBookingService = await _unitOfWork.PriceOfRentingServiceRepository
+                                                                    .Query()
+                                                                    .AnyAsync(x => x.PublishYearId == id && x.Status == 1);
+            if (checkExistedReferenceToPriceOfBookingService)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -1,11 +1,13 @@
-﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace TourismSmartTransportation.Business.SearchModel.Admin.PublishYearManagement
 {
-    public class PublishYearSearchModel
+    public class CreatePublishYearModel
     {
+        [Required]
         public string Name { get; set; }
+
+        [Required]
         public string Description { get; set; }
-        public int? Status { get; set; }
     }
 }
