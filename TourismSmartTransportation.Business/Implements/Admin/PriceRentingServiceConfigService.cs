@@ -31,17 +31,24 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Giá đã tồn tại!"
                 };
             }
+
+            var validatorResult = await CheckValidationData(model);
+            if (validatorResult.StatusCode != 0)
+            {
+                return validatorResult;
+            }
+
             var price = new PriceOfRentingService()
             {
                 PriceOfRentingServiceId = Guid.NewGuid(),
-                CategoryId = model.CategoryId,
-                FixedPrice = model.FixedPrice,
-                HolidayPrice = model.HolidayPrice,
-                MaxTime = model.MaxTime,
-                MinTime = model.MinTime,
-                PricePerHour = model.PricePerHour,
-                PublishYearId = model.PublishYearId,
-                WeekendPrice = model.WeekendPrice,
+                CategoryId = model.CategoryId.Value,
+                FixedPrice = model.FixedPrice.Value,
+                HolidayPrice = model.HolidayPrice.Value,
+                MaxTime = model.MaxTime.Value,
+                MinTime = model.MinTime.Value,
+                PricePerHour = model.PricePerHour.Value,
+                PublishYearId = model.PublishYearId.Value,
+                WeekendPrice = model.WeekendPrice.Value,
                 Status = 1
             };
 
@@ -108,15 +115,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> UpdatePrice(Guid id, UpdatePriceRentingServiceModel model)
         {
-            var isExistCode = await _unitOfWork.PriceOfRentingServiceRepository.Query().AnyAsync(x => x.CategoryId == model.CategoryId && x.PublishYearId == model.PublishYearId);
-            if (isExistCode)
-            {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Giá đã tồn tại!"
-                };
-            }
             var entity = await _unitOfWork.PriceOfRentingServiceRepository.GetById(id);
             if (entity == null)
             {
@@ -126,6 +124,52 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Không tìm thấy!"
                 };
             }
+
+            if (model.CategoryId != null && model.CategoryId.Value != entity.CategoryId
+                && model.PublishYearId != null && model.PublishYearId.Value != entity.PublishYearId)
+            {
+                var isExistCode = await _unitOfWork.PriceOfRentingServiceRepository.Query().AnyAsync(x => x.CategoryId == model.CategoryId.Value && x.PublishYearId == model.PublishYearId.Value);
+                if (isExistCode)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Giá đã tồn tại!"
+                    };
+                }
+            }
+            else if (model.CategoryId != null && model.CategoryId.Value != entity.CategoryId)
+            {
+                var isExistCode = await _unitOfWork.PriceOfRentingServiceRepository.Query().AnyAsync(x => x.CategoryId == model.CategoryId.Value && x.PublishYearId == entity.PublishYearId);
+                if (isExistCode)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Giá đã tồn tại!"
+                    };
+                }
+            }
+            else if (model.PublishYearId != null && model.PublishYearId.Value != entity.PublishYearId)
+            {
+                var isExistCode = await _unitOfWork.PriceOfRentingServiceRepository.Query().AnyAsync(x => x.CategoryId == entity.CategoryId && x.PublishYearId == model.PublishYearId.Value);
+                if (isExistCode)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Giá đã tồn tại!"
+                    };
+                }
+            }
+
+
+            var validatorResult = await CheckValidationData(model);
+            if (validatorResult.StatusCode != 0)
+            {
+                return validatorResult;
+            }
+
             entity.HolidayPrice = UpdateTypeOfNotNullAbleObject<decimal>(entity.HolidayPrice, model.HolidayPrice);
             entity.FixedPrice = UpdateTypeOfNotNullAbleObject<decimal>(entity.FixedPrice, model.FixedPrice);
             entity.PricePerHour = UpdateTypeOfNotNullAbleObject<decimal>(entity.PricePerHour, model.PricePerHour);
@@ -141,6 +185,59 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
+            };
+        }
+
+        private async Task<Response> CheckValidationData(PriceRentingModel model)
+        {
+            // Check category
+            if (model.CategoryId != null)
+            {
+                var category = await _unitOfWork.CategoryRepository.GetById(model.CategoryId.Value);
+                if (category == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Hạng xe không tồn tại"
+                    };
+                }
+                else if (category.Status == 0)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Không thể thực hiện thao tác với hạng xe đã bị vô hiệu hóa"
+                    };
+                }
+            }
+
+            // Check publish year
+            if (model.PublishYearId != null)
+            {
+                var publicYear = await _unitOfWork.PublishYearRepository.GetById(model.PublishYearId.Value);
+                if (publicYear == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Năm sản xuất không tồn tại"
+                    };
+                }
+                else if (publicYear.Status == 0)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Không thể thực hiện thao tác với năm sản xuất đã bị vô hiệu hóa"
+                    };
+                }
+            }
+
+
+            return new()
+            {
+                StatusCode = 0
             };
         }
     }
