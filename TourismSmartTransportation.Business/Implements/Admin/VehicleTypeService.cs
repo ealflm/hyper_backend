@@ -76,9 +76,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
-            entity.Label = UpdateTypeOfNullAbleObject<string>(entity.Label, model.Label);
-            entity.Seats = UpdateTypeOfNotNullAbleObject<int>(entity.Seats, model.Seats);
-            entity.Fuel = UpdateTypeOfNullAbleObject<string>(entity.Fuel, model.Fuel);
             if (model.Status == null)
             {
                 entity.Status = entity.Status;
@@ -101,6 +98,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 entity.Status = model.Status.Value;
             }
 
+            entity.Label = UpdateTypeOfNullAbleObject<string>(entity.Label, model.Label);
+            entity.Seats = UpdateTypeOfNotNullAbleObject<int>(entity.Seats, model.Seats);
+            entity.Fuel = UpdateTypeOfNullAbleObject<string>(entity.Fuel, model.Fuel);
+            
             _unitOfWork.VehicleTypeRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()
@@ -112,16 +113,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> DeleteVehicleType(Guid id)
         {
-            bool isNotAllowed = await UpdateStatusToInactive(id);
-            if (isNotAllowed)
-            {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
-                };
-            }
-
             var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
             if (entity == null)
             {
@@ -129,6 +120,16 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     StatusCode = 404,
                     Message = "Không tìm thấy"
+                };
+            }
+
+            bool isNotAllowed = await UpdateStatusToInactive(id);
+            if (isNotAllowed)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
                 };
             }
 

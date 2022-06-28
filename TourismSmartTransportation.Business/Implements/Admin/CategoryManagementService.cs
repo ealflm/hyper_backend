@@ -61,6 +61,16 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
+            bool isNotAllowed = await UpdateStatusToInactive(id);
+            if (isNotAllowed)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
+                };
+            }
+
             entity.Status = 0;
             _unitOfWork.CategoryRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -121,10 +131,32 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
+            if (model.Status == null)
+            {
+                entity.Status = entity.Status;
+            }
+            else if (model.Status.Value == 0)
+            {
+                bool isNotAllowed = await UpdateStatusToInactive(id);
+                if (isNotAllowed)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
+                    };
+                }
+                entity.Status = 0;
+            }
+            else
+            {
+                entity.Status = model.Status.Value;
+            }
+
             entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
-            entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
+            // entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
 
             _unitOfWork.CategoryRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -134,6 +166,19 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
             };
+        }
+
+        private async Task<bool> UpdateStatusToInactive(Guid id)
+        {
+            var checkExistedReferenceToVehicle = await _unitOfWork.PriceOfRentingServiceRepository
+                                                                .Query()
+                                                                .AnyAsync(x => x.CategoryId == id && x.Status == 1);
+            if (checkExistedReferenceToVehicle)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
