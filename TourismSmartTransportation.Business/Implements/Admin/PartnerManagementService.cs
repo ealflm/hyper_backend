@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagement;
@@ -64,22 +63,22 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             var partner = new TourismSmartTransportation.Data.Models.Partner()
             {
-                Id = Guid.NewGuid(),
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                CompanyName = model.CompanyName,
-                Address1 = model.Address1,
-                Address2 = model.Address2,
-                Phone = model.Phone,
-                DateOfBirth = model.DateOfBirth != null ? model.DateOfBirth.Value : null,
-                Gender = model.Gender,
-                Email = model.Email,
+                PartnerId = Guid.NewGuid(),
+                Username = username,
                 Password = passwordHash,
                 Salt = passwordSalt,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                PhotoUrl = UploadFile(model.UploadFile, Container.Partner).Result,
+                Gender = model.Gender,
+                Phone = model.Phone,
+                Address1 = model.Address1,
+                Address2 = model.Address2,
+                CompanyName = model.CompanyName,
+                DateOfBirth = model.DateOfBirth != null ? model.DateOfBirth.Value : null,
+                Email = model.Email,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
-                Username = username,
-                PhotoUrl = UploadFile(model.UploadFile, Container.Partner).Result,
                 Status = 1
             };
             await _unitOfWork.PartnerRepository.Add(partner);
@@ -89,8 +88,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     var partnerService = new PartnerServiceType()
                     {
-                        Id = new Guid(),
-                        PartnerId = partner.Id,
+                        PartnerId = partner.PartnerId,
                         ServiceTypeId = x,
                         Status = 1
                     };
@@ -140,7 +138,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             partner.Status = 0;
             _unitOfWork.PartnerRepository.Update(partner);
-            var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.Id)).ToListAsync();
+            var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.PartnerId)).ToListAsync();
             foreach (PartnerServiceType x in serviceTypes)
             {
                 x.Status = 0;
@@ -261,11 +259,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 foreach (Guid x in model.DeleteServiceTypeIdList)
                 {
-                    var serviceType = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.Id) && x.ServiceTypeId.Equals(x)).FirstOrDefaultAsync();
-                    await _unitOfWork.PartnerServiceTypeRepository.Remove(serviceType.Id);
+                    var serviceType = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.PartnerId) && x.ServiceTypeId.Equals(x)).FirstOrDefaultAsync();
+                    await _unitOfWork.PartnerServiceTypeRepository.Remove(serviceType.ServiceTypeId);
                 }
             }
-            var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.Id)).ToListAsync();
+            var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.PartnerId)).ToListAsync();
 
             if (model.AddServiceTypeIdList != null)
             {
@@ -286,8 +284,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     }
                     var serviceType = new PartnerServiceType()
                     {
-                        Id = new Guid(),
-                        PartnerId = partner.Id,
+                        PartnerId = partner.PartnerId,
                         ServiceTypeId = x,
                         Status = 1
                     };

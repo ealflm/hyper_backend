@@ -6,6 +6,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.Route
     {
         public int OrderNumber { get; set; }
         public Guid StationId { get; set; }
-        public Guid? RouteId { get; set; }
+        public Guid RouteId { get; set; }
+        public decimal Distance { get; set; }
     }
 }

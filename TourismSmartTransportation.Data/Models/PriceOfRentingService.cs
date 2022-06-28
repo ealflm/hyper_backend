@@ -5,15 +5,15 @@ using System.Collections.Generic;
 
 namespace TourismSmartTransportation.Data.Models
 {
-    public partial class PriceRenting
+    public partial class PriceOfRentingService
     {
-        public PriceRenting()
+        public PriceOfRentingService()
         {
-            OrderDetails = new HashSet<OrderDetail>();
+            OrderDetailOfRentingServices = new HashSet<OrderDetailOfRentingService>();
             Vehicles = new HashSet<Vehicle>();
         }
 
-        public Guid Id { get; set; }
+        public Guid PriceOfRentingServiceId { get; set; }
         public Guid PublishYearId { get; set; }
         public Guid CategoryId { get; set; }
         public decimal MinTime { get; set; }
@@ -26,7 +26,7 @@ namespace TourismSmartTransportation.Data.Models
 
         public virtual Category Category { get; set; }
         public virtual PublishYear PublishYear { get; set; }
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+        public virtual ICollection<OrderDetailOfRentingService> OrderDetailOfRentingServices { get; set; }
         public virtual ICollection<Vehicle> Vehicles { get; set; }
     }
 }

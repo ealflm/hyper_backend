@@ -1,17 +1,18 @@
 using System;
-using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using TourismSmartTransportation.Business.ViewModel.Admin.PackageItem;
+using TourismSmartTransportation.Business.ViewModel.Common;
 
-namespace TourismSmartTransportation.Business.ViewModel.Admin.Package
+namespace TourismSmartTransportation.Business.SearchModel.Admin.Package
 {
-    // [ModelBinder(BinderType = typeof(MetadataValueModelBinder))]
-    public class UpdatePackageModel
+    public class UpdatePackageModel : FileViewModel
     {
-        public Guid Id { get; set; }
-        public Guid? TierId { get; set; }
-        public Guid? ServiceTypeId { get; set; }
         public string Name { get; set; }
-        public decimal? Limit { get; set; }
-        public decimal? Value { get; set; }
+        public string PhotoUrl { get; set; }
+        public string Description { get; set; }
+        public decimal? Price { get; set; }
+        public string PromotedTitle { get; set; }
+        public List<UpdatePackageItemModel> PackageItems { get; set; }
         public int? Status { get; set; }
     }
 }

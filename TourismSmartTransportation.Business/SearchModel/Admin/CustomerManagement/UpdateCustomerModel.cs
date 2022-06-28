@@ -11,7 +11,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.CustomerManageme
 {
     public class UpdateCustomerModel : FileViewModel
     {
-        public Guid? TierId { get; set; }
         [StringLength(50)]
         public string FirstName { get; set; }
         [StringLength(50)]
