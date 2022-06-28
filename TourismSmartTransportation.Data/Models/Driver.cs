@@ -9,10 +9,11 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Driver()
         {
+            FeedbackForDrivers = new HashSet<FeedbackForDriver>();
             Trips = new HashSet<Trip>();
         }
 
-        public Guid Id { get; set; }
+        public Guid DriverId { get; set; }
         public Guid PartnerId { get; set; }
         public Guid VehicleId { get; set; }
         public string FirstName { get; set; }
@@ -29,6 +30,7 @@ namespace TourismSmartTransportation.Data.Models
 
         public virtual Partner Partner { get; set; }
         public virtual Vehicle Vehicle { get; set; }
+        public virtual ICollection<FeedbackForDriver> FeedbackForDrivers { get; set; }
         public virtual ICollection<Trip> Trips { get; set; }
     }
 }

@@ -11,12 +11,10 @@ namespace TourismSmartTransportation.Data.Models
         {
             Cards = new HashSet<Card>();
             CustomerTrips = new HashSet<CustomerTrip>();
-            Orders = new HashSet<Order>();
             Wallets = new HashSet<Wallet>();
         }
 
-        public Guid Id { get; set; }
-        public Guid? TierId { get; set; }
+        public Guid CustomerId { get; set; }
         public byte[] Password { get; set; }
         public byte[] Salt { get; set; }
         public string FirstName { get; set; }
@@ -34,7 +32,6 @@ namespace TourismSmartTransportation.Data.Models
 
         public virtual ICollection<Card> Cards { get; set; }
         public virtual ICollection<CustomerTrip> CustomerTrips { get; set; }
-        public virtual ICollection<Order> Orders { get; set; }
         public virtual ICollection<Wallet> Wallets { get; set; }
     }
 }

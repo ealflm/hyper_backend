@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.VehicleType;
 using TourismSmartTransportation.Business.ViewModel.Admin.VehicleType;
@@ -11,6 +10,7 @@ using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.Extensions;
 using Azure.Storage.Blobs;
+using TourismSmartTransportation.Business.CommonModel;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -42,11 +42,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return entity.AsVehicleTypeViewModel();
         }
 
-        public async Task<bool> CreateVehicleType(CreateVehicleTypeModel model)
+        public async Task<Response> CreateVehicleType(CreateVehicleTypeModel model)
         {
             var entity = new VehicleType()
             {
-                Id = Guid.NewGuid(),
+                VehicleTypeId = Guid.NewGuid(),
                 Label = model.Label,
                 Seats = model.Seats,
                 Fuel = model.Fuel,
@@ -54,54 +54,61 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
             await _unitOfWork.VehicleTypeRepository.Add(entity);
             await _unitOfWork.SaveChangesAsync();
-            return true;
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Tạo mới loại xe thành công!"
+            };
 
         }
 
-        public async Task<bool> UpdateVehicleType(Guid id, CreateVehicleTypeModel model)
+        public async Task<Response> UpdateVehicleType(Guid id, CreateVehicleTypeModel model)
         {
-            try
+            var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
+            if (entity == null)
             {
-                var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
-                if (entity is null)
+                return new()
                 {
-                    return false;
-                }
-
-                entity.Label = UpdateTypeOfNullAbleObject<string>(entity.Label, model.Label);
-                entity.Seats = UpdateTypeOfNotNullAbleObject<int>(entity.Seats, model.Seats);
-                entity.Fuel = UpdateTypeOfNullAbleObject<string>(entity.Fuel, model.Fuel);
-                entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
-
-                _unitOfWork.VehicleTypeRepository.Update(entity);
-                await _unitOfWork.SaveChangesAsync();
-                return true;
+                    StatusCode = 404,
+                    Message = "Không tìm thấy"
+                };
             }
-            catch (Exception)
+
+            entity.Label = UpdateTypeOfNullAbleObject<string>(entity.Label, model.Label);
+            entity.Seats = UpdateTypeOfNotNullAbleObject<int>(entity.Seats, model.Seats);
+            entity.Fuel = UpdateTypeOfNullAbleObject<string>(entity.Fuel, model.Fuel);
+            entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
+
+            _unitOfWork.VehicleTypeRepository.Update(entity);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
             {
-                return false;
-            }
+                StatusCode = 201,
+                Message = "Cập nhật loại xe thành công!"
+            };
         }
 
-        public async Task<bool> DeleteVehicleType(Guid id)
+        public async Task<Response> DeleteVehicleType(Guid id)
         {
-            try
-            {
-                var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
-                if (entity is null)
-                {
-                    return false;
-                }
 
-                entity.Status = 0;
-                _unitOfWork.VehicleTypeRepository.Update(entity);
-                await _unitOfWork.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception)
+            var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
+            if (entity == null)
             {
-                return false;
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Không tìm thấy"
+                };
             }
+
+            entity.Status = 0;
+            _unitOfWork.VehicleTypeRepository.Update(entity);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Cập nhật trạng thái thành công!"
+            };
         }
     }
 }

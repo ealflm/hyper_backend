@@ -33,7 +33,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
             var card = new Card()
             {
-                Id = Guid.NewGuid(),
+                CardId = Guid.NewGuid(),
                 Uid = uid,
                 Status = 1
             };

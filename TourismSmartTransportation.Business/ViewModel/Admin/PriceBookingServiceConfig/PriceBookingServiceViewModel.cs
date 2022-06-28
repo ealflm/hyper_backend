@@ -2,7 +2,7 @@ using System;
 
 namespace TourismSmartTransportation.Business.ViewModel.Admin.PriceBookingServiceViewModel
 {
-    public class PriceBookingServiceViewModel
+    public class PriceOfBookingServiceViewModel
     {
         public Guid Id { get; set; }
         public Guid VehicleTypeId { get; set; }
