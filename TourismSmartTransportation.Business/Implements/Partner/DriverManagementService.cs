@@ -76,6 +76,13 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     Message = "Không tìm thấy!"
                 };
             }
+
+            var result = await CheckReferenceToOther(id);
+            if (result.StatusCode != 0)
+            {
+                return result;
+            }
+
             entity.Status = 0;
             _unitOfWork.DriverRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -90,7 +97,9 @@ namespace TourismSmartTransportation.Business.Implements.Partner
         {
             var entity = await _unitOfWork.DriverRepository.GetById(id);
             var model = entity.AsDriverViewModel();
-            model.LicensePlates = (await _unitOfWork.VehicleRepository.GetById(model.VehicleId)).LicensePlates;
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
+            model.VehicleName = vehicle.Name;
+            model.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
             return model;
 
         }
@@ -109,7 +118,10 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             .ToListAsync();
             foreach (DriverViewModel x in entity)
             {
-                x.LicensePlates = (await _unitOfWork.VehicleRepository.GetById(x.VehicleId)).LicensePlates;
+                var vehicle = await _unitOfWork.VehicleRepository.GetById(x.VehicleId);
+                x.LicensePlates = vehicle.LicensePlates;
+                x.VehicleName = vehicle.Name;
+                x.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
             }
             return entity;
 
@@ -127,7 +139,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 };
             }
 
-            if (model.Phone != entity.Phone)
+            if (model.Phone != null && model.Phone != entity.Phone)
             {
                 var isExistCode = await _unitOfWork.DriverRepository.Query().AnyAsync(x => x.Phone.Equals(model.Phone));
                 if (isExistCode)
@@ -140,12 +152,31 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 }
             }
 
+            // Check status
+            if (model.Status == null)
+            {
+                entity.Status = entity.Status;
+            }
+            else if (model.Status.Value == 0)
+            {
+                var result = await CheckReferenceToOther(id);
+                if (result.StatusCode != 0)
+                {
+                    return result;
+                }
+                entity.Status = 0;
+            }
+            else
+            {
+                entity.Status = model.Status.Value;
+            }
+
             entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
             entity.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(entity.DateOfBirth, model.DateOfBirth);
             entity.Gender = UpdateTypeOfNotNullAbleObject<bool>(entity.Gender, model.Gender);
             entity.LastName = UpdateTypeOfNullAbleObject<string>(entity.LastName, model.LastName);
             entity.FirstName = UpdateTypeOfNullAbleObject<string>(entity.FirstName, model.FirstName);
-            entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
+            // entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
             entity.ModifiedDate = DateTime.Now;
             _unitOfWork.DriverRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -153,6 +184,30 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
+            };
+        }
+
+        private async Task<Response> CheckReferenceToOther(Guid id)
+        {
+            var checkExistedReferenceToTrip = await _unitOfWork.TripRepository
+                                            .Query()
+                                            .AnyAsync(
+                                                            x => x.DriverId == id &&
+                                                            DateTime.Compare(DateTime.Now, x.TimeStart) >= 0 &&
+                                                            DateTime.Compare(DateTime.Now, x.TimeEnd) <= 0
+                                                    );
+            if (checkExistedReferenceToTrip)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
+                };
+            }
+
+            return new()
+            {
+                StatusCode = 0
             };
         }
     }

@@ -7,6 +7,8 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement
         public Guid Id { get; set; }
         public Guid PartnerId { get; set; }
         public Guid VehicleId { get; set; }
+        public string VehicleName { get; set; }
+        public string VehicleTypeLabel { get; set; }
         public string LicensePlates { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
