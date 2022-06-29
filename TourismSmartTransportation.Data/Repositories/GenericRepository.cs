@@ -65,5 +65,10 @@ namespace TourismSmartTransportation.Data.Repositories
             var entity = await GetById(id);
             _dbSet.Remove(entity);
         }
+
+        public void Remove(TEntity entity)
+        {
+            _dbSet.Remove(entity);
+        }
     }
 }

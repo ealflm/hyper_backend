@@ -257,10 +257,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             partner.ModifiedDate = DateTime.Now;
             if (model.DeleteServiceTypeIdList != null)
             {
-                foreach (Guid x in model.DeleteServiceTypeIdList)
+                foreach (Guid p in model.DeleteServiceTypeIdList)
                 {
-                    var serviceType = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.PartnerId) && x.ServiceTypeId.Equals(x)).FirstOrDefaultAsync();
-                    await _unitOfWork.PartnerServiceTypeRepository.Remove(serviceType.ServiceTypeId);
+                    var serviceType = await _unitOfWork.PartnerServiceTypeRepository
+                                    .Query()
+                                    .Where(x => x.PartnerId == partner.PartnerId && x.ServiceTypeId == p)
+                                    .FirstOrDefaultAsync();
+                    _unitOfWork.PartnerServiceTypeRepository.Remove(serviceType);
                 }
             }
             var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.PartnerId)).ToListAsync();
