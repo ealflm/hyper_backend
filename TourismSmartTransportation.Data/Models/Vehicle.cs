@@ -29,7 +29,6 @@ namespace TourismSmartTransportation.Data.Models
 
         public virtual Partner Partner { get; set; }
         public virtual PriceOfRentingService PriceRenting { get; set; }
-        public virtual RentStation RentStation { get; set; }
         public virtual ServiceType ServiceType { get; set; }
         public virtual VehicleType VehicleType { get; set; }
         public virtual ICollection<CustomerTrip> CustomerTrips { get; set; }

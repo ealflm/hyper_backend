@@ -30,19 +30,22 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             List<CustomerPackagesHistoryViewModel> cusPacHisList = new List<CustomerPackagesHistoryViewModel>();
             foreach (Order order in ordersList)
             {
-                var orderDetail = await _unitOfWork.OrderDetailOfPackageRepository.GetById(order.OrderId);
+                var orderDetail = await _unitOfWork.OrderDetailOfPackageRepository
+                                .Query()
+                                .Where(x => x.OrderId == order.OrderId)
+                                .FirstOrDefaultAsync();
                 if (orderDetail != null)
                 {
                     var package = await _unitOfWork.PackageRepository.GetById(orderDetail.PackageId);
                     var timeEnd = order.CreatedDate.AddDays((double)package.Duration);
                     var packageHistoryItem = new CustomerPackagesHistoryViewModel()
                     {
-                        CustomerId = model.CustomerId.Value,
+                        CustomerId = order.CustomerId,
                         PackageId = package.PackageId,
                         PackageName = package.Name,
                         TimeStart = order.CreatedDate,
                         TimeEnd = timeEnd,
-                        Status = DateTime.Now.CompareTo(timeEnd)
+                        Status = DateTime.Now.CompareTo(timeEnd) > 0 ? 0 : 1
                     };
                     cusPacHisList.Add(packageHistoryItem);
                 }

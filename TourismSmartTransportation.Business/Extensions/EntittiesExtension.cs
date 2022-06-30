@@ -132,8 +132,10 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.OrderId,
-                CreatedDate = item.CreatedDate,
                 CustomerId = item.CustomerId,
+                ServiceTypeId = item.ServiceTypeId != null ? item.ServiceTypeId.Value : null,
+                DiscountId = item.DiscountId != null ? item.DiscountId.Value : null,
+                CreatedDate = item.CreatedDate,
                 TotalPrice = item.TotalPrice,
                 Status = item.Status
             };
