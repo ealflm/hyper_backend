@@ -40,16 +40,16 @@ namespace ApiVer1Url
         public const string OrderDetail = BaseApiUrl + "/order-detail";
 
         // Payment
-        public const string Payment = BaseApiUrl + "/payment";
+        public const string Transaction = BaseApiUrl + "/transaction";
 
 
         // Service type
         public const string ServiceType = BaseApiUrl + "/service-type";
 
-        // Customer Tier History
-        public const string CustomerTierHistory = BaseApiUrl + "/cus-tier-his";
+        // Customer Package History
+        public const string CustomerPackageHistory = BaseApiUrl + "/package-history";
 
-        // Tier
+        // Package
         public const string Package = BaseApiUrl + "/package";
 
         //Route
