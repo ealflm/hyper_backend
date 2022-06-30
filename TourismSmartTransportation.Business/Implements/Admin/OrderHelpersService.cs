@@ -83,7 +83,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     var orderDetail = new OrderDetailOfBookingService()
                     {
                         OrderId = newOrder.OrderId,
-                        PriceOfBookingServiceId = orderDetailsInfo.PriceOfBusServiceId.Value,
+                        PriceOfBookingServiceId = orderDetailsInfo.PriceOfBookingServiceId.Value,
                         Price = orderDetailsInfo.Price,
                         Content = orderDetailsInfo.Content,
                         Quantity = orderDetailsInfo.Quantity,
@@ -96,7 +96,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     var orderDetail = new OrderDetailOfRentingService()
                     {
                         OrderId = newOrder.OrderId,
-                        PriceOfRentingService = orderDetailsInfo.PriceOfBusServiceId.Value,
+                        PriceOfRentingService = orderDetailsInfo.PriceOfRentingServiceId.Value,
                         Price = orderDetailsInfo.Price,
                         Content = orderDetailsInfo.Content,
                         Quantity = orderDetailsInfo.Quantity,
