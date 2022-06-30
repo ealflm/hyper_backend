@@ -26,5 +26,14 @@ namespace ApiVer1Url
 
         // Service type
         public const string ServiceType = BaseApiUrl + "/service-type";
+
+        // profile information
+        public const string Profile = BaseApiUrl + "/profile";
+
+        // Bus Station
+        public const string Station = BaseApiUrl + "/station";
+
+        // tracking-vehicle
+        public const string TrackingVehicle = BaseApiUrl + "/tracking-vehicle";
     }
 }

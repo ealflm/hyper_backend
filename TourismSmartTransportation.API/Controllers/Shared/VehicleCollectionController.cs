@@ -9,7 +9,6 @@ using TourismSmartTransportation.Business.Interfaces.Shared;
 namespace TourismSmartTransportation.API.Controllers
 {
     [ApiController]
-    [Route(ApiVer1Url.Admin.TrackingVehicle)]
     public class VehicleCollectionController : BaseController
     {
 
@@ -21,12 +20,14 @@ namespace TourismSmartTransportation.API.Controllers
         }
 
         [HttpGet]
+        [Route(ApiVer1Url.Admin.TrackingVehicle)]
         public async Task<IEnumerable<VehicleCollection>> Get()
         {
             return await _service.GetAll();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet]
+        [Route(ApiVer1Url.Admin.TrackingVehicle + "/{id}")]
         public async Task<ActionResult<VehicleCollection>> GetById(string id)
         {
             return SendResponse(await _service.GetById(id));
@@ -40,6 +41,7 @@ namespace TourismSmartTransportation.API.Controllers
         }
 
         [HttpPost]
+        [Route(ApiVer1Url.Admin.TrackingVehicle)]
         public async Task<IActionResult> Create(AddVehicleCollectionModel Vehicle)
         {
             return SendResponse(await _service.Create(Vehicle));
@@ -54,9 +56,17 @@ namespace TourismSmartTransportation.API.Controllers
         // }
 
         [HttpDelete]
+        [Route(ApiVer1Url.Admin.TrackingVehicle)]
         public async Task<IActionResult> Delete([FromQuery] string id)
         {
             return SendResponse(await _service.Delete(id));
+        }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.TrackingVehicle)]
+        public async Task<IEnumerable<VehicleCollection>> GetVehiclesListByPartner(Guid partnerId)
+        {
+            return await _service.GetVehiclesListByPartner(partnerId);
         }
     }
 }

@@ -135,5 +135,22 @@ namespace TourismSmartTransportation.Business.Implements.Vehicle
         {
             throw new System.NotImplementedException();
         }
+
+        public async Task<List<VehicleCollection>> GetVehiclesListByPartner(Guid partnetId)
+        {
+            List<VehicleCollection> vehiclesTrackingList = new List<VehicleCollection>();
+            VehicleSearchModel model = new VehicleSearchModel();
+            model.PartnerId = partnetId;
+            var vehiclesList = await _vehicleManagementService.Search(model);
+            foreach (var p in vehiclesList)
+            {
+                var lastedVehicleDataRealtime = await _vehicles.Find(vehicle => vehicle.VehicleId.Equals(p.Id)).ToListAsync();
+                if (lastedVehicleDataRealtime.Count > 0)
+                {
+                    vehiclesTrackingList.Add(lastedVehicleDataRealtime[lastedVehicleDataRealtime.Count - 1]);
+                }
+            }
+            return vehiclesTrackingList;
+        }
     }
 }
