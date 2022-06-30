@@ -26,6 +26,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 .Where(x => x.CustomerId == customerId)
                 .Select(x => x.AsOrderViewModel())
                 .ToListAsync();
+            foreach (var order in orders)
+            {
+                if (order.ServiceTypeId != null)
+                {
+                    order.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value)).Name;
+                }
+            }
             SearchResultViewModel<OrderViewModel> result = null;
             result = new SearchResultViewModel<OrderViewModel>()
             {

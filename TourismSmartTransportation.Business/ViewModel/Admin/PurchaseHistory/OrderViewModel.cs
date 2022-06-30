@@ -11,6 +11,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.PurchaseHistory
         public Guid Id { get; set; }
         public Guid CustomerId { get; set; }
         public Guid? ServiceTypeId { get; set; }
+        public string ServiceTypeName { get; set; }
         public Guid? DiscountId { get; set; }
         public DateTime CreatedDate { get; set; }
         public decimal TotalPrice { get; set; }
