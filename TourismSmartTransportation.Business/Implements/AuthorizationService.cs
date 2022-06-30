@@ -191,7 +191,7 @@ namespace TourismSmartTransportation.Business.Implements
                     {
                         authClaims.Add(new Claim("Role", "Partner"));
                         var serviceTypeList = _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(id)).ToList();
-                        string serviceTypeIds = null;
+                        string serviceTypeIds = "";
                         foreach (PartnerServiceType x in serviceTypeList)
                         {
                             serviceTypeIds += x.ServiceTypeId + "|";
