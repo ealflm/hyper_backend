@@ -131,7 +131,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             var newOrderDetailInfo = new OrderDetailsInfo()
             {
-                PackageId = model.PackageId.Value,
+                PackageId = model.PriceOfBusServiceId != null ? model.PackageId.Value : null,
                 PriceOfBusServiceId = model.PriceOfBusServiceId != null ? model.PriceOfBusServiceId.Value : null,
                 PriceOfBookingServiceId = model.PriceOfBookingServiceId != null ? model.PriceOfBookingServiceId.Value : null,
                 PriceOfRentingServiceId = model.PriceOfRentingServiceId != null ? model.PriceOfRentingServiceId.Value : null,
