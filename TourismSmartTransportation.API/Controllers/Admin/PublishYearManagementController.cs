@@ -24,8 +24,6 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             _service = service;
         }
 
-
-        
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] PublishYearSearchModel model)
         {
@@ -40,13 +38,13 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
         // POST api/<CategoryManagementController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] PublishYearSearchModel model)
+        public async Task<IActionResult> Post([FromBody] CreatePublishYearModel model)
         {
             return SendResponse(await _service.Add(model));
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] PublishYearSearchModel model)
+        public async Task<IActionResult> Put(Guid id, [FromBody] UpdatePublishYearModel model)
         {
             return SendResponse(await _service.Update(id, model));
         }

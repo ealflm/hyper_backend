@@ -35,6 +35,12 @@ namespace TourismSmartTransportation.Data.Repositories
             return data;
         }
 
+        public async Task<TEntity> GetById(Guid id1, Guid id2)
+        {
+            var data = await _dbSet.FindAsync(id1, id2);
+            return data;
+        }
+
         public async Task Add(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
@@ -63,6 +69,11 @@ namespace TourismSmartTransportation.Data.Repositories
         public async Task Remove(Guid id)
         {
             var entity = await GetById(id);
+            _dbSet.Remove(entity);
+        }
+
+        public void Remove(TEntity entity)
+        {
             _dbSet.Remove(entity);
         }
     }

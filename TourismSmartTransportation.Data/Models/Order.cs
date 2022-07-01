@@ -20,7 +20,7 @@ namespace TourismSmartTransportation.Data.Models
 
         public Guid OrderId { get; set; }
         public Guid CustomerId { get; set; }
-        public Guid ServiceTypeId { get; set; }
+        public Guid? ServiceTypeId { get; set; }
         public Guid? DiscountId { get; set; }
         public DateTime CreatedDate { get; set; }
         public decimal TotalPrice { get; set; }

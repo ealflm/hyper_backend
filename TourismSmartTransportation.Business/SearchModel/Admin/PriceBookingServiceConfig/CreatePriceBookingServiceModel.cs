@@ -4,15 +4,15 @@ using TourismSmartTransportation.Business.Validation;
 
 namespace TourismSmartTransportation.Business.SearchModel.Admin.PriceBookingServiceConfig
 {
-    public class CreatePriceBookingServiceModel
+    public class CreatePriceBookingServiceModel : PriceBookingModel
     {
         [Required]
-        public Guid VehicleTypeId { get; set; }
+        public override Guid? VehicleTypeId { get; set; }
         [Required]
-        public decimal FixedPrice { get; set; }
+        public override decimal? FixedPrice { get; set; }
         [Required]
-        public decimal FixedDistance { get; set; }
+        public override decimal? FixedDistance { get; set; }
         [Required]
-        public decimal PricePerKilometer { get; set; }
+        public override decimal? PricePerKilometer { get; set; }
     }
 }

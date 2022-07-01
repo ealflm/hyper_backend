@@ -25,10 +25,12 @@ using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Implements;
 using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Implements.Company;
+using TourismSmartTransportation.Business.Implements.Mobile.Customer;
 using TourismSmartTransportation.Business.Implements.Partner;
 using TourismSmartTransportation.Business.Implements.Vehicle;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Company;
+using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
 using TourismSmartTransportation.Business.Interfaces.Partner;
 using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Data.Context;
@@ -164,9 +166,9 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IPartnerManagementService, PartnerManagementService>();
             services.AddScoped<ICustomerManagementService, CustomerManagementService>();
             services.AddScoped<IRentStationManagementService, RentStationManagementService>();
-            // services.AddScoped<IPurchaseHistoryService, PurchaseHistoryService>();
+            services.AddScoped<IPurchaseHistoryService, PurchaseHistoryService>();
             services.AddScoped<IServiceTypeManagementService, ServiceTypeManagementService>();
-            // services.AddScoped<ICustomerTierHistoryService, CustomerTierHistoryService>();
+            services.AddScoped<ICustomerPackagesHistoryService, CustomerPackagesHistoryService>();
             services.AddScoped<IPackageService, PackageService>();
             services.AddScoped<IRouteManagementService, RouteManagementService>();
             services.AddScoped<IPriceBusServiceConfig, PriceBusServiceConfigService>();
@@ -178,6 +180,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IVehicleCollectionService, VehicleCollectionService>();
             services.AddScoped<IVehicleManagementService, VehicleManagementService>();
             services.AddScoped<IDriverManagementService, DriverManagementService>();
+            services.AddScoped<IOrderHelpersService, OrderHelpersService>();
 
             // Azure blob
             services.AddScoped(_ => new BlobServiceClient(Configuration.GetConnectionString("AzureBlobStorage")));

@@ -5,17 +5,15 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.VehicleType
 {
     public class CreateVehicleTypeModel
     {
-        [NotAllowedEmptyStringValidator]
+        [Required]
         [StringLength(255)]
         public string Label { get; set; }
 
+        [Required]
         [Range(1, 70)]
         public int Seats { get; set; }
 
+        [Required]
         public string Fuel { get; set; }
-
-        public decimal Price { get; set; }
-
-        public int? Status { get; set; }
     }
 }

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Admin.PublishYearManagement;
@@ -14,8 +11,8 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
     {
         Task<SearchResultViewModel<PublishYearViewModel>> GetAll(PublishYearSearchModel model);
         Task<PublishYearViewModel> Get(Guid id);
-        Task<Response> Add(PublishYearSearchModel model);
-        Task<Response> Update(Guid id, PublishYearSearchModel model);
+        Task<Response> Add(CreatePublishYearModel model);
+        Task<Response> Update(Guid id, UpdatePublishYearModel model);
         Task<Response> Delete(Guid id);
     }
 }

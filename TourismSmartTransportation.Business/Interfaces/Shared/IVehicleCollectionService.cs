@@ -14,5 +14,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Shared
         public Task<Response> Create(AddVehicleCollectionModel product);
         public Task<Response> Update(VehicleCollection product);
         public Task<Response> Delete(string id);
+        public Task<List<VehicleCollection>> GetVehiclesListByPartner(Guid partnerId);
     }
 }

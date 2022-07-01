@@ -18,5 +18,7 @@ namespace TourismSmartTransportation.Data.Interfaces
         void Update(TEntity entity);
 
         Task Remove(Guid id);
+
+        void Remove(TEntity entity);
     }
 }

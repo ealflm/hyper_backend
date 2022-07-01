@@ -25,6 +25,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var list = await _unitOfWork.VehicleTypeRepository
                         .Query()
                         .Where(x => model.Label == null || x.Label.Contains(model.Label))
+                        .Where(x => model.Fuel == null || x.Fuel.Contains(model.Fuel))
+                        .Where(x => model.Seats == null || x.Seats.ToString().Contains(model.Seats.ToString()))
                         .Where(x => model.Status == null || x.Status == model.Status.Value)
                         .Select(item => item.AsVehicleTypeViewModel())
                         .ToListAsync();
@@ -50,7 +52,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Label = model.Label,
                 Seats = model.Seats,
                 Fuel = model.Fuel,
-                Status = model.Status != null ? model.Status.Value : 1
+                Status = 1
             };
             await _unitOfWork.VehicleTypeRepository.Add(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -62,7 +64,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         }
 
-        public async Task<Response> UpdateVehicleType(Guid id, CreateVehicleTypeModel model)
+        public async Task<Response> UpdateVehicleType(Guid id, UpdateVehicleTypeModel model)
         {
             var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
             if (entity == null)
@@ -74,10 +76,27 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
+            if (model.Status == null)
+            {
+                entity.Status = entity.Status;
+            }
+            else if (model.Status.Value == 0)
+            {
+                var result = await CheckReferenceToOther(id);
+                if (result.StatusCode != 0)
+                {
+                    return result;
+                }
+                entity.Status = 0;
+            }
+            else
+            {
+                entity.Status = model.Status.Value;
+            }
+
             entity.Label = UpdateTypeOfNullAbleObject<string>(entity.Label, model.Label);
             entity.Seats = UpdateTypeOfNotNullAbleObject<int>(entity.Seats, model.Seats);
             entity.Fuel = UpdateTypeOfNullAbleObject<string>(entity.Fuel, model.Fuel);
-            entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
 
             _unitOfWork.VehicleTypeRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -90,7 +109,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> DeleteVehicleType(Guid id)
         {
-
             var entity = _unitOfWork.VehicleTypeRepository.GetById(id).Result;
             if (entity == null)
             {
@@ -101,6 +119,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
+            var result = await CheckReferenceToOther(id);
+            if (result.StatusCode != 0)
+            {
+                return result;
+            }
+
             entity.Status = 0;
             _unitOfWork.VehicleTypeRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -108,6 +132,36 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 StatusCode = 201,
                 Message = "Cập nhật trạng thái thành công!"
+            };
+        }
+
+        private async Task<Response> CheckReferenceToOther(Guid id)
+        {
+            var obj = new Response()
+            {
+                StatusCode = 400,
+                Message = "Dữ liệu đã được tham chiếu, bạn không thể xóa dữ liệu này"
+            };
+
+            var checkExistedReferenceToVehicle = await _unitOfWork.VehicleRepository
+                                                                .Query()
+                                                                .AnyAsync(x => x.VehicleId == id && x.Status == 1);
+            if (checkExistedReferenceToVehicle)
+            {
+                return obj;
+            }
+
+            var checkExistedReferenceToPriceOfBookingService = await _unitOfWork.PriceOfBookingServiceRepository
+                                                                    .Query()
+                                                                    .AnyAsync(x => x.VehicleTypeId == id && x.Status == 1);
+            if (checkExistedReferenceToPriceOfBookingService)
+            {
+                return obj;
+            }
+
+            return new()
+            {
+                StatusCode = 0
             };
         }
     }
