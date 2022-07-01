@@ -174,7 +174,7 @@ namespace TourismSmartTransportation.Business.Implements
             foreach (var x in model.GetType().GetProperties())
             {
                 authClaims.Add(new Claim(x.Name, (x.GetValue(model) ?? "").ToString()));
-                if (x.Name.Equals("Id"))
+                if (x.Name.Equals("AdminId") || x.Name.Equals("PartnerId") || x.Name.Equals("CustomerId") || x.Name.Equals("DriverId"))
                 {
                     id = new Guid((x.GetValue(model)).ToString());
                 }
