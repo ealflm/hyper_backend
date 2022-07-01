@@ -35,5 +35,8 @@ namespace ApiVer1Url
 
         // tracking-vehicle
         public const string TrackingVehicle = BaseApiUrl + "/tracking-vehicle";
+
+        // trip
+        public const string Trip = BaseApiUrl + "/trip";
     }
 }

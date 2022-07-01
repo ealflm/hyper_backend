@@ -35,7 +35,14 @@ namespace TourismSmartTransportation.API.Controllers
 
         [HttpGet]
         [Route(ApiVer1Url.Admin.TrackingVehicle + "/vehicle")]
-        public async Task<ActionResult<VehicleCollection>> GetByVehicleId([FromQuery] Guid vehicleId)
+        public async Task<ActionResult<VehicleCollection>> GetVehicleIdByAdmin([FromQuery] Guid vehicleId)
+        {
+            return SendResponse(await _service.GetByVehicleId(vehicleId));
+        }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.TrackingVehicle + "/vehicle")]
+        public async Task<ActionResult<VehicleCollection>> GetVehicleIdByPartner([FromQuery] Guid vehicleId)
         {
             return SendResponse(await _service.GetByVehicleId(vehicleId));
         }

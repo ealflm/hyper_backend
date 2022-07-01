@@ -4,7 +4,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.Authorization
 {
     public class AdminViewModel
     {
-        public Guid Id { get; set; }
+        public Guid AdminId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }

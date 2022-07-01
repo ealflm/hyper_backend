@@ -126,7 +126,10 @@ namespace TourismSmartTransportation.Business.Implements.Vehicle
             var vehicle = await _vehicles.Find(vehicle => vehicle.VehicleId.Equals(vehicleId)).ToListAsync();
             if (vehicle.Count == 0)
             {
-                return null;
+                return new VehicleCollection()
+                {
+                    Id = "-1"
+                };
             }
             return vehicle[vehicle.Count - 1];
         }

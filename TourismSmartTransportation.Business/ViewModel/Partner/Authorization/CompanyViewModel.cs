@@ -8,7 +8,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.Authorization
 {
     public class CompanyViewModel
     {
-        public Guid Id { get; set; }
+        public Guid PartnerId { get; set; }
         public string Username { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }

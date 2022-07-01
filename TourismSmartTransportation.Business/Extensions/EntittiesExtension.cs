@@ -420,5 +420,21 @@ namespace TourismSmartTransportation.Business.Extensions
                 Status = item.Status
             };
         }
+
+        public static TripViewModel AsTripViewModel(this Trip item)
+        {
+            return new()
+            {
+                TripId = item.TripId,
+                RouteId = item.RouteId,
+                DriverId = item.DriverId,
+                VehicleId = item.VehicleId,
+                TripName = item.TripName,
+                DayOfWeek = item.DayOfWeek,
+                TimeStart = item.TimeStart,
+                TimeEnd = item.TimeEnd,
+                Status = item.Status
+            };
+        }
     }
 }
