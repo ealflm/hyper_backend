@@ -20,6 +20,12 @@ namespace TourismSmartTransportation.API.Controllers
                 statusCode = 404;
                 message = "Không tìm thấy";
             }
+            else if (result.GetType().GetProperties()[0].Name == "Id" && (result.GetType().GetProperties()[0].GetValue(result)).ToString() == "-1")
+            {
+                statusCode = 404;
+                message = "Không thể tìm thấy xe trên bản đồ";
+                result = null;
+            }
             return HandleObjectResponse(statusCode, message, result);
         }
 

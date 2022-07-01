@@ -836,9 +836,9 @@ namespace TourismSmartTransportation.Data.Context
 
             modelBuilder.Entity<Trip>(entity =>
             {
-                entity.HasKey(e => new { e.DriverId, e.PartnerId, e.VehicleId, e.RouteId });
-
                 entity.ToTable("Trip");
+
+                entity.Property(e => e.TripId).ValueGeneratedNever();
 
                 entity.Property(e => e.TimeEnd).HasColumnType("datetime");
 
@@ -853,11 +853,6 @@ namespace TourismSmartTransportation.Data.Context
                     .HasForeignKey(d => d.DriverId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Trip__DriverId__3493CFA7");
-
-                entity.HasOne(d => d.Partner)
-                    .WithMany(p => p.Trips)
-                    .HasForeignKey(d => d.PartnerId)
-                    .HasConstraintName("FK__Trip__PartnerId__3587F3E0");
 
                 entity.HasOne(d => d.Route)
                     .WithMany(p => p.Trips)
