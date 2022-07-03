@@ -48,11 +48,13 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             };
         }
 
-        public async Task<SearchResultViewModel<RouteViewModel>> GetAll()
+        public async Task<SearchResultViewModel<RouteViewModel>> GetAll(RouteSearchModel model)
         {
             var routes = await _unitOfWork.RouteRepository.Query()
-               .Select(x => x.AsRouteViewModel())
-               .ToListAsync();
+                        .Where(x => model.PartnerId == null || x.PartnerId == model.PartnerId.Value)
+                        .Where(x => model.Name == null || x.Name.Contains(model.Name))
+                        .Select(x => x.AsRouteViewModel())
+                        .ToListAsync();
             foreach (RouteViewModel x in routes)
             {
                 var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(y => y.RouteId.Equals(x.Id)).ToListAsync();

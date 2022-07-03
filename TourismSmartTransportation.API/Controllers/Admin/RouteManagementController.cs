@@ -24,9 +24,9 @@ namespace TourismSmartTransportation.API.Controllers.Admin
 
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] RouteSearchModel model)
         {
-            return SendResponse(await _service.GetAll());
+            return SendResponse(await _service.GetAll(model));
         }
 
         [HttpGet("{id}")]

@@ -12,7 +12,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Partner
 {
     public interface IRouteManagementService
     {
-        Task<SearchResultViewModel<RouteViewModel>> GetAll();
+        Task<SearchResultViewModel<RouteViewModel>> GetAll(RouteSearchModel model);
         Task<Response> CreateRoute(CreateRouteModel model);
         Task<RouteViewModel> GetRouteById(Guid id);
     }
