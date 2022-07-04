@@ -251,5 +251,17 @@ namespace TourismSmartTransportation.Business.Implements
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
             return new string(Enumerable.Repeat(chars, lengthOfString).Select(s => s[random.Next(s.Length)]).ToArray());
         }
+
+        /// <summary>
+        /// return a random string
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static string GeneratePinCodeAuto(int lengthOfString)
+        {
+            var random = new Random();
+            const string chars = "0123456789";
+            return new string(Enumerable.Repeat(chars, lengthOfString).Select(s => s[random.Next(s.Length)]).ToArray());
+        }
     }
 }
