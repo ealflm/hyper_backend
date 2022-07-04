@@ -11,6 +11,7 @@ namespace ApiVer1Url
         // Authorization
         public const string Login = BaseApiUrl + "/authorization/login";
         public const string Register = BaseApiUrl + "/authorization/register";
+        public const string CheckPhoneNumber = BaseApiUrl + "/authorization/login/verify";
 
         // Package history
         public const string CustomerPackageHistory = BaseApiUrl + "/package-history";
