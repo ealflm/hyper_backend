@@ -18,13 +18,18 @@ namespace TourismSmartTransportation.API.Validation
             var objectModel = context.ActionArguments.SingleOrDefault(o => o.Value is Object);
             if (objectModel.Value is null)
             {
-                context.Result = new BadRequestObjectResult("Invalid data");
+                context.Result = new BadRequestObjectResult(new Response() { StatusCode = 422, Message = "Cannot empty data" });
                 return;
             }
 
             if (!context.ModelState.IsValid)
             {
                 context.Result = new BadRequestObjectResult(context.ModelState);
+            }
+
+            if (objectModel.Value.GetType() != typeof(Object))
+            {
+                return;
             }
 
             foreach (var p in objectModel.Value.GetType().GetProperties())

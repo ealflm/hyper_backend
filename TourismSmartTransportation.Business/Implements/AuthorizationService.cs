@@ -315,6 +315,23 @@ namespace TourismSmartTransportation.Business.Implements
             };
         }
 
+        public async Task<Response> CheckExistedPhoneNumber(string phoneNumber)
+        {
+            var existedPhone = await _unitOfWork.CustomerRepository.Query().AnyAsync(x => x.Phone == phoneNumber);
+            if (existedPhone)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Số điện thoại đã được sử dụng!"
+                };
+            }
 
+            return new()
+            {
+                StatusCode = 200,
+                Message = "Số điện thoại có thể đăng ký tài khoản!"
+            };
+        }
     }
 }
