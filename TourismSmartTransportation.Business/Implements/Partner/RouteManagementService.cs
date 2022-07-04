@@ -84,7 +84,11 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 return null;
             }
-            var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(entity.RouteId)).ToListAsync();
+            var stationRouteList = await _unitOfWork.StationRouteRepository
+                                .Query()
+                                .Where(x => x.RouteId.Equals(entity.RouteId))
+                                .OrderBy(x => x.OrderNumber)
+                                .ToListAsync();
             var route = entity.AsRouteViewModel();
             route.StationList = new List<ViewModel.Admin.StationManagement.StationViewModel>();
             foreach (StationRoute s in stationRouteList)
