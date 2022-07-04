@@ -36,7 +36,7 @@ namespace TourismSmartTransportation.Business.Implements
 
         public void SendSMS(string phone, string message)
         {
-            phone ="84"+ phone.Substring(1);
+            phone = "84" + phone.Substring(1);
             var VonageClient = new VonageClient(_credentials);
             var response = VonageClient.SmsClient.SendAnSms(new Vonage.Messaging.SendSmsRequest()
             {

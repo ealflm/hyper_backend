@@ -6,14 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TourismSmartTransportation.API.Utilities.Response;
-using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
+using TourismSmartTransportation.Business.SearchModel.Mobile.Customer.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 
-namespace TourismSmartTransportation.API.Controllers.Admin
+namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 {
     [ApiController]
-    public class AuthorizationController : ControllerBase
+    public class AuthorizationController : BaseController
     {
         private readonly Business.Interfaces.IAuthorizationService _authorizationService;
 
@@ -23,10 +23,10 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpPost]
-        [Route(ApiVer1Url.Admin.Login)]
+        [Route(ApiVer1Url.Customer.Login)]
         public async Task<IActionResult> Login([FromBody] LoginSearchModel model)
         {
-            var result = await _authorizationService.Login(model, global::Login.Admin);
+            var result = await _authorizationService.Login(model, global::Login.Customer);
 
             if (result.Data == null)
             {
@@ -37,17 +37,11 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpPost]
-        [Route(ApiVer1Url.Admin.Register)]
-        public async Task<IActionResult> Register([FromForm] RegisterSearchModel model)
+        [Route(ApiVer1Url.Customer.Register)]
+        public async Task<IActionResult> RegisterForCustomer([FromForm] RegisterModel model)
         {
-            var result = await _authorizationService.RegisterForAdmin(model);
-
-            if (result != null)
-            {
-                return ValidationProblem(result.Message);
-            }
-
-            return Ok();
+            return SendResponse(await _authorizationService.RegisterForCustomer(model));
         }
+
     }
 }

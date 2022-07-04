@@ -10,6 +10,7 @@ namespace ApiVer1Url
 
         // Authorization
         public const string Login = BaseApiUrl + "/authorization/login";
+        public const string Register = BaseApiUrl + "/authorization/register";
 
         // Package history
         public const string CustomerPackageHistory = BaseApiUrl + "/package-history";

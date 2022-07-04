@@ -1,7 +1,7 @@
 ﻿public enum Login
 {
-    Admin,
-    Company,
-    Customer,
-    Driver
+    Admin, // 0
+    Company, // 1
+    Customer, // 2
+    Driver // 3
 }

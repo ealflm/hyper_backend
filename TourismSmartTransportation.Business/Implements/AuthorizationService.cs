@@ -10,9 +10,11 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Interfaces;
 using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
+using TourismSmartTransportation.Business.SearchModel.Mobile.Customer.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Partner.Authorization;
 using TourismSmartTransportation.Data.Interfaces;
@@ -53,7 +55,7 @@ namespace TourismSmartTransportation.Business.Implements
                         }
                     case 2:
                         {
-                            model = await LoginEmailPassword<AdminViewModel>(loginModel.UserName, loginModel.Password, new AdminViewModel(), loginType);
+                            model = await LoginEmailPassword<CustomerViewModel>(loginModel.UserName, loginModel.Password, new CustomerViewModel(), loginType);
                             break;
                         }
                     case 3:
@@ -81,7 +83,7 @@ namespace TourismSmartTransportation.Business.Implements
                         }
                     case 2:
                         {
-                            result = GetToken((AdminViewModel)model.Data, 2);
+                            result = GetToken((CustomerViewModel)model.Data, 2);
                             break;
                         }
                     case 3:
@@ -121,14 +123,14 @@ namespace TourismSmartTransportation.Business.Implements
                     }
                 case 2:
                     {
-                        user = await _unitOfWork.DriverRepository.Query()
+                        user = await _unitOfWork.CustomerRepository.Query()
                         .Where(x => x.Phone == email && x.Password != null)
                         .FirstOrDefaultAsync();
                         break;
                     }
                 case 3:
                     {
-                        user = await _unitOfWork.CustomerRepository.Query()
+                        user = await _unitOfWork.DriverRepository.Query()
                         .Where(x => x.Phone == email && x.Password != null)
                         .FirstOrDefaultAsync();
                         break;
@@ -235,7 +237,7 @@ namespace TourismSmartTransportation.Business.Implements
             return true;
         }
 
-        public async Task<AuthorizationResultViewModel> Register(RegisterSearchModel model)
+        public async Task<AuthorizationResultViewModel> RegisterForAdmin(RegisterSearchModel model)
         {
             AuthorizationResultViewModel resultViewModel = null;
             bool isExist = await _unitOfWork.AdminRepository.Query()
@@ -268,6 +270,49 @@ namespace TourismSmartTransportation.Business.Implements
             }
 
             return resultViewModel;
+        }
+
+        public async Task<Response> RegisterForCustomer(RegisterModel model)
+        {
+            bool isExist = await _unitOfWork.CustomerRepository.Query()
+                .AnyAsync(x => x.Phone == model.Phone);
+            if (!isExist)
+            {
+                CreatePasswordHash(model.Pin, out byte[] passwordHash, out byte[] passwordSalt);
+
+                var customer = new Customer()
+                {
+                    CustomerId = Guid.NewGuid(),
+                    Phone = model.Phone,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Password = passwordHash,
+                    Salt = passwordSalt,
+                    Gender = model.Gender,
+                    CreatedDate = DateTime.Now,
+                    ModifiedDate = DateTime.Now,
+                    PhotoUrl = await UploadFile(model.UploadFile, Container.Customer),
+                    Status = 1
+                };
+
+                await _unitOfWork.CustomerRepository.Add(customer);
+                await _unitOfWork.SaveChangesAsync();
+
+            }
+            else
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Số điện thoại đã được sử dụng"
+                };
+            }
+
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Đăng ký thành công!"
+            };
         }
 
 
