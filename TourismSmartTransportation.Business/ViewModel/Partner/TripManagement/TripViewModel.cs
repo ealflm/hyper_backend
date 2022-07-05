@@ -6,7 +6,6 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement
     {
         public Guid TripId { get; set; }
         public Guid DriverId { get; set; }
-        public Guid PartnerId { get; set; }
         public Guid VehicleId { get; set; }
         public string LicensePlates { get; set; }
         public Guid RouteId { get; set; }
