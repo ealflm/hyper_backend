@@ -21,7 +21,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class PartnerManagementService : AccountService, IPartnerManagementService
     {
-        public PartnerManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials, HttpClient client) : base(unitOfWork, blobServiceClient, credentials, client)
+        public PartnerManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials,
+                                        HttpClient client, ITwilioSettings twilioSettings) : base(unitOfWork, blobServiceClient, credentials, client, twilioSettings)
         {
         }
 
