@@ -19,5 +19,7 @@ namespace TourismSmartTransportation.Business.Interfaces
         Task<Response> CheckExistedPhoneNumber(string phoneNumber);
         Task<Response> SendOTP(string phone);
         Task<Response> VerifyOTP(OTPVerificationModel model);
+        Task<Response> SendOTPByTwilio(string phone);
+        Task<Response> VerifyOTPByTwilio(OTPVerificationModel model);
     }
 }

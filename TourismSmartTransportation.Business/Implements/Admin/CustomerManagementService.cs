@@ -16,7 +16,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class CustomerManagementService : AccountService, ICustomerManagementService
     {
-        public CustomerManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        public CustomerManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, ITwilioSettings twilioSettings) : base(unitOfWork, blobServiceClient, twilioSettings)
         {
         }
 

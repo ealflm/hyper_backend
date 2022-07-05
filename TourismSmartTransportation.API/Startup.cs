@@ -22,6 +22,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using TourismSmartTransportation.API.Utilities.Swagger;
 using TourismSmartTransportation.API.Validation;
+using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Implements;
 using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Implements.Company;
@@ -205,6 +206,12 @@ namespace TourismSmartTransportation.API
                 client.DefaultRequestHeaders.Add("x-functions-key", Configuration.GetSection("SendEmailFunction").GetSection("Key").Value);
                 return client;
             });
+
+            // Twilio setting
+            services.AddSingleton<ITwilioSettings, TwilioSettings>(_ =>
+              Configuration
+                  .GetSection(nameof(TwilioSettings))
+                  .Get<TwilioSettings>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

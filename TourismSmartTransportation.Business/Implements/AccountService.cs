@@ -11,6 +11,11 @@ using TourismSmartTransportation.Data.Interfaces;
 using Vonage;
 using Vonage.Request;
 using Vonage.Verify;
+using Twilio;
+using Twilio.Rest.Verify.V2;
+using Twilio.Rest.Verify.V2.Service;
+using TourismSmartTransportation.Business.ViewModel.Mobile.Customer.Authorization;
+using TourismSmartTransportation.Business.CommonModel;
 
 namespace TourismSmartTransportation.Business.Implements
 {
@@ -18,11 +23,15 @@ namespace TourismSmartTransportation.Business.Implements
     {
         private readonly Credentials _credentials;
         private readonly HttpClient _client;
-        public AccountService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private readonly ITwilioSettings _twilioSettings;
+
+        public AccountService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, ITwilioSettings twilioSettings) : base(unitOfWork, blobServiceClient)
         {
+            _twilioSettings = twilioSettings;
         }
 
-        public AccountService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials, HttpClient client) : base(unitOfWork, blobServiceClient)
+        public AccountService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials,
+                                HttpClient client) : base(unitOfWork, blobServiceClient)
         {
             _credentials = credentials;
             _client = client;
@@ -122,6 +131,42 @@ namespace TourismSmartTransportation.Business.Implements
                     }
             }
             return statusCode;
+        }
+
+        public async Task<OTPResponse> SendOTPVerificationByTwilio(string phone)
+        {
+            phone = "84" + phone.Substring(1);
+            TwilioClient.Init(_twilioSettings.AccountSid, _twilioSettings.AuthToken);
+            // var service = await ServiceResource.CreateAsync(friendlyName: "Temper service OTP code", codeLength: 4); // create service
+
+            var verification = await VerificationResource.CreateAsync(
+                to: $"+{phone}",
+                channel: "sms",
+                pathServiceSid: _twilioSettings.RequestId
+            );
+            return new()
+            {
+                StatusCode = 200,
+                Status = verification.Status,
+                RequestId = _twilioSettings.RequestId
+            };
+        }
+
+        public async Task<OTPResponse> VerifyCheckOTPByTwilio(string phone, string OtpCode, string requestId)
+        {
+            phone = "84" + phone.Substring(1);
+            TwilioClient.Init(_twilioSettings.AccountSid, _twilioSettings.AuthToken);
+
+            var verificationCheck = await VerificationCheckResource.CreateAsync(
+                to: $"+{phone}",
+                code: OtpCode,
+                pathServiceSid: requestId
+            );
+            return new()
+            {
+                StatusCode = 200,
+                Status = verificationCheck.Status,
+            };
         }
     }
 }
