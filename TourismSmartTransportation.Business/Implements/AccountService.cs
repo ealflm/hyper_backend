@@ -16,6 +16,7 @@ using Twilio.Rest.Verify.V2;
 using Twilio.Rest.Verify.V2.Service;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer.Authorization;
 using TourismSmartTransportation.Business.CommonModel;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace TourismSmartTransportation.Business.Implements
 {
@@ -31,10 +32,11 @@ namespace TourismSmartTransportation.Business.Implements
         }
 
         public AccountService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials,
-                                HttpClient client) : base(unitOfWork, blobServiceClient)
+                                HttpClient client, ITwilioSettings twilioSettings) : base(unitOfWork, blobServiceClient)
         {
             _credentials = credentials;
             _client = client;
+            _twilioSettings = twilioSettings;
         }
 
         public static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
@@ -167,6 +169,17 @@ namespace TourismSmartTransportation.Business.Implements
                 StatusCode = 200,
                 Status = verificationCheck.Status,
             };
+        }
+
+        public async Task SendSMSByTwilio(string phone, string message)
+        {
+            phone = "84" + phone.Substring(1);
+            TwilioClient.Init(_twilioSettings.AccountSid, _twilioSettings.AuthToken);
+            var smsMessage = await MessageResource.CreateAsync(
+                body: message,
+                from: new Twilio.Types.PhoneNumber(_twilioSettings.PhoneNumber),
+                to: new Twilio.Types.PhoneNumber($"+{phone}")
+            );
         }
     }
 }

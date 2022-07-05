@@ -6,6 +6,7 @@ namespace TourismSmartTransportation.Business.CommonModel
         public string AccountSid { get; set; }
         public string AuthToken { get; set; }
         public string RequestId { get; set; }
+        public string PhoneNumber { get; set; }
     }
 
     public interface ITwilioSettings
@@ -13,5 +14,6 @@ namespace TourismSmartTransportation.Business.CommonModel
         string AccountSid { get; set; }
         string AuthToken { get; set; }
         string RequestId { get; set; }
+        string PhoneNumber { get; set; }
     }
 }

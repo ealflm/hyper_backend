@@ -15,7 +15,7 @@ namespace TourismSmartTransportation.Data.Models
 
         public Guid DriverId { get; set; }
         public Guid PartnerId { get; set; }
-        public Guid VehicleId { get; set; }
+        public Guid? VehicleId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string PhotoUrl { get; set; }

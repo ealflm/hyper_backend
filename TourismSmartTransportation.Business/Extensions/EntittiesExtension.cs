@@ -416,7 +416,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 PartnerId = item.PartnerId,
                 Phone = item.Phone,
                 PhotoUrl = item.PhotoUrl,
-                VehicleId = item.VehicleId,
+                VehicleId = item.VehicleId != null ? item.VehicleId.Value : null,
                 Status = item.Status
             };
         }

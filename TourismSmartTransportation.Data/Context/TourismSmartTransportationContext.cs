@@ -296,7 +296,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Vehicle)
                     .WithMany(p => p.Drivers)
                     .HasForeignKey(d => d.VehicleId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Driver__VehicleI__30C33EC3");
             });
 

@@ -9,8 +9,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.DriverManageme
     {
         [Required]
         public Guid PartnerId { get; set; }
-        [Required]
-        public Guid VehicleId { get; set; }
+        public Guid? VehicleId { get; set; }
         [Required]
         public string FirstName { get; set; }
         [Required]

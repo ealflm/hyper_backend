@@ -18,9 +18,9 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 {
     public class DriverManagementService : AccountService, IDriverManagementService
     {
-        private readonly string MESSAGE = "Dang nhap bang SDT da dang ky voi MAT KHAU: ";
+        // private readonly string MESSAGE = "Dang nhap bang SDT da dang ky voi MAT KHAU: ";
 
-        public DriverManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials, HttpClient client) : base(unitOfWork, blobServiceClient, credentials, client)
+        public DriverManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials, HttpClient client, ITwilioSettings twilioSettings) : base(unitOfWork, blobServiceClient, credentials, client, twilioSettings)
         {
         }
 
@@ -49,7 +49,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 ModifiedDate = DateTime.Now,
                 PartnerId = model.PartnerId,
                 Phone = model.Phone,
-                VehicleId = model.VehicleId,
+                VehicleId = model.VehicleId != null ? model.VehicleId.Value : null,
                 Password = passwordHash,
                 Salt = passwordSalt,
                 Status = 1
@@ -57,7 +57,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
             await _unitOfWork.DriverRepository.Add(driver);
             await _unitOfWork.SaveChangesAsync();
-            SendSMS(driver.Phone, MESSAGE + password);
+            // SendSMS(driver.Phone, MESSAGE + password);
+            await SendSMSByTwilio(driver.Phone, $"Thông tin đăng nhập: \n Số điện thoại: {driver.Phone}\n Mã pin: {password}");
             return new()
             {
                 StatusCode = 201,
@@ -97,11 +98,13 @@ namespace TourismSmartTransportation.Business.Implements.Partner
         {
             var entity = await _unitOfWork.DriverRepository.GetById(id);
             var model = entity.AsDriverViewModel();
-            var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
-            model.VehicleName = vehicle.Name;
-            model.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
+            if (model.VehicleId != null)
+            {
+                var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId.Value);
+                model.VehicleName = vehicle.Name;
+                model.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
+            }
             return model;
-
         }
 
         public async Task<List<DriverViewModel>> Search(DriverSearchModel model)
@@ -118,13 +121,15 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             .ToListAsync();
             foreach (DriverViewModel x in entity)
             {
-                var vehicle = await _unitOfWork.VehicleRepository.GetById(x.VehicleId);
-                x.LicensePlates = vehicle.LicensePlates;
-                x.VehicleName = vehicle.Name;
-                x.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
+                if (x.VehicleId != null)
+                {
+                    var vehicle = await _unitOfWork.VehicleRepository.GetById(x.VehicleId.Value);
+                    x.LicensePlates = vehicle.LicensePlates;
+                    x.VehicleName = vehicle.Name;
+                    x.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
+                }
             }
             return entity;
-
         }
 
         public async Task<Response> Update(Guid id, UpdateDriverModel model)
