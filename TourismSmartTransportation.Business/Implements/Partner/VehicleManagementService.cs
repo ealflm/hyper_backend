@@ -98,6 +98,12 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             model.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(model.ServiceTypeId)).Name;
             model.CompanyName = (await _unitOfWork.PartnerRepository.GetById(model.PartnerId)).CompanyName;
             model.VehicleTypeName = (await _unitOfWork.VehicleTypeRepository.GetById(model.VehicleTypeId)).Label;
+            if (entity.PriceRentingId != null)
+            {
+                var priceEntity = await _unitOfWork.PriceOfRentingServiceRepository.GetById(entity.PriceRentingId.Value);
+                model.CategoryId = priceEntity.CategoryId;
+                model.PublishYearId = priceEntity.PublishYearId;
+            }
             return model;
 
         }
@@ -121,6 +127,12 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 x.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId)).Name;
                 x.CompanyName = (await _unitOfWork.PartnerRepository.GetById(x.PartnerId)).CompanyName;
                 x.VehicleTypeName = (await _unitOfWork.VehicleTypeRepository.GetById(x.VehicleTypeId)).Label;
+                if (x.PriceRentingId != null)
+                {
+                    var priceEntity = await _unitOfWork.PriceOfRentingServiceRepository.GetById(x.PriceRentingId.Value);
+                    x.CategoryId = priceEntity.CategoryId;
+                    x.PublishYearId = priceEntity.PublishYearId;
+                }
             }
             return entity;
 
