@@ -105,12 +105,23 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         public async Task<SearchResultViewModel<TripViewModel>> GetTripsList(TripSearchModel model)
         {
-            var trip = await _unitOfWork.TripRepository
-                    .Query()
-                    .Where(x => x.TripName.Contains(model.TripName))
-                    .Select(x => x.AsTripViewModel())
-                    .ToListAsync();
-            var listAfterSorting = GetListAfterSorting(trip, model.SortBy);
+            var routesList = await _unitOfWork.RouteRepository
+                        .Query()
+                        .Where(x => model.PartnerId == null || x.PartnerId == model.PartnerId.Value)
+                        .ToListAsync();
+            List<TripViewModel> tripsList = new List<TripViewModel>();
+            foreach (var route in routesList)
+            {
+                var trips = await _unitOfWork.TripRepository
+                                    .Query()
+                                    .Where(x => x.RouteId == route.RouteId)
+                                    .Where(x => model.TripName == null || x.TripName.Contains(model.TripName))
+                                    .Select(x => x.AsTripViewModel())
+                                    .ToListAsync();
+                tripsList.AddRange(trips);
+            }
+
+            var listAfterSorting = GetListAfterSorting(tripsList, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
             foreach (var t in listItemsAfterPaging)

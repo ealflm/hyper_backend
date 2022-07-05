@@ -7,7 +7,8 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.Route
     public class TripSearchModel : PagingSearchModel
     {
         public string TripName { get; set; }
-        public DateTime TimeStart { get; set; }
-        public DateTime TimeEnd { get; set; }
+        public Guid? PartnerId { get; set; }
+        public DateTime? TimeStart { get; set; }
+        public DateTime? TimeEnd { get; set; }
     }
 }
