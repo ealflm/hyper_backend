@@ -43,6 +43,12 @@ namespace TourismSmartTransportation.API.Controllers
             return HandleObjectResponse(response.StatusCode, response.Message, null);
         }
 
+        [NonAction]
+        public ObjectResult ResponseOTP(Response response)
+        {
+            return HandleObjectResponse(response.StatusCode, response.Message, response.Data);
+        }
+
         private ObjectResult HandleObjectResponse(int statusCode, string message, object result)
         {
             ObjectResult objectResult = null;

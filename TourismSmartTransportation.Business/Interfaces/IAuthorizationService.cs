@@ -17,5 +17,7 @@ namespace TourismSmartTransportation.Business.Interfaces
         Task<AuthorizationResultViewModel> RegisterForAdmin(RegisterSearchModel model);
         Task<Response> RegisterForCustomer(RegisterModel model);
         Task<Response> CheckExistedPhoneNumber(string phoneNumber);
+        Task<Response> SendOTP(string phone);
+        Task<Response> VerifyOTP(OTPVerificationModel model);
     }
 }
