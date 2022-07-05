@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TourismSmartTransportation.API.Utilities.Response;
 using TourismSmartTransportation.API.Validation;
+using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
@@ -17,10 +18,12 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
     public class AuthorizationController : BaseController
     {
         private readonly Business.Interfaces.IAuthorizationService _authorizationService;
+        private readonly ITwilioSettings _twilioSettings;
 
-        public AuthorizationController(Business.Interfaces.IAuthorizationService authorizationService)
+        public AuthorizationController(Business.Interfaces.IAuthorizationService authorizationService, ITwilioSettings twilioSettings)
         {
             this._authorizationService = authorizationService;
+            _twilioSettings = twilioSettings;
         }
 
         [HttpPost]
@@ -57,14 +60,14 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> SendOTP([FromForm] string phoneNumber)
         {
-            return ResponseOTP(await _authorizationService.SendOTP(phoneNumber));
+            return ResponseOTP(await _authorizationService.SendOTPByTwilio(phoneNumber));
         }
 
         [HttpPost]
         [Route(ApiVer1Url.Customer.OTP + "/verify-otp")]
         public async Task<IActionResult> VerifyOTP([FromForm] OTPVerificationModel model)
         {
-            return SendResponse(await _authorizationService.VerifyOTP(model));
+            return SendResponse(await _authorizationService.VerifyOTPByTwilio(model));
         }
 
     }

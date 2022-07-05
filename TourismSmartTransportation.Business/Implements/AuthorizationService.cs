@@ -27,8 +27,9 @@ namespace TourismSmartTransportation.Business.Implements
     public class AuthorizationService : AccountService, IAuthorizationService
     {
         private readonly IConfiguration _configuration;
+        // private readonly ITwilioSettings _twilioSettings;
 
-        public AuthorizationService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
+        public AuthorizationService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IConfiguration configuration, ITwilioSettings twilioSettings) : base(unitOfWork, blobServiceClient, twilioSettings)
         {
             _configuration = configuration;
         }
@@ -371,6 +372,46 @@ namespace TourismSmartTransportation.Business.Implements
             {
                 StatusCode = 200,
                 Message = "Xác thực thành công!"
+            };
+        }
+
+        public async Task<Response> SendOTPByTwilio(string phone)
+        {
+            var sendOTPResponse = await SendOTPVerificationByTwilio(phone);
+            if (sendOTPResponse.StatusCode != 200)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Số điện thoại không đúng hoặc chưa được đăng ký!"
+                };
+            }
+            return new()
+            {
+                StatusCode = sendOTPResponse.StatusCode,
+                Data = new
+                {
+                    RequestId = sendOTPResponse.RequestId
+                },
+                Message = "Gửi mã xác thực thành công!"
+            };
+        }
+
+        public async Task<Response> VerifyOTPByTwilio(OTPVerificationModel model)
+        {
+            var sendOTPResponse = await VerifyCheckOTPByTwilio(model.Phone, model.OTPCode, model.RequestId);
+            if (sendOTPResponse.Status == "approved")
+            {
+                return new()
+                {
+                    StatusCode = sendOTPResponse.StatusCode,
+                    Message = "Xác thực thành công!"
+                };
+            }
+            return new()
+            {
+                StatusCode = 400,
+                Message = "Xác thực thất bại!"
             };
         }
     }
