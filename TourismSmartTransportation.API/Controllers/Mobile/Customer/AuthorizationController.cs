@@ -52,5 +52,20 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
             return SendResponse(await _authorizationService.CheckExistedPhoneNumber(phoneNumber));
         }
 
+        [HttpPost]
+        [Route(ApiVer1Url.Customer.OTP + "/send-otp")]
+        [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+        public async Task<IActionResult> SendOTP([FromForm] string phoneNumber)
+        {
+            return ResponseOTP(await _authorizationService.SendOTP(phoneNumber));
+        }
+
+        [HttpPost]
+        [Route(ApiVer1Url.Customer.OTP + "/verify-otp")]
+        public async Task<IActionResult> VerifyOTP([FromForm] OTPVerificationModel model)
+        {
+            return SendResponse(await _authorizationService.VerifyOTP(model));
+        }
+
     }
 }

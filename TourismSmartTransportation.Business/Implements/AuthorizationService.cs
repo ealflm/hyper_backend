@@ -333,5 +333,45 @@ namespace TourismSmartTransportation.Business.Implements
                 Message = "Số điện thoại có thể đăng ký tài khoản!"
             };
         }
+
+        public async Task<Response> SendOTP(string phone)
+        {
+            string requestId = await SendOTPVerification(phone);
+            if (requestId == "")
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Số điện thoại không đúng hoặc chưa được đăng ký!"
+                };
+            }
+            return new()
+            {
+                StatusCode = 200,
+                Data = new
+                {
+                    RequestId = requestId
+                },
+                Message = "Gửi mã xác thực thành công!"
+            };
+        }
+
+        public async Task<Response> VerifyOTP(OTPVerificationModel model)
+        {
+            var statusCode = await VerifyCheckOTP(model.Phone, model.OTPCode, model.RequestId);
+            if (statusCode != 0)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Xác thực thất bại!"
+                };
+            }
+            return new()
+            {
+                StatusCode = 200,
+                Message = "Xác thực thành công!"
+            };
+        }
     }
 }

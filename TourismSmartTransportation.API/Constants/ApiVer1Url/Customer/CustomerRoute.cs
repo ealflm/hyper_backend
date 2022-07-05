@@ -15,5 +15,8 @@ namespace ApiVer1Url
 
         // Package history
         public const string CustomerPackageHistory = BaseApiUrl + "/package-history";
+
+        // OTP Verification
+        public const string OTP = BaseApiUrl + "/otp";
     }
 }
