@@ -126,7 +126,13 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
             foreach (var t in listItemsAfterPaging)
             {
-                t.LicensePlates = (await _unitOfWork.VehicleRepository.GetById(t.VehicleId)).LicensePlates;
+                var vehicle = await _unitOfWork.VehicleRepository.GetById(t.VehicleId);
+                t.LicensePlates = vehicle.LicensePlates;
+                t.VehicleName = vehicle.Name;
+                var driver = await _unitOfWork.DriverRepository.GetById(t.DriverId);
+                t.DriverFirstName = driver.FirstName;
+                t.DriverLastName = driver.LastName;
+                t.DriverPhotoUrl = driver.PhotoUrl;
             }
             SearchResultViewModel<TripViewModel> result = null;
             result = new SearchResultViewModel<TripViewModel>()
