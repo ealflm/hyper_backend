@@ -34,7 +34,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 return new()
                 {
                     StatusCode = 400,
-                    Message = "Số điện thoại đã được sử dụng để tạo tài khoản!"
+                    Message = "Số điện thoại đã được sử dụng!"
                 };
             }
 
