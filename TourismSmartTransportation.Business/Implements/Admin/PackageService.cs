@@ -46,6 +46,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             await _unitOfWork.PackageRepository.Add(entity);
             foreach (CreatePackageItemModel x in model.PackageItems)
             {
+                x.PackageId = entity.PackageId;
                 await _unitOfWork.PackageItemRepository.Add(x.AsPackageItemData());
             }
 
@@ -155,12 +156,23 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             package.PhotoUrl += await UploadFile(model.UploadFile, Container.Admin);
             package.Price = UpdateTypeOfNotNullAbleObject<decimal>(package.Price, model.Price);
             package.Status = UpdateTypeOfNotNullAbleObject<int>(package.Status, model.Status);
+            package.PackageItems = await _unitOfWork.PackageItemRepository
+                                .Query()
+                                .Where(x => x.PackageId == package.PackageId)
+                                .ToListAsync();
             _unitOfWork.PackageRepository.Update(package);
+
             if (model.PackageItems != null && model.PackageItems.Count() > 0)
             {
+                foreach (var p in package.PackageItems)
+                {
+                    _unitOfWork.PackageItemRepository.Remove(p);
+                }
+
                 foreach (UpdatePackageItemModel x in model.PackageItems)
                 {
-                    _unitOfWork.PackageItemRepository.Update(x.AsPackageItemData());
+                    x.PackageId = package.PackageId;
+                    await _unitOfWork.PackageItemRepository.Add(x.AsPackageItemData());
                 }
             }
             await _unitOfWork.SaveChangesAsync();

@@ -66,6 +66,20 @@ namespace TourismSmartTransportation.Data.Repositories
             }
         }
 
+        public void UpdateWithMultipleKey(TEntity entity)
+        {
+            _dbSet.Attach(entity);
+            foreach (PropertyInfo prop in entity.GetType().GetProperties())
+            {
+                if (prop.GetGetMethod().IsVirtual) continue;
+                if (prop.Name.Contains("Id")) continue;
+                if (prop.GetValue(entity, null) != null)
+                {
+                    _dbContext.Entry(entity).Property(prop.Name).IsModified = true;
+                }
+            }
+        }
+
         public async Task Remove(Guid id)
         {
             var entity = await GetById(id);
