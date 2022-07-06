@@ -14,6 +14,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.CustomerManageme
         [Required]
         [StringLength(50)]
         public string FirstName { get; set; }
+
         [Required]
         [StringLength(50)]
         public string LastName { get; set; }
@@ -22,13 +23,17 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.CustomerManageme
         public string Address1 { get; set; }
         public string Address2 { get; set; }
         public string PhotoUrl { get; set; }
+
         [Phone]
         [Required]
         public string Phone { get; set; }
+
         [AllowEmptyAndChekcValidEmail]
         [StringLength(50)]
         public string Email { get; set; }
+
         [Required]
+        [ValidatedPinCode]
         public string Password { get; set; }
     }
 }
