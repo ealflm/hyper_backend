@@ -32,6 +32,7 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.DiscountId,
+                ServiceTypeId = item.ServiceTypeId,
                 Title = item.Title,
                 Description = item.Description,
                 TimeStart = item.TimeStart,

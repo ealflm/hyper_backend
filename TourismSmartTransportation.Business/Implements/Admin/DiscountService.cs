@@ -166,8 +166,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = $"Thời gian kết thúc không được nhỏ hơn thời gian bắt đầu({timeStart})"
                 };
             }
+
             entity.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Admin, entity.PhotoUrl);
             entity.PhotoUrl += await UploadFile(model.UploadFile, Container.Admin);
+            entity.ServiceTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.ServiceTypeId, model.ServiceTypeId);
             entity.Title = UpdateTypeOfNullAbleObject<string>(entity.Title, model.Title);
             entity.Description = UpdateTypeOfNullAbleObject<string>(entity.Description, model.Description);
             entity.TimeStart = UpdateTypeOfNotNullAbleObject<DateTime>(entity.TimeStart, model.TimeStart);
