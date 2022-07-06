@@ -37,16 +37,16 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> CreatePackage([FromForm] CreatePackageModel model)
         {
-            var formPackageList = this.Request.Form["PackageList"];
-            model.PackageItems = JsonExtensions.FromDelimitedJson<CreatePackageItemModel>(new StringReader(formPackageList)).ToList();
+            var formPackageItems = this.Request.Form["PackageItems"];
+            model.PackageItems = JsonExtensions.FromDelimitedJson<CreatePackageItemModel>(new StringReader(formPackageItems)).ToList();
             return SendResponse(await _service.CreatePackage(model));
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePackage(Guid id, [FromForm] UpdatePackageModel model)
         {
-            var formPackageList = this.Request.Form["PackageList"];
-            model.PackageItems = JsonExtensions.FromDelimitedJson<UpdatePackageItemModel>(new StringReader(formPackageList)).ToList();
+            var formPackageItems = this.Request.Form["PackageItems"];
+            model.PackageItems = JsonExtensions.FromDelimitedJson<UpdatePackageItemModel>(new StringReader(formPackageItems)).ToList();
             return SendResponse(await _service.UpdatePackage(id, model));
         }
 
