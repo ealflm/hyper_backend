@@ -35,7 +35,7 @@ namespace TourismSmartTransportation.API.Controllers.Partner
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePartnerById(Guid id, [FromForm] UpdatePartnerModel model)
+        public async Task<IActionResult> UpdatePartnerById(Guid id, [FromForm] UpdatePartnerProfile model)
         {
             return SendResponse(await _service.UpdatePartner(id, model));
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagement;
@@ -12,7 +13,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
         Task<SearchResultViewModel<PartnerViewModel>> SearchPartner(PartnerSearchModel model);
         Task<PartnerViewModel> GetPartner(Guid id);
         Task<Response> AddPartner(AddPartnerModel model);
-        Task<Response> UpdatePartner(Guid id, UpdatePartnerModel model);
+        Task<Response> UpdatePartner(Guid id, UpdatePartnerModel model, List<Guid?> addList = null, List<Guid?> deleteList = null);
         Task<Response> DeletePartner(Guid id);
     }
 }
