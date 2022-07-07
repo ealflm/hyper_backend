@@ -53,7 +53,12 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromForm] UpdatePartnerByAdmin model)
         {
-            return SendResponse(await _service.UpdatePartner(id, model, model.AddServiceTypeIdList, model.DeleteServiceTypeIdList));
+            var formAddList = this.Request.Form["AddServiceTypeIdList"];
+            var formDeleteList = this.Request.Form["DeleteServiceTypeIdList"];
+            return SendResponse(await _service.UpdatePartner(id,
+                                                            model,
+                                                            formAddList != "" ? model.AddServiceTypeIdList : null,
+                                                            formDeleteList != "" ? model.DeleteServiceTypeIdList : null));
         }
 
         // DELETE api/<StationMangementController>/5
