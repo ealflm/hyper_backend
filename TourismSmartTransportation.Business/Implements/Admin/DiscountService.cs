@@ -41,7 +41,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Description = model.Description,
                 TimeStart = model.TimeStart,
                 TimeEnd = model.TimeEnd,
-                PhotoUrl = model.PhotoUrl,
+                PhotoUrl = await UploadFile(model.UploadFile, Container.Admin),
                 Value = model.Value,
                 Status = 1
             };
