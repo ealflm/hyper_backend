@@ -70,7 +70,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Salt = passwordSalt,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                PhotoUrl = UploadFile(model.UploadFile, Container.Partner).Result,
+                PhotoUrl = await UploadFile(model.UploadFile, Container.Partner),
                 Gender = model.Gender,
                 Phone = model.Phone,
                 Address1 = model.Address1,
