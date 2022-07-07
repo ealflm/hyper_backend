@@ -226,8 +226,24 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<Response> UpdatePartner(Guid id, UpdatePartnerModel model)
+        public async Task<Response> UpdatePartner(Guid id, UpdatePartnerModel upm, List<Guid?> addList = null, List<Guid?> deleteList = null)
         {
+            UpdatePartnerByAdmin model = new UpdatePartnerByAdmin()
+            {
+                // FirstName = upm.FirstName,
+                // LastName = upm.LastName,
+                Password = upm.Password,
+                CompanyName = upm.CompanyName,
+                Gender = upm.Gender,
+                Phone = upm.Phone,
+                Address1 = upm.Address1,
+                Address2 = upm.Address2,
+                Email = upm.Email,
+                DateOfBirth = upm.DateOfBirth != null ? upm.DateOfBirth.Value : null,
+                Status = upm.Status != null ? upm.Status.Value : null,
+            };
+
+
             var partner = await _unitOfWork.PartnerRepository.GetById(id);
             if (partner == null)
             {
@@ -245,8 +261,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
             partner.PhotoUrl = await DeleteFile(model.DeleteFile, Container.Partner, partner.PhotoUrl);
             partner.PhotoUrl += await UploadFile(model.UploadFile, Container.Partner);
-            partner.FirstName = UpdateTypeOfNullAbleObject<string>(partner.FirstName, model.FirstName);
-            partner.LastName = UpdateTypeOfNullAbleObject<string>(partner.LastName, model.LastName);
+            partner.FirstName = UpdateTypeOfNullAbleObject<string>(partner.FirstName, partner.FirstName);
+            partner.LastName = UpdateTypeOfNullAbleObject<string>(partner.LastName, partner.LastName);
             partner.Address1 = UpdateTypeOfNullAbleObject<string>(partner.Address1, model.Address1);
             partner.Address2 = UpdateTypeOfNullAbleObject<string>(partner.Address2, model.Address2);
             partner.Phone = UpdateTypeOfNullAbleObject<string>(partner.Phone, model.Phone);
@@ -256,21 +272,26 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             partner.Gender = UpdateTypeOfNotNullAbleObject<bool>(partner.Gender, model.Gender);
             partner.Status = UpdateTypeOfNotNullAbleObject<int>(partner.Status, model.Status);
             partner.ModifiedDate = DateTime.Now;
-            if (model.DeleteServiceTypeIdList != null)
+            if (deleteList != null)
             {
+                model.DeleteServiceTypeIdList = deleteList.ToList();
                 foreach (Guid p in model.DeleteServiceTypeIdList)
                 {
                     var serviceType = await _unitOfWork.PartnerServiceTypeRepository
                                     .Query()
                                     .Where(x => x.PartnerId == partner.PartnerId && x.ServiceTypeId == p)
                                     .FirstOrDefaultAsync();
-                    _unitOfWork.PartnerServiceTypeRepository.Remove(serviceType);
+                    if (serviceType != null)
+                    {
+                        _unitOfWork.PartnerServiceTypeRepository.Remove(serviceType);
+                    }
                 }
             }
             var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.PartnerId)).ToListAsync();
 
-            if (model.AddServiceTypeIdList != null)
+            if (addList != null)
             {
+                model.AddServiceTypeIdList = addList.ToList();
                 foreach (Guid x in model.AddServiceTypeIdList)
                 {
                     var isExist = false;

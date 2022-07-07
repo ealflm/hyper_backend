@@ -8,20 +8,18 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagemen
 {
     public class UpdatePartnerModel : FileViewModel
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string CompanyName { get; set; }
-        public string Password { get; set; }
-        public string Address1 { get; set; }
-        public string Address2 { get; set; }
+        // public virtual string FirstName { get; set; }
+        // public virtual string LastName { get; set; }
+        public virtual string CompanyName { get; set; }
+        public virtual string Password { get; set; }
+        public virtual string Address1 { get; set; }
+        public virtual string Address2 { get; set; }
         [AllowNullOrEmptyAndCheckValidPhone]
-        public string Phone { get; set; }
+        public virtual string Phone { get; set; }
         [AllowEmptyAndChekcValidEmail]
-        public string Email { get; set; }
-        public DateTime? DateOfBirth { get; set; }
-        public bool Gender { get; set; }
-        public List<Guid> AddServiceTypeIdList { get; set; }
-        public List<Guid> DeleteServiceTypeIdList { get; set; }
-        public int? Status { get; set; }
+        public virtual string Email { get; set; }
+        public virtual DateTime? DateOfBirth { get; set; }
+        public virtual bool Gender { get; set; }
+        public virtual int? Status { get; set; }
     }
 }
