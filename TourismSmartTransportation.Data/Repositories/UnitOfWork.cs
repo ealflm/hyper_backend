@@ -114,6 +114,7 @@ namespace TourismSmartTransportation.Data.Repositories
             ServiceTypeRepository = serviceTypeRepository;
             StationRepository = stationRepository;
             StationRouteRepository = stationRouteRepository;
+            TransactionRepository = transactionRepository;
             TripRepository = tripRepository;
             VehicleRepository = vehicleRepository;
             VehicleTypeRepository = vehicleTypeRepository;
