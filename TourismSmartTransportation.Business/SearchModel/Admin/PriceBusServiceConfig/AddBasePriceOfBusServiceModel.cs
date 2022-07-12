@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using TourismSmartTransportation.Business.Validation;
 
 namespace TourismSmartTransportation.Business.SearchModel.Admin.PriceBusServiceConfig
 {
@@ -9,6 +10,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PriceBusServiceC
         public decimal MaxDistance { get; set; }
 
         [Required]
+        [ValidValueMinMax("MaxDistance", ErrorMessage = "MinDistance cannot be greater than MaxDistance")]
         public decimal MinDistance { get; set; }
 
         [Required]
