@@ -16,6 +16,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class PriceBusServiceConfigService : BaseService, IPriceBusServiceConfig
     {
+        // "rate value" for calculating price of bus service from base price value
+        private readonly double[] rateArray = { 0.25, 0.5, 0.75, 1 };
+
         public PriceBusServiceConfigService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
         }
@@ -113,6 +116,57 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
+            };
+        }
+
+        public async Task<Response> GeneratePriceOfBusService(AddBasePriceOfBusService model)
+        {
+            var maxDistance = await _unitOfWork.BasePriceOfBusServiceRepository
+                                    .Query()
+                                    .OrderBy(x => x.MaxDistance)
+                                    .Select(x => x.MaxDistance)
+                                    .LastOrDefaultAsync();
+            if (model.MinDistance < maxDistance)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Giá đã tồn tại!"
+                };
+            }
+
+            var basePrice = new BasePriceOfBusService()
+            {
+                BasePriceOfBusServiceId = Guid.NewGuid(),
+                MinDistance = (int)model.MinDistance,
+                MaxDistance = (int)model.MaxDistance,
+                Price = model.Price,
+                Status = 1
+            };
+
+            await _unitOfWork.BasePriceOfBusServiceRepository.Add(basePrice);
+
+            // create price base on distance and take money follow by min distance and max distance
+            var price = new PriceOfBusService()
+            {
+                PriceOfBusServiceId = Guid.NewGuid(),
+                BasePriceId = basePrice.BasePriceOfBusServiceId,
+                MinDistance = model.MinDistance,
+                MaxDistance = model.MaxDistance * (decimal)rateArray[0],
+                Price = basePrice.Price * (decimal)rateArray[0] - 1000,
+                MinStation = 0,
+                MaxStation = 0,
+                Mode = "distance",
+                Status = 1,
+            };
+
+            await _unitOfWork.PriceOfBusServiceRepository.Add(price);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new()
+            {
+                StatusCode = 200,
+                Message = "Tạo giá thành công!"
             };
         }
     }

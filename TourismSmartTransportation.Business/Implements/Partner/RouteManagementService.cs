@@ -8,6 +8,7 @@ using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Partner;
 using TourismSmartTransportation.Business.SearchModel.Partner.Route;
+using TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceViewModel;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement;
 using TourismSmartTransportation.Data.Interfaces;
@@ -17,6 +18,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 {
     public class RouteManagementService : BaseService, IRouteManagementService
     {
+        private readonly double[] rateArray = { 0.25, 0.5, 0.75, 1 };
+
         public RouteManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
         }
@@ -35,12 +38,97 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 Status = 1
             };
             await _unitOfWork.RouteRepository.Add(entity);
+
+            // add the stations for the route
             foreach (var p in model.StationList)
             {
                 p.RouteId = entity.RouteId;
                 await _unitOfWork.StationRouteRepository.Add(p.AsStationRouteData());
             }
+
+            var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository
+                            .Query()
+                            .Where(x => x.MinDistance <= entity.Distance && entity.Distance <= x.MaxDistance)
+                            .OrderBy(x => x.MinDistance)
+                            .Select(x => x.AsBasePriceOfBusServiceViewModel())
+                            .FirstOrDefaultAsync();
+
+            if (basePrice == null)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Cần tạo giá cơ sở trước khi thực hiện các thao tác tạo tuyến đường."
+                };
+            }
+
+            List<PriceOfBusServiceViewModel> list = new List<PriceOfBusServiceViewModel>();
+
+            // Create price follow by number of stations
+            for (int i = 0; i < rateArray.Count(); i++)
+            {
+                switch (i)
+                {
+                    case 0:
+                        {
+                            var price = new PriceOfBusService()
+                            {
+                                PriceOfBusServiceId = Guid.NewGuid(),
+                                BasePriceId = basePrice.Id,
+                                MinDistance = basePrice.MaxDistance * (decimal)rateArray[i],
+                                MaxDistance = basePrice.MaxDistance * (decimal)rateArray[i + 1],
+                                Price = basePrice.Price * (decimal)rateArray[i],
+                                MinStation = 1,
+                                MaxStation = Math.Ceiling(entity.TotalStation * (decimal)rateArray[i + 1]),
+                                Mode = "station",
+                                Status = 1,
+                            };
+                            await _unitOfWork.PriceOfBusServiceRepository.Add(price);
+                            list.Add(price.AsPriceOfBusServiceViewModel());
+                            break;
+                        }
+                    default:
+                        {
+                            int index = i == rateArray.Count() - 1 ? i : i + 1;
+                            var price = new PriceOfBusService()
+                            {
+                                PriceOfBusServiceId = Guid.NewGuid(),
+                                BasePriceId = basePrice.Id,
+                                MinDistance = basePrice.MaxDistance * (decimal)rateArray[i],
+                                MaxDistance = basePrice.MaxDistance * (decimal)rateArray[index],
+                                Price = basePrice.Price * (decimal)rateArray[i],
+                                MinStation = Math.Ceiling(entity.TotalStation * (decimal)rateArray[i]),
+                                MaxStation = Math.Ceiling(entity.TotalStation * (decimal)rateArray[index]),
+                                Mode = "station",
+                                Status = 1,
+                            };
+                            await _unitOfWork.PriceOfBusServiceRepository.Add(price);
+                            list.Add(price.AsPriceOfBusServiceViewModel());
+                            break;
+                        };
+                }
+            }
+
+            // Get list price to assign for the route
+            var priceOfBusServiceList = await _unitOfWork.PriceOfBusServiceRepository
+                                        .Query()
+                                        .Where(x => x.BasePriceId == basePrice.Id)
+                                        .Select(x => x.AsPriceOfBusServiceViewModel())
+                                        .ToListAsync();
+            list.AddRange(priceOfBusServiceList);
+
+            foreach (var item in list)
+            {
+                var routePrice = new RoutePriceBusing()
+                {
+                    RouteId = entity.RouteId,
+                    PriceBusingId = item.Id,
+                };
+                await _unitOfWork.RoutePriceBusingRepository.Add(routePrice);
+            }
+
             await _unitOfWork.SaveChangesAsync();
+
             return new()
             {
                 StatusCode = 201,

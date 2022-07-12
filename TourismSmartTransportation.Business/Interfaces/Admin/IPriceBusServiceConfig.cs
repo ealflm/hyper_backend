@@ -14,5 +14,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
         Task<Response> CreatePrice(CreatePriceBusServiceModel model);
         Task<Response> UpdatePrice(Guid id, UpdatePriceBusServiceModel model);
         Task<Response> DeletePrice(Guid id);
+        Task<Response> GeneratePriceOfBusService(AddBasePriceOfBusService model);
     }
 }

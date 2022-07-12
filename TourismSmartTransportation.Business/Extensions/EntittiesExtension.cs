@@ -437,5 +437,17 @@ namespace TourismSmartTransportation.Business.Extensions
                 Status = item.Status
             };
         }
+
+        public static BasePriceOfBusServiceViewModel AsBasePriceOfBusServiceViewModel(this BasePriceOfBusService item)
+        {
+            return new()
+            {
+                Id = item.BasePriceOfBusServiceId,
+                MinDistance = item.MinDistance,
+                MaxDistance = item.MaxDistance,
+                Price = item.Price,
+                Status = item.Status
+            };
+        }
     }
 }
