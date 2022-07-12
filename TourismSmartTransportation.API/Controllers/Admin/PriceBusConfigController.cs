@@ -33,12 +33,12 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             return SendResponse(await _service.GetById(id));
         }
 
-        [HttpPost]
-        // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
-        public async Task<IActionResult> Create([FromBody] CreatePriceBusServiceModel model)
-        {
-            return SendResponse(await _service.CreatePrice(model));
-        }
+        // [HttpPost]
+        // // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
+        // public async Task<IActionResult> Create([FromBody] CreatePriceBusServiceModel model)
+        // {
+        //     return SendResponse(await _service.CreatePrice(model));
+        // }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePriceBusServiceModel model)
@@ -50,6 +50,12 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         public async Task<IActionResult> Delete(Guid id)
         {
             return SendResponse(await _service.DeletePrice(id));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GeneratePriceBaseOnBasePrice([FromBody] AddBasePriceOfBusService model)
+        {
+            return SendResponse(await _service.GeneratePriceOfBusService(model));
         }
     }
 }

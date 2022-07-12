@@ -115,5 +115,139 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Message = "Cập nhật thành công!"
             };
         }
+
+        public async Task<Response> GeneratePriceOfBusService(AddBasePriceOfBusService model)
+        {
+            var maxDistance = await _unitOfWork.BasePriceOfBusServiceRepository
+                                    .Query()
+                                    .OrderBy(x => x.MaxDistance)
+                                    .Select(x => x.MaxDistance)
+                                    .LastOrDefaultAsync();
+            if (model.MinDistance < maxDistance)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Giá đã tồn tại!"
+                };
+            }
+
+            var basePrice = new BasePriceOfBusService()
+            {
+                BasePriceOfBusServiceId = Guid.NewGuid(),
+                MinDistance = (int)model.MinDistance,
+                MaxDistance = (int)model.MaxDistance,
+                Price = model.Price,
+                Status = 1
+            };
+
+            await _unitOfWork.BasePriceOfBusServiceRepository.Add(basePrice);
+
+            double[] rateArray = { 0.25, 0.5, 0.75, 1 };
+            decimal tempValue = 0;
+            for (int i = 0; i < rateArray.Count(); i++)
+            {
+                switch (i)
+                {
+                    case 0:
+                        {
+                            var price = new PriceOfBusService()
+                            {
+                                PriceOfBusServiceId = Guid.NewGuid(),
+                                BasePriceId = basePrice.BasePriceOfBusServiceId,
+                                MinDistance = model.MinDistance,
+                                MaxDistance = model.MaxDistance * (decimal)rateArray[i],
+                                Price = basePrice.Price * (decimal)rateArray[i],
+                                MinStation = 0,
+                                MaxStation = 0,
+                                Mode = "distance",
+                                Status = 1,
+                            };
+                            await _unitOfWork.PriceOfBusServiceRepository.Add(price);
+                            tempValue = price.MaxDistance;
+                            break;
+                        }
+                    // case 1:
+                    //     {
+                    //         var price = new PriceOfBusService()
+                    //         {
+                    //             PriceOfBusServiceId = Guid.NewGuid(),
+                    //             BasePriceId = basePrice.BasePriceOfBusServiceId,
+                    //             MinDistance = tempValue,
+                    //             MaxDistance = model.MaxDistance * (decimal)rateArray[i],
+                    //             Price = basePrice.Price * (decimal)rateArray[i],
+                    //             MinStation = 0,
+                    //             MaxStation = 0,
+                    //             Mode = "distance",
+                    //             Status = 1,
+                    //         };
+                    //         await _unitOfWork.PriceOfBusServiceRepository.Add(price);
+                    //         tempValue = price.MaxDistance;
+                    //         break;
+                    //     }
+                    // case 2:
+                    //     {
+                    //         var price = new PriceOfBusService()
+                    //         {
+                    //             PriceOfBusServiceId = Guid.NewGuid(),
+                    //             BasePriceId = basePrice.BasePriceOfBusServiceId,
+                    //             MinDistance = tempValue,
+                    //             MaxDistance = model.MaxDistance * (decimal)rateArray[i],
+                    //             Price = basePrice.Price * (decimal)rateArray[i],
+                    //             MinStation = 0,
+                    //             MaxStation = 0,
+                    //             Mode = "distance",
+                    //             Status = 1,
+                    //         };
+                    //         await _unitOfWork.PriceOfBusServiceRepository.Add(price);
+                    //         tempValue = price.MaxDistance;
+                    //         break;
+                    //     }
+                    // case 3:
+                    //     {
+                    //         var price = new PriceOfBusService()
+                    //         {
+                    //             PriceOfBusServiceId = Guid.NewGuid(),
+                    //             BasePriceId = basePrice.BasePriceOfBusServiceId,
+                    //             MinDistance = tempValue,
+                    //             MaxDistance = model.MaxDistance * (decimal)rateArray[i],
+                    //             Price = basePrice.Price * (decimal)rateArray[i],
+                    //             MinStation = 0,
+                    //             MaxStation = 0,
+                    //             Mode = "distance",
+                    //             Status = 1,
+                    //         };
+                    //         await _unitOfWork.PriceOfBusServiceRepository.Add(price);
+                    //         break;
+                    //     }
+                    default:
+                        {
+                            var price = new PriceOfBusService()
+                            {
+                                PriceOfBusServiceId = Guid.NewGuid(),
+                                BasePriceId = basePrice.BasePriceOfBusServiceId,
+                                MinDistance = tempValue,
+                                MaxDistance = model.MaxDistance * (decimal)rateArray[i],
+                                Price = basePrice.Price * (decimal)rateArray[i],
+                                MinStation = 0,
+                                MaxStation = 0,
+                                Mode = "distance",
+                                Status = 1,
+                            };
+                            await _unitOfWork.PriceOfBusServiceRepository.Add(price);
+                            tempValue = price.MaxDistance;
+                            break;
+                        };
+                }
+
+            }
+            await _unitOfWork.SaveChangesAsync();
+
+            return new()
+            {
+                StatusCode = 200,
+                Message = "Tạo giá thành công!"
+            };
+        }
     }
 }
