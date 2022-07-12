@@ -139,12 +139,15 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             partner.Status = 0;
             _unitOfWork.PartnerRepository.Update(partner);
-            var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository.Query().Where(x => x.PartnerId.Equals(partner.PartnerId)).ToListAsync();
-            foreach (PartnerServiceType x in serviceTypes)
-            {
-                x.Status = 0;
-                _unitOfWork.PartnerServiceTypeRepository.Update(x);
-            }
+            var serviceTypes = await _unitOfWork.PartnerServiceTypeRepository
+                            .Query()
+                            .Where(x => x.PartnerId.Equals(partner.PartnerId))
+                            .ToListAsync();
+            // foreach (PartnerServiceType x in serviceTypes)
+            // {
+            //     x.Status = 0;
+            //     _unitOfWork.PartnerServiceTypeRepository.Update(x);
+            // }
 
             await _unitOfWork.SaveChangesAsync();
 
