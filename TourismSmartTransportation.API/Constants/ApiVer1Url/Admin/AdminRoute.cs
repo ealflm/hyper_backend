@@ -81,5 +81,8 @@ namespace ApiVer1Url
 
         // Driver
         public const string Driver = BaseApiUrl + "/driver";
+
+        //Power BI
+        public const string PowerBI = BaseApiUrl + "/power-bi";
     }
 }

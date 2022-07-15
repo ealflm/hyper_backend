@@ -34,6 +34,7 @@ using TourismSmartTransportation.Business.Interfaces.Company;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
 using TourismSmartTransportation.Business.Interfaces.Partner;
 using TourismSmartTransportation.Business.Interfaces.Shared;
+using TourismSmartTransportation.Business.ViewModel.Shared;
 using TourismSmartTransportation.Data.Context;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.MongoDBContext;
@@ -183,6 +184,23 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IDriverManagementService, DriverManagementService>();
             services.AddScoped<IOrderHelpersService, OrderHelpersService>();
             services.AddScoped<ITripManagementService, TripManagementService>();
+            services.AddScoped<IPowerBIService, PowerBIService>();
+
+
+            //Azure AD
+            services.AddScoped(_ =>
+            {
+                var model = new AzureViewModel();
+                model.ClientId = Configuration.GetSection("PowerBI").GetSection("clientId").Value;
+                model.ClientSecret = Configuration.GetSection("PowerBI").GetSection("clientSecret").Value;
+                model.GrantType = Configuration.GetSection("PowerBI").GetSection("grantType").Value;
+                model.Password = Configuration.GetSection("PowerBI").GetSection("password").Value;
+                model.Username = Configuration.GetSection("PowerBI").GetSection("username").Value;
+                model.Resource = Configuration.GetSection("PowerBI").GetSection("resource").Value;
+                model.DataSetId = Configuration.GetSection("PowerBI").GetSection("datasetId").Value;
+                model.ReportId = Configuration.GetSection("PowerBI").GetSection("reportId").Value;
+                return model;
+            });
 
             // Azure blob
             services.AddScoped(_ => new BlobServiceClient(Configuration.GetConnectionString("AzureBlobStorage")));
