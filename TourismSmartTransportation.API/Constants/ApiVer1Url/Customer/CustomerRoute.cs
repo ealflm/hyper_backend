@@ -18,5 +18,8 @@ namespace ApiVer1Url
 
         // OTP Verification
         public const string OTP = BaseApiUrl + "/otp";
+
+        // Deposit
+        public const string Deposit = BaseApiUrl + "/deposit";
     }
 }
