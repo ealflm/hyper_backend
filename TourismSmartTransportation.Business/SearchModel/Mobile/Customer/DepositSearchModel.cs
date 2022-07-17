@@ -8,7 +8,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Mobile.Customer
 {
     public class DepositSearchModel
     {
-        public string Ip { get; set; }
         public Guid CustomerId { get; set; }
         public decimal Amount { get; set; }
         public int Method { get; set; }
