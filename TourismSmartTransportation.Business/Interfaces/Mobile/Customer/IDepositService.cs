@@ -12,6 +12,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Mobile.Customer
     public interface IDepositService
     {
         Task<DepositViewModel> GetOrderId(DepositSearchModel model);
-        Task<Response> GetOrderStatus(Guid id);
+        Task<Response> GetOrderStatus(string id);
     }
 }

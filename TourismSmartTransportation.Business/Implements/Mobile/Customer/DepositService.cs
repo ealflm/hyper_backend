@@ -90,7 +90,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     int end = body.IndexOf("\"", start + 1);
                     token = body.Substring(start, end - start);
                 }
-                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \""+ model.Amount+ "\"}}],\"application_context\": {\"return_url\": \"https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit/"+transaction.TransactionId+"\",\"cancel_url\": \"\"}}";
+                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \""+ model.Amount+ "\"}}],\"application_context\": {\"return_url\": \"https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit/\",\"cancel_url\": \"\"}}";
                 request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
@@ -118,9 +118,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             return result;
         }
 
-        public async Task<Response> GetOrderStatus(Guid id)
+        public async Task<Response> GetOrderStatus(string id)
         {
-            var transaction = await _unitOfWork.TransactionRepository.GetById(id);
+            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.Content.Equals(id)).FirstOrDefaultAsync();
             var order = await _unitOfWork.OrderRepository.GetById(transaction.OrderId);
             var status = "";
             var client = new HttpClient();
@@ -152,7 +152,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri("https://api.sandbox.paypal.com/v2/checkout/orders/"+transaction.Content+ "/capture"),
+                RequestUri = new Uri("https://api.sandbox.paypal.com/v2/checkout/orders/"+id+ "/capture"),
                 Headers =
                     {
                         { "Authorization", "Bearer " + token }
