@@ -807,10 +807,9 @@ namespace TourismSmartTransportation.Data.Context
 
             modelBuilder.Entity<Transaction>(entity =>
             {
-                entity.HasKey(e => new { e.OrderId, e.WalletId })
-                    .HasName("PK_Payment");
-
                 entity.ToTable("Transaction");
+
+                entity.Property(e => e.TransactionId).ValueGeneratedNever();
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 0)");
 

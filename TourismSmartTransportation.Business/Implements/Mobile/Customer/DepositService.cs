@@ -25,6 +25,24 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
         public async Task<DepositViewModel> GetOrderId(DepositSearchModel model)
         {
+            var order = new Order()
+            {
+                OrderId = Guid.NewGuid(),
+                CreatedDate= DateTime.Now,
+                CustomerId= model.CustomerId,
+                TotalPrice= model.Amount,
+                Status= 1
+            };
+            await _unitOfWork.OrderRepository.Add(order);
+            var walletId = (await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync()).WalletId;
+            var transaction = new Transaction()
+            {
+                TransactionId = Guid.NewGuid(),
+                OrderId = order.OrderId,
+                WalletId = walletId,
+                Amount = order.TotalPrice,
+                CreatedDate = DateTime.Now
+            };
             var id = "";
             var result = new DepositViewModel();
             if (model.Method == 0)
@@ -45,7 +63,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     response.EnsureSuccessStatusCode();
                     var body = await response.Content.ReadAsStringAsync();
                     var start= body.IndexOf("convertedAmount") + 17;
-                    model.Amount = double.Parse(body.Substring(start, 4));
+                    model.Amount = decimal.Parse(body.Substring(start, 4));
                 }
                 var username = "AXZb2SctDtdMVaazixC9p-3WKxyBW2evpzldMqYi3rFn8UwEwzW_SU7Q6-upjLFWaGgBn14xOAWCIB_t";
                 var password = "EPOBnxf2gprkvwAGJSUInJa3TM0VSujkVNB7dY3ExgdJwT3bvl9syul1_JDl9p-jw1XUVaIXtqp3X7Zd";
@@ -72,7 +90,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     int end = body.IndexOf("\"", start + 1);
                     token = body.Substring(start, end - start);
                 }
-                var Json = "{\"application_context\":{\"return_url\":\"https://example.com/hyper/return\",\"cancel_url\":\"https://example.com/hyper/cancel\"},\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \"" + model.Amount+"\"}}]}";
+                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \""+ model.Amount+ "\"}}],\"application_context\": {\"return_url\": \"https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit/\",\"cancel_url\": \"\"}}";
                 request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
@@ -93,14 +111,17 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     id = body.Substring(start, end - start);
                 }
                 result.Id = id;
-                //result.Token = token;
+                transaction.Content = id;
+                await _unitOfWork.TransactionRepository.Add(transaction);
             }
-
+            await _unitOfWork.SaveChangesAsync();
             return result;
         }
 
         public async Task<Response> GetOrderStatus(string id)
         {
+            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.Content.Equals(id)).FirstOrDefaultAsync();
+            var order = await _unitOfWork.OrderRepository.GetById(transaction.OrderId);
             var status = "";
             var client = new HttpClient();
             var username = "AXZb2SctDtdMVaazixC9p-3WKxyBW2evpzldMqYi3rFn8UwEwzW_SU7Q6-upjLFWaGgBn14xOAWCIB_t";
@@ -142,6 +163,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             {
                 if (response.StatusCode== System.Net.HttpStatusCode.Created)
                 {
+                    transaction.Status = 2;
+                    order.Status = 2;
+                    _unitOfWork.TransactionRepository.Update(transaction);
+                    _unitOfWork.OrderRepository.Update(order);
+                    var wallet = await _unitOfWork.WalletRepository.GetById(transaction.WalletId);
+                    wallet.AccountBalance += transaction.Amount;
+                    _unitOfWork.WalletRepository.Update(wallet);
+                    await _unitOfWork.SaveChangesAsync();
                     return new()
                     {
                         StatusCode = 200,
@@ -149,7 +178,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     };
                 }
             }
-
+            transaction.Status = 0;
+            order.Status = 0;
+            _unitOfWork.TransactionRepository.Update(transaction);
+            _unitOfWork.OrderRepository.Update(order);
+            await _unitOfWork.SaveChangesAsync();
             return new()
             {
                 StatusCode = 400,
