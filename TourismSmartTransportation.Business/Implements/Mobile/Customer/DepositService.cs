@@ -6,9 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
+using TourismSmartTransportation.Business.MoMo;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
@@ -112,8 +114,63 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
                 result.Id = id;
                 transaction.Content = id;
-                await _unitOfWork.TransactionRepository.Add(transaction);
             }
+            else 
+            {
+                string endpoint = "https://test-payment.momo.vn/gw_payment/transactionProcessor";
+                string partnerCode = "MOMODJMX20220717";
+                string accessKey = "WehkypIRwPP14mHb";
+                string serectkey = "3fq8h4CqAAPZcTTb3nCDpFKwEkQDsZzz";
+                string orderInfo = "test";
+                string returnUrl = "https://wonderful-island-0a012b800.1.azurestaticapps.net";
+                string notifyurl = "https://wonderful-island-0a012b800.1.azurestaticapps.net"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
+
+                string amount = model.Amount.ToString();
+                string requestId = DateTime.Now.Ticks.ToString();
+                string extraData = "";
+
+                //Before sign HMAC SHA256 signature
+                string rawHash = "partnerCode=" +
+                    partnerCode + "&accessKey=" +
+                    accessKey + "&requestId=" +
+                    requestId + "&amount=" +
+                    amount + "&orderId=" +
+                    order.OrderId + "&orderInfo=" +
+                    orderInfo + "&returnUrl=" +
+                    returnUrl + "&notifyUrl=" +
+                    notifyurl + "&extraData=" +
+                    extraData;
+
+                MoMoSecurity crypto = new MoMoSecurity();
+                //sign signature SHA256
+                string signature = crypto.signSHA256(rawHash, serectkey);
+
+                //build body json request
+                JObject message = new JObject
+            {
+                { "partnerCode", partnerCode },
+                { "accessKey", accessKey },
+                { "requestId", requestId },
+                { "amount", amount },
+                { "orderId", order.OrderId },
+                { "orderInfo", orderInfo },
+                { "returnUrl", returnUrl },
+                { "notifyUrl", notifyurl },
+                { "extraData", extraData },
+                { "requestType", "captureMoMoWallet" },
+                { "signature", signature }
+
+            };
+
+                string responseFromMomo =await PaymentRequest.sendPaymentRequest(endpoint, message.ToString());
+
+                JObject jmessage = JObject.Parse(responseFromMomo);
+
+                result.Id= jmessage.GetValue("payUrl").ToString();
+                transaction.Content = requestId;
+                //result.Id = responseFromMomo;
+            }
+            await _unitOfWork.TransactionRepository.Add(transaction);
             await _unitOfWork.SaveChangesAsync();
             return result;
         }
@@ -124,60 +181,61 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var order = await _unitOfWork.OrderRepository.GetById(transaction.OrderId);
             var status = "";
             var client = new HttpClient();
-            var username = "AXZb2SctDtdMVaazixC9p-3WKxyBW2evpzldMqYi3rFn8UwEwzW_SU7Q6-upjLFWaGgBn14xOAWCIB_t";
-            var password = "EPOBnxf2gprkvwAGJSUInJa3TM0VSujkVNB7dY3ExgdJwT3bvl9syul1_JDl9p-jw1XUVaIXtqp3X7Zd";
-            string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1")
-                                           .GetBytes(username + ":" + password));
-            var GrantType = new Dictionary<string, string>();
-            GrantType.Add("grant_type", "client_credentials");
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token"),
-                Headers =
+
+                var username = "AXZb2SctDtdMVaazixC9p-3WKxyBW2evpzldMqYi3rFn8UwEwzW_SU7Q6-upjLFWaGgBn14xOAWCIB_t";
+                var password = "EPOBnxf2gprkvwAGJSUInJa3TM0VSujkVNB7dY3ExgdJwT3bvl9syul1_JDl9p-jw1XUVaIXtqp3X7Zd";
+                string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1")
+                                               .GetBytes(username + ":" + password));
+                var GrantType = new Dictionary<string, string>();
+                GrantType.Add("grant_type", "client_credentials");
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token"),
+                    Headers =
                     {
                         { "Authorization", "Basic " + encoded }
                     },
-                Content = new FormUrlEncodedContent(GrantType)
-            };
-            string token;
-            using (var response = await client.SendAsync(request))
-            {
-                response.EnsureSuccessStatusCode();
-                var body = await response.Content.ReadAsStringAsync();
-                var start = body.IndexOf("access_token") + 15;
-                int end = body.IndexOf("\"", start + 1);
-                token = body.Substring(start, end - start);
-            }
-            request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://api.sandbox.paypal.com/v2/checkout/orders/"+id+ "/capture"),
-                Headers =
+                    Content = new FormUrlEncodedContent(GrantType)
+                };
+                string token;
+                using (var response = await client.SendAsync(request))
+                {
+                    response.EnsureSuccessStatusCode();
+                    var body = await response.Content.ReadAsStringAsync();
+                    var start = body.IndexOf("access_token") + 15;
+                    int end = body.IndexOf("\"", start + 1);
+                    token = body.Substring(start, end - start);
+                }
+                request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri("https://api.sandbox.paypal.com/v2/checkout/orders/" + id + "/capture"),
+                    Headers =
                     {
                         { "Authorization", "Bearer " + token }
                     },
-                Content = new StringContent("", Encoding.UTF8, "application/json")
-            };
-            using (var response = await client.SendAsync(request))
-            {
-                if (response.StatusCode== System.Net.HttpStatusCode.Created)
+                    Content = new StringContent("", Encoding.UTF8, "application/json")
+                };
+                using (var response = await client.SendAsync(request))
                 {
-                    transaction.Status = 2;
-                    order.Status = 2;
-                    _unitOfWork.TransactionRepository.Update(transaction);
-                    _unitOfWork.OrderRepository.Update(order);
-                    var wallet = await _unitOfWork.WalletRepository.GetById(transaction.WalletId);
-                    wallet.AccountBalance += transaction.Amount;
-                    _unitOfWork.WalletRepository.Update(wallet);
-                    await _unitOfWork.SaveChangesAsync();
-                    return new()
+                    if (response.StatusCode == System.Net.HttpStatusCode.Created)
                     {
-                        StatusCode = 200,
-                        Message = "Thanh toán thành công!"
-                    };
+                        transaction.Status = 2;
+                        order.Status = 2;
+                        _unitOfWork.TransactionRepository.Update(transaction);
+                        _unitOfWork.OrderRepository.Update(order);
+                        var wallet = await _unitOfWork.WalletRepository.GetById(transaction.WalletId);
+                        wallet.AccountBalance += transaction.Amount;
+                        _unitOfWork.WalletRepository.Update(wallet);
+                        await _unitOfWork.SaveChangesAsync();
+                        return new()
+                        {
+                            StatusCode = 200,
+                            Message = "Thanh toán thành công!"
+                        };
+                    }
                 }
-            }
             transaction.Status = 0;
             order.Status = 0;
             _unitOfWork.TransactionRepository.Update(transaction);
@@ -189,5 +247,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 Message = "Thanh toán thất bại!"
             };
         }
+
+
     }
 }

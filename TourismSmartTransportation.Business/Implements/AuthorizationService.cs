@@ -295,8 +295,15 @@ namespace TourismSmartTransportation.Business.Implements
                     PhotoUrl = await UploadFile(model.UploadFile, Container.Customer),
                     Status = 1
                 };
-
+                var wallet = new Wallet()
+                {
+                    AccountBalance = 0,
+                    CustomerId = customer.CustomerId,
+                    WalletId = Guid.NewGuid(),
+                    Status = 1
+                };
                 await _unitOfWork.CustomerRepository.Add(customer);
+                await _unitOfWork.WalletRepository.Add(wallet);
                 await _unitOfWork.SaveChangesAsync();
 
             }
