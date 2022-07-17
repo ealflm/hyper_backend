@@ -72,7 +72,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     int end = body.IndexOf("\"", start + 1);
                     token = body.Substring(start, end - start);
                 }
-                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \""+ model.Amount+"\"}}]}";
+                var Json = "{\"application_context\":{\"return_url\":\"https://example.com/hyper/return\",\"cancel_url\":\"https://example.com/hyper/cancel\"},\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \"" + model.Amount+"\"}}]}";
                 request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
