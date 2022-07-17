@@ -22,7 +22,7 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetOrderStatus(string id)
+        public async Task<IActionResult> GetOrderStatus(Guid id)
         {
             return SendResponse(await _service.GetOrderStatus(id));
         }

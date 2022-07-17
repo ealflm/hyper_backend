@@ -7,6 +7,7 @@ namespace TourismSmartTransportation.Data.Models
 {
     public partial class Transaction
     {
+        public Guid TransactionId { get; set; }
         public Guid OrderId { get; set; }
         public Guid WalletId { get; set; }
         public decimal Amount { get; set; }
