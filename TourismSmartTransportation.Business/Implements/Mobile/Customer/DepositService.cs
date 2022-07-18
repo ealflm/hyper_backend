@@ -124,9 +124,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 string orderInfo = "test";
                 string returnUrl = "hyper://customer.app";
                 string notifyurl = "https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit-momo"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
-
+                string orderId = DateTime.Now.Ticks.ToString();
                 string amount = model.Amount.ToString();
-                string requestId = DateTime.Now.Ticks.ToString();
+                string requestId = order.OrderId.ToString();
                 string extraData = "";
 
                 //Before sign HMAC SHA256 signature
@@ -135,7 +135,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     accessKey + "&requestId=" +
                     requestId + "&amount=" +
                     amount + "&orderId=" +
-                    order.OrderId + "&orderInfo=" +
+                    orderId + "&orderInfo=" +
                     orderInfo + "&returnUrl=" +
                     returnUrl + "&notifyUrl=" +
                     notifyurl + "&extraData=" +
@@ -177,8 +177,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
         public async Task<Response> GetOrderMoMoStatus(MoMoStatusModel model)
         {
-            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(new Guid(model.orderId))).FirstOrDefaultAsync();
-            var order = await _unitOfWork.OrderRepository.GetById(new Guid(model.orderId));
+            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(new Guid(model.requestId))).FirstOrDefaultAsync();
+            var order = await _unitOfWork.OrderRepository.GetById(new Guid(model.requestId));
             if (model.resultCode == 0)
             {
                 transaction.Status = 2;
