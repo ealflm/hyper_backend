@@ -11,6 +11,9 @@ using Azure.Storage.Blobs;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.ViewModel.Admin.CardManagement;
 using TourismSmartTransportation.Business.SearchModel.Admin.CardManagement;
+using System.Text;
+using System.Security.Cryptography;
+using System.IO;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -105,7 +108,30 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return entity;
 
         }
+        public static string DecryptString(string cipherText)
+        {
+            string key = "b14pa58l8aee4133bhce2ea2315b1916";
+            byte[] iv = new byte[16];
+            byte[] buffer = Convert.FromBase64String(cipherText);
 
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.IV = iv;
+                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                using (MemoryStream memoryStream = new MemoryStream(buffer))
+                {
+                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
+                        {
+                            return streamReader.ReadToEnd();
+                        }
+                    }
+                }
+            }
+        }
         public async Task<Response> Update(Guid id, UpdateCardModel model)
         {
             var isExistCode = await _unitOfWork.CardRepository.Query().AnyAsync(x => x.Uid.Equals(model.Uid));
@@ -128,6 +154,30 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
             entity.CustomerId = UpdateTypeOfNotNullAbleObject<Guid>(entity.CustomerId, model.CustomerId);
             entity.Uid = UpdateTypeOfNullAbleObject<string>(entity.Uid, model.Uid);
+            entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
+            _unitOfWork.CardRepository.Update(entity);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Cập nhật thành công!"
+            };
+        }
+
+
+        public async Task<Response> CustomerMatch(UpdateCardModel model)
+        {
+            model.Uid = DecryptString(model.Uid.Substring(1));
+            var entity = await _unitOfWork.CardRepository.Query().Where(x=> x.Uid.Equals(model.Uid)).FirstOrDefaultAsync();
+            if (entity == null)
+            {
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Không tìm thấy!"
+                };
+            }
+            entity.CustomerId = UpdateTypeOfNotNullAbleObject<Guid>(entity.CustomerId, model.CustomerId);
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
             _unitOfWork.CardRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();

@@ -30,5 +30,8 @@ namespace ApiVer1Url
 
         // package list
         public const string Package = BaseApiUrl + "/package";
+
+        // Card matching
+        public const string CardMatch = BaseApiUrl + "/card-match";
     }
 }
