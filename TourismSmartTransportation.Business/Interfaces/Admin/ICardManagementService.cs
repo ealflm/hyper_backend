@@ -14,5 +14,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
         Task<Response> Create(string uid);
         Task<Response> Update(Guid id, UpdateCardModel model);
         Task<Response> Delete(Guid id);
+        Task<Response> CustomerMatch(UpdateCardModel model);
     }
 }
