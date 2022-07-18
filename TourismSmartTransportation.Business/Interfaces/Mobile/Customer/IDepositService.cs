@@ -13,5 +13,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Mobile.Customer
     {
         Task<DepositViewModel> GetOrderId(DepositSearchModel model);
         Task<Response> GetOrderStatus(string id);
+        Task<Response> GetOrderMoMoStatus(Guid id, int status);
     }
 }

@@ -123,7 +123,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 string serectkey = "3fq8h4CqAAPZcTTb3nCDpFKwEkQDsZzz";
                 string orderInfo = "test";
                 string returnUrl = "https://wonderful-island-0a012b800.1.azurestaticapps.net";
-                string notifyurl = "https://wonderful-island-0a012b800.1.azurestaticapps.net"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
+                string notifyurl = "https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit-momo"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
 
                 string amount = model.Amount.ToString();
                 string requestId = DateTime.Now.Ticks.ToString();
@@ -173,6 +173,39 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             await _unitOfWork.TransactionRepository.Add(transaction);
             await _unitOfWork.SaveChangesAsync();
             return result;
+        }
+
+        public async Task<Response> GetOrderMoMoStatus(Guid id, int status)
+        {
+            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(id)).FirstOrDefaultAsync();
+            var order = await _unitOfWork.OrderRepository.GetById(id);
+            if (status == 0)
+            {
+                transaction.Status = 2;
+                order.Status = 2;
+                _unitOfWork.TransactionRepository.Update(transaction);
+                _unitOfWork.OrderRepository.Update(order);
+                var wallet = await _unitOfWork.WalletRepository.GetById(transaction.WalletId);
+                wallet.AccountBalance += transaction.Amount;
+                _unitOfWork.WalletRepository.Update(wallet);
+                await _unitOfWork.SaveChangesAsync();
+                return new()
+                {
+                    StatusCode = 200,
+                    Message = "Thanh toán thành công!"
+                };
+            }
+            transaction.Status = 0;
+            order.Status = 0;
+            _unitOfWork.TransactionRepository.Update(transaction);
+            _unitOfWork.OrderRepository.Update(order);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 400,
+                Message = "Thanh toán thất bại!"
+            };
+
         }
 
         public async Task<Response> GetOrderStatus(string id)

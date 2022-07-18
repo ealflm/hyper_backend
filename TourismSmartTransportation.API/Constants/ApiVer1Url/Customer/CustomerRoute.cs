@@ -21,5 +21,7 @@ namespace ApiVer1Url
 
         // Deposit
         public const string Deposit = BaseApiUrl + "/deposit";
+        // Deposit MoMo
+        public const string DepositMoMo = BaseApiUrl + "/deposit-momo";
     }
 }
