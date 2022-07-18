@@ -150,9 +150,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             {
                 { "partnerCode", partnerCode },
                 { "accessKey", accessKey },
-                { "requestId", requestId },
+                { "requestId", order.OrderId },
                 { "amount", amount },
-                { "orderId", order.OrderId },
+                { "orderId", orderId },
                 { "orderInfo", orderInfo },
                 { "returnUrl", returnUrl },
                 { "notifyUrl", notifyurl },
