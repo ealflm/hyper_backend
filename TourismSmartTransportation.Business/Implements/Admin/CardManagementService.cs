@@ -177,7 +177,14 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = "Không tìm thấy!"
                 };
             }
-            entity.CustomerId = UpdateTypeOfNotNullAbleObject<Guid>(entity.CustomerId, model.CustomerId);
+            if (model.CustomerId != null)
+            {
+                entity.CustomerId = model.CustomerId;
+            }
+            else
+            {
+                entity.CustomerId = null;
+            }
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
             _unitOfWork.CardRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
