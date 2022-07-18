@@ -20,6 +20,7 @@ using TourismSmartTransportation.Business.ViewModel.Admin.CardManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.PackageItem;
+using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -446,6 +447,17 @@ namespace TourismSmartTransportation.Business.Extensions
                 MinDistance = item.MinDistance,
                 MaxDistance = item.MaxDistance,
                 Price = item.Price,
+                Status = item.Status
+            };
+        }
+
+        public static WalletViewModel AsWalletViewModel(this Wallet item)
+        {
+            return new()
+            {
+                WalletId = item.WalletId,
+                CustomerId = item.CustomerId,
+                AccountBalance = item.AccountBalance,
                 Status = item.Status
             };
         }
