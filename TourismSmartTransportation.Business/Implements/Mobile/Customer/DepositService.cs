@@ -43,7 +43,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 OrderId = order.OrderId,
                 WalletId = walletId,
                 Amount = order.TotalPrice,
-                CreatedDate = DateTime.Now
+                CreatedDate = DateTime.Now,
+                Status = 1
             };
             var id = "";
             var result = new DepositViewModel();
@@ -117,29 +118,30 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
             else 
             {
-                string endpoint = "https://test-payment.momo.vn/gw_payment/transactionProcessor";
+                string endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
                 string partnerCode = "MOMODJMX20220717";
                 string accessKey = "WehkypIRwPP14mHb";
                 string serectkey = "3fq8h4CqAAPZcTTb3nCDpFKwEkQDsZzz";
                 string orderInfo = "test";
-                string returnUrl = "hyper://customer.app";
-                string notifyurl = "https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit-momo"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
+                string redirectUrl = "hyper://customer.app";
+                string ipnUrl = "https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit-momo"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
                 string orderId = DateTime.Now.Ticks.ToString();
                 string amount = model.Amount.ToString();
                 string requestId = order.OrderId.ToString();
                 string extraData = "";
+                string requestType = "captureWallet";
 
                 //Before sign HMAC SHA256 signature
-                string rawHash = "partnerCode=" +
-                    partnerCode + "&accessKey=" +
-                    accessKey + "&requestId=" +
-                    requestId + "&amount=" +
-                    amount + "&orderId=" +
-                    orderId + "&orderInfo=" +
-                    orderInfo + "&returnUrl=" +
-                    returnUrl + "&notifyUrl=" +
-                    notifyurl + "&extraData=" +
-                    extraData;
+                string rawHash = "accessKey=" + accessKey +
+                    "&amount=" + amount +
+                    "&extraData=" + extraData +
+                    "&ipnUrl=" + ipnUrl +
+                    "&orderId=" + orderId +
+                    "&orderInfo=" + orderInfo +
+                    "&partnerCode=" + partnerCode +
+                    "&redirectUrl=" + redirectUrl +
+                    "&requestId=" + requestId +
+                    "&requestType=" + requestType;
 
                 MoMoSecurity crypto = new MoMoSecurity();
                 //sign signature SHA256
@@ -147,20 +149,22 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                 //build body json request
                 JObject message = new JObject
-            {
-                { "partnerCode", partnerCode },
-                { "accessKey", accessKey },
-                { "requestId", order.OrderId },
-                { "amount", amount },
-                { "orderId", orderId },
-                { "orderInfo", orderInfo },
-                { "returnUrl", returnUrl },
-                { "notifyUrl", notifyurl },
-                { "extraData", extraData },
-                { "requestType", "captureMoMoWallet" },
-                { "signature", signature }
+                {
+                    { "partnerCode", partnerCode },
+                    { "partnerName", "Test" },
+                    { "storeId", "MomoTestStore" },
+                    { "requestId", requestId },
+                    { "amount", amount },
+                    { "orderId", orderId },
+                    { "orderInfo", orderInfo },
+                    { "redirectUrl", redirectUrl },
+                    { "ipnUrl", ipnUrl },
+                    { "lang", "vi" },
+                    { "extraData", extraData },
+                    { "requestType", requestType },
+                    { "signature", signature }
 
-            };
+                };
 
                 string responseFromMomo =await PaymentRequest.sendPaymentRequest(endpoint, message.ToString());
 
