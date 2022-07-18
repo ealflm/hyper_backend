@@ -24,5 +24,8 @@ namespace ApiVer1Url
 
         // Wallet
         public const string Wallet = BaseApiUrl + "/wallet";
+
+        // package list
+        public const string Package = BaseApiUrl + "/package";
     }
 }
