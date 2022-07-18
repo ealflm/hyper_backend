@@ -8,7 +8,7 @@ namespace TourismSmartTransportation.Business.MoMo
 {
     public class MoMoStatusModel
     {
-        public string orderId { get; set; }
+        public string requestId { get; set; }
         public int resultCode { get; set; }
     }
 }
