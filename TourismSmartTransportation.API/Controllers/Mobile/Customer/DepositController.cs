@@ -10,7 +10,6 @@ using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 {
     [ApiController]
-    [Authorize]
     [Route(ApiVer1Url.Customer.Deposit)]
     public class DepositController : BaseController
     {
@@ -23,12 +22,14 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetOrderStatus(string id)
         {
             return SendResponse(await _service.GetOrderStatus(id));
         }
 
         [HttpPost]
+        [Authorize]
         // [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> GetOrderId([FromForm] DepositSearchModel model)
         {
