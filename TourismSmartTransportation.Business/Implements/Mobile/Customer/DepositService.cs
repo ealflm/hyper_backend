@@ -179,7 +179,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         {
             var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(new Guid(model.requestId))).FirstOrDefaultAsync();
             var order = await _unitOfWork.OrderRepository.GetById(new Guid(model.requestId));
-            if (model.resultCode == 0)
+            if (model.resultCode == 0|| model.resultCode==9000)
             {
                 transaction.Status = 2;
                 order.Status = 2;
@@ -191,7 +191,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 await _unitOfWork.SaveChangesAsync();
                 return new()
                 {
-                    StatusCode = 200,
+                    StatusCode = 204,
                     Message = "Thanh toán thành công!"
                 };
             }
