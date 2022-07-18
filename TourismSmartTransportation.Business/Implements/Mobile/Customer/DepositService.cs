@@ -177,8 +177,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
         public async Task<Response> GetOrderMoMoStatus(MoMoStatusModel model)
         {
-            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(model.orderId)).FirstOrDefaultAsync();
-            var order = await _unitOfWork.OrderRepository.GetById(model.orderId);
+            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(new Guid(model.orderId))).FirstOrDefaultAsync();
+            var order = await _unitOfWork.OrderRepository.GetById(new Guid(model.orderId));
             if (model.resultCode == 0)
             {
                 transaction.Status = 2;
