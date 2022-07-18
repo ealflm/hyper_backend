@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -6,10 +7,13 @@ using Microsoft.EntityFrameworkCore;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Admin;
+using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
 using TourismSmartTransportation.Business.SearchModel.Admin.Package;
+using TourismSmartTransportation.Business.SearchModel.Mobile.Customer;
 using TourismSmartTransportation.Business.ViewModel.Admin.Package;
 using TourismSmartTransportation.Business.ViewModel.Admin.PackageItem;
 using TourismSmartTransportation.Business.ViewModel.Common;
+using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 
@@ -17,8 +21,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class PackageService : BaseService, IPackageService
     {
-        public PackageService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private readonly ICustomerPackagesHistoryService _cusPacHisService;
+        public PackageService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient,
+                                ICustomerPackagesHistoryService cusPacHisService) : base(unitOfWork, blobServiceClient)
         {
+            _cusPacHisService = cusPacHisService;
         }
 
         public async Task<Response> CreatePackage(CreatePackageModel model)
@@ -181,6 +188,62 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
+            };
+        }
+
+        public async Task<SearchResultViewModel<PackageViewModel>> GetPackageNotUsed(PackageCustomerModel model)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId);
+            if (customer == null)
+            {
+                return null;
+            }
+            CustomerPackagesHistorySearchModel cusPacHisModel = new CustomerPackagesHistorySearchModel() { CustomerId = customer.CustomerId };
+            var packageHisList = await _cusPacHisService.GetCustomerPackageHistory(cusPacHisModel);
+            var packageIdIsUsedList = packageHisList.Items
+                                        .Where(x => x.Status == 1)
+                                        .Select(x => x.PackageId)
+                                        .ToList();
+
+            string sql = $@"Select * From Package Where Status = 1 ";
+            List<object> paramsList = new List<object>();
+            for (int i = 0; i < packageIdIsUsedList.Count; i++)
+            {
+                if (packageIdIsUsedList.Count == 1)
+                {
+                    sql += "And PackageId != {" + i + "} ";
+                }
+                else if (i == packageIdIsUsedList.Count - 1)
+                {
+                    sql += "PackageId != {" + i + "} ";
+                }
+                else
+                {
+                    sql += "And PackageId != {" + i + "} And ";
+                }
+                paramsList.Add(packageIdIsUsedList[i]);
+            }
+            var packagesList = await _unitOfWork.PackageRepository
+                                .Query()
+                                .FromSqlRaw(sql, paramsList.ToArray())
+                                .Select(x => x.AsPackageViewModel())
+                                .ToListAsync();
+            var listAfterSorting = GetListAfterSorting(packagesList, model.SortBy);
+            var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
+            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
+            foreach (var item in listItemsAfterPaging)
+            {
+                var packageItems = await _unitOfWork.PackageItemRepository.Query()
+                                    .Where(x => x.PackageId == item.Id)
+                                    .Select(x => x.AsPackageItemViewModel())
+                                    .ToListAsync();
+                item.PackageItems = packageItems;
+            }
+            return new SearchResultViewModel<PackageViewModel>()
+            {
+                Items = listItemsAfterPaging,
+                PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
+                TotalItems = totalRecord
             };
         }
     }
