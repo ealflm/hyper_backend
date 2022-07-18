@@ -191,31 +191,46 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-        public async Task<SearchResultViewModel<PackageViewModel>> GetPackageNotUsed(Guid customerId)
+        public async Task<SearchResultViewModel<PackageViewModel>> GetPackageNotUsed(PackageCustomerModel model)
         {
-            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
+            var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId);
             if (customer == null)
             {
                 return null;
             }
-            CustomerPackagesHistorySearchModel cusPacHisModel = new CustomerPackagesHistorySearchModel() { CustomerId = customerId };
+            CustomerPackagesHistorySearchModel cusPacHisModel = new CustomerPackagesHistorySearchModel() { CustomerId = customer.CustomerId };
             var packageHisList = await _cusPacHisService.GetCustomerPackageHistory(cusPacHisModel);
             var packageIdIsUsedList = packageHisList.Items
-                                        .AsQueryable()
                                         .Where(x => x.Status == 1)
                                         .Select(x => x.PackageId)
                                         .ToList();
 
-            List<PackageViewModel> packagesList = new List<PackageViewModel>();
-            foreach (var pId in packageIdIsUsedList)
+            string sql = $@"Select * From Package Where Status = 1 ";
+            List<object> paramsList = new List<object>();
+            for (int i = 0; i < packageIdIsUsedList.Count; i++)
             {
-                var package = await _unitOfWork.PackageRepository.GetById(pId);
-                packagesList.Add(package.AsPackageViewModel());
+                if (packageIdIsUsedList.Count == 1)
+                {
+                    sql += "And PackageId != {" + i + "} ";
+                }
+                else if (i == packageIdIsUsedList.Count - 1)
+                {
+                    sql += "PackageId != {" + i + "} ";
+                }
+                else
+                {
+                    sql += "And PackageId != {" + i + "} And ";
+                }
+                paramsList.Add(packageIdIsUsedList[i]);
             }
-
-            var listAfterSorting = GetListAfterSorting(packagesList, cusPacHisModel.SortBy);
-            var totalRecord = GetTotalRecord(listAfterSorting, cusPacHisModel.ItemsPerPage, cusPacHisModel.PageIndex);
-            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, cusPacHisModel.ItemsPerPage, cusPacHisModel.PageIndex, totalRecord);
+            var packagesList = await _unitOfWork.PackageRepository
+                                .Query()
+                                .FromSqlRaw(sql, paramsList.ToArray())
+                                .Select(x => x.AsPackageViewModel())
+                                .ToListAsync();
+            var listAfterSorting = GetListAfterSorting(packagesList, model.SortBy);
+            var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
+            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
             foreach (var item in listItemsAfterPaging)
             {
                 var packageItems = await _unitOfWork.PackageItemRepository.Query()
@@ -227,7 +242,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return new SearchResultViewModel<PackageViewModel>()
             {
                 Items = listItemsAfterPaging,
-                PageSize = GetPageSize(cusPacHisModel.ItemsPerPage, totalRecord),
+                PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
                 TotalItems = totalRecord
             };
         }

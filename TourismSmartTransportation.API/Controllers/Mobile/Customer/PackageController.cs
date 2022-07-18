@@ -22,10 +22,10 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
         }
 
         [HttpGet]
-        [Route(ApiVer1Url.Customer.Package + "/list/{customerId}")]
-        public async Task<IActionResult> SearchPackage(Guid customerId)
+        [Route(ApiVer1Url.Customer.Package + "/list")]
+        public async Task<IActionResult> SearchPackage([FromQuery] PackageCustomerModel model)
         {
-            return SendResponse(await _service.GetPackageNotUsed(customerId));
+            return SendResponse(await _service.GetPackageNotUsed(model));
         }
     }
 }
