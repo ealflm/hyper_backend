@@ -122,7 +122,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 string accessKey = "WehkypIRwPP14mHb";
                 string serectkey = "3fq8h4CqAAPZcTTb3nCDpFKwEkQDsZzz";
                 string orderInfo = "test";
-                string returnUrl = "https://wonderful-island-0a012b800.1.azurestaticapps.net";
+                string returnUrl = "hyper://customer.app";
                 string notifyurl = "https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit-momo"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
 
                 string amount = model.Amount.ToString();
@@ -175,11 +175,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             return result;
         }
 
-        public async Task<Response> GetOrderMoMoStatus(Guid id, int status)
+        public async Task<Response> GetOrderMoMoStatus(MoMoStatusModel model)
         {
-            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(id)).FirstOrDefaultAsync();
-            var order = await _unitOfWork.OrderRepository.GetById(id);
-            if (status == 0)
+            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(model.orderId)).FirstOrDefaultAsync();
+            var order = await _unitOfWork.OrderRepository.GetById(model.orderId);
+            if (model.resultCode == 0)
             {
                 transaction.Status = 2;
                 order.Status = 2;
