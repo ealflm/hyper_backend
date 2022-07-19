@@ -40,6 +40,30 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Status = 1
             };
             await _unitOfWork.CategoryRepository.Add(entity);
+
+            var publisYearsList = await _unitOfWork.PublishYearRepository
+                                    .Query()
+                                    .Select(x => x.AsPublishYearViewModel())
+                                    .ToListAsync();
+            foreach (var p in publisYearsList)
+            {
+                var newRecord = new PriceOfRentingService()
+                {
+                    PriceOfRentingServiceId = Guid.NewGuid(),
+                    CategoryId = entity.CategoryId,
+                    PublishYearId = p.Id,
+                    MinTime = 0,
+                    MaxTime = 0,
+                    PricePerHour = 0,
+                    FixedPrice = 0,
+                    WeekendPrice = 0,
+                    HolidayPrice = 0,
+                    Status = 1
+                };
+
+                await _unitOfWork.PriceOfRentingServiceRepository.Add(newRecord);
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             return new()
