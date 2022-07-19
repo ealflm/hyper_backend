@@ -185,9 +185,9 @@ namespace TourismSmartTransportation.Data.Context
 
             modelBuilder.Entity<CustomerTrip>(entity =>
             {
-                entity.HasKey(e => new { e.CustomerId, e.RouteId, e.VehicleId });
-
                 entity.ToTable("CustomerTrip");
+
+                entity.Property(e => e.CustomerTripId).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
@@ -818,6 +818,10 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Uid)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("UId");
 
                 entity.HasOne(d => d.Order)
                     .WithMany(p => p.Transactions)

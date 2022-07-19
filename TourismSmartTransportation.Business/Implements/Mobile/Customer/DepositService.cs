@@ -46,6 +46,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 CreatedDate = DateTime.Now,
                 Status = 1
             };
+            await _unitOfWork.TransactionRepository.Add(transaction);
+            await _unitOfWork.SaveChangesAsync();
+            transaction = await _unitOfWork.TransactionRepository.GetById(transaction.TransactionId);
             var id = "";
             var result = new DepositViewModel();
             if (model.Method == 0)
@@ -93,7 +96,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     int end = body.IndexOf("\"", start + 1);
                     token = body.Substring(start, end - start);
                 }
-                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \""+ model.Amount+ "\"}}],\"application_context\": {\"return_url\": \"https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit/\",\"cancel_url\": \"\"}}";
+                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \""+ model.Amount+ "\"}}],\"application_context\": {\"return_url\": \"https://example.com/hyper?uid="+transaction.Uid+"&create-date="+transaction.CreatedDate.ToString()+"\",\"cancel_url\": \"\"}}";
                 request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
@@ -123,7 +126,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 string accessKey = "WehkypIRwPP14mHb";
                 string serectkey = "3fq8h4CqAAPZcTTb3nCDpFKwEkQDsZzz";
                 string orderInfo = "test";
-                string redirectUrl = "hyper://customer.app";
+                string redirectUrl = "hyper://customer.app?uid=" + transaction.Uid + "&create-date=" + transaction.CreatedDate.ToString();
                 string ipnUrl = "https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit-momo"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
                 string orderId = DateTime.Now.Ticks.ToString();
                 string amount = model.Amount.ToString();
