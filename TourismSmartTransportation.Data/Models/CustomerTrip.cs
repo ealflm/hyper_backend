@@ -18,6 +18,7 @@ namespace TourismSmartTransportation.Data.Models
         public decimal? LongitudeOfDestination { get; set; }
         public decimal? LatitudeOfDestination { get; set; }
         public int Status { get; set; }
+        public Guid CustomerTripId { get; set; }
 
         public virtual Customer Customer { get; set; }
         public virtual Route Route { get; set; }

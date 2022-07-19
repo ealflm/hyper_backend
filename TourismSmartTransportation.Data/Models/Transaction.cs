@@ -13,6 +13,7 @@ namespace TourismSmartTransportation.Data.Models
         public decimal Amount { get; set; }
         public DateTime CreatedDate { get; set; }
         public string Content { get; set; }
+        public int Uid { get; set; }
         public int Status { get; set; }
 
         public virtual Order Order { get; set; }
