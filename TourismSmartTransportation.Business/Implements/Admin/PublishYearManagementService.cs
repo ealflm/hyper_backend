@@ -42,6 +42,32 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Status = 1
             };
             await _unitOfWork.PublishYearRepository.Add(entity);
+
+            // generate default price with value 0
+            var categoriesList = await _unitOfWork.CategoryRepository
+                                .Query()
+                                .Select(x => x.AsCategoryViewModel())
+                                .ToListAsync();
+
+            foreach (var p in categoriesList)
+            {
+                var newRecord = new PriceOfRentingService()
+                {
+                    PriceOfRentingServiceId = Guid.NewGuid(),
+                    CategoryId = p.Id,
+                    PublishYearId = entity.PublishYearId,
+                    MinTime = 0,
+                    MaxTime = 0,
+                    PricePerHour = 0,
+                    FixedPrice = 0,
+                    WeekendPrice = 0,
+                    HolidayPrice = 0,
+                    Status = 1
+                };
+
+                await _unitOfWork.PriceOfRentingServiceRepository.Add(newRecord);
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             return new()
