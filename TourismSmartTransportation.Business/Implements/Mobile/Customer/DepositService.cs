@@ -30,10 +30,10 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var order = new Order()
             {
                 OrderId = Guid.NewGuid(),
-                CreatedDate= DateTime.Now,
-                CustomerId= model.CustomerId,
-                TotalPrice= model.Amount,
-                Status= 1
+                CreatedDate = DateTime.Now,
+                CustomerId = model.CustomerId,
+                TotalPrice = model.Amount,
+                Status = 1
             };
             await _unitOfWork.OrderRepository.Add(order);
             var walletId = (await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync()).WalletId;
@@ -46,7 +46,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 CreatedDate = DateTime.Now,
                 Status = 1
             };
-            var uid = (await _unitOfWork.TransactionRepository.Query().OrderBy(x => x.Uid).LastOrDefaultAsync()).Uid+1;
+            var uid = (await _unitOfWork.TransactionRepository.Query().OrderBy(x => x.Uid).LastOrDefaultAsync()).Uid + 1;
             //await _unitOfWork.SaveChangesAsync();
             //var transactionModel = await _unitOfWork.TransactionRepository.GetById(transaction.TransactionId);
             var id = "";
@@ -68,7 +68,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 {
                     response.EnsureSuccessStatusCode();
                     var body = await response.Content.ReadAsStringAsync();
-                    var start= body.IndexOf("convertedAmount") + 17;
+                    var start = body.IndexOf("convertedAmount") + 17;
                     model.Amount = decimal.Parse(body.Substring(start, 4));
                 }
                 var username = "AXZb2SctDtdMVaazixC9p-3WKxyBW2evpzldMqYi3rFn8UwEwzW_SU7Q6-upjLFWaGgBn14xOAWCIB_t";
@@ -96,7 +96,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     int end = body.IndexOf("\"", start + 1);
                     token = body.Substring(start, end - start);
                 }
-                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \""+ model.Amount+ "\"}}],\"application_context\": {\"return_url\": \"https://example.com/hyper?uid="+uid+"&amount="+transaction.Amount+"&create-date="+transaction.CreatedDate.Ticks.ToString()+"\",\"cancel_url\": \"\"}}";
+                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \"" + model.Amount + "\"}}],\"application_context\": {\"return_url\": \"https://example.com/hyper?uid=" + uid + "&amount=" + transaction.Amount + "&create-date=" + transaction.CreatedDate.Ticks.ToString() + "\",\"cancel_url\": \"\"}}";
                 request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
@@ -119,7 +119,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 result.Id = id;
                 transaction.Content = id;
             }
-            else 
+            else
             {
                 string endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
                 string partnerCode = "MOMODJMX20220717";
@@ -169,15 +169,15 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                 };
 
-                string responseFromMomo =await PaymentRequest.sendPaymentRequest(endpoint, message.ToString());
+                string responseFromMomo = await PaymentRequest.sendPaymentRequest(endpoint, message.ToString());
 
                 JObject jmessage = JObject.Parse(responseFromMomo);
 
-                result.Id= jmessage.GetValue("payUrl").ToString();
+                result.Id = jmessage.GetValue("payUrl").ToString();
                 transaction.Content = requestId;
                 //result.Id = responseFromMomo;
             }
-             await _unitOfWork.TransactionRepository.Add(transaction);
+            await _unitOfWork.TransactionRepository.Add(transaction);
             await _unitOfWork.SaveChangesAsync();
             return result;
         }
@@ -186,7 +186,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         {
             var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(new Guid(model.requestId))).FirstOrDefaultAsync();
             var order = await _unitOfWork.OrderRepository.GetById(new Guid(model.requestId));
-            if (model.resultCode == 0|| model.resultCode==9000)
+            if (model.resultCode == 0 || model.resultCode == 9000)
             {
                 transaction.Status = 2;
                 order.Status = 2;
@@ -219,63 +219,62 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         {
             var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.Content.Equals(id)).FirstOrDefaultAsync();
             var order = await _unitOfWork.OrderRepository.GetById(transaction.OrderId);
-            var status = "";
             var client = new HttpClient();
 
-                var username = "AXZb2SctDtdMVaazixC9p-3WKxyBW2evpzldMqYi3rFn8UwEwzW_SU7Q6-upjLFWaGgBn14xOAWCIB_t";
-                var password = "EPOBnxf2gprkvwAGJSUInJa3TM0VSujkVNB7dY3ExgdJwT3bvl9syul1_JDl9p-jw1XUVaIXtqp3X7Zd";
-                string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1")
-                                               .GetBytes(username + ":" + password));
-                var GrantType = new Dictionary<string, string>();
-                GrantType.Add("grant_type", "client_credentials");
-                var request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token"),
-                    Headers =
+            var username = "AXZb2SctDtdMVaazixC9p-3WKxyBW2evpzldMqYi3rFn8UwEwzW_SU7Q6-upjLFWaGgBn14xOAWCIB_t";
+            var password = "EPOBnxf2gprkvwAGJSUInJa3TM0VSujkVNB7dY3ExgdJwT3bvl9syul1_JDl9p-jw1XUVaIXtqp3X7Zd";
+            string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1")
+                                           .GetBytes(username + ":" + password));
+            var GrantType = new Dictionary<string, string>();
+            GrantType.Add("grant_type", "client_credentials");
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token"),
+                Headers =
                     {
                         { "Authorization", "Basic " + encoded }
                     },
-                    Content = new FormUrlEncodedContent(GrantType)
-                };
-                string token;
-                using (var response = await client.SendAsync(request))
-                {
-                    response.EnsureSuccessStatusCode();
-                    var body = await response.Content.ReadAsStringAsync();
-                    var start = body.IndexOf("access_token") + 15;
-                    int end = body.IndexOf("\"", start + 1);
-                    token = body.Substring(start, end - start);
-                }
-                request = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = new Uri("https://api.sandbox.paypal.com/v2/checkout/orders/" + id + "/capture"),
-                    Headers =
+                Content = new FormUrlEncodedContent(GrantType)
+            };
+            string token;
+            using (var response = await client.SendAsync(request))
+            {
+                response.EnsureSuccessStatusCode();
+                var body = await response.Content.ReadAsStringAsync();
+                var start = body.IndexOf("access_token") + 15;
+                int end = body.IndexOf("\"", start + 1);
+                token = body.Substring(start, end - start);
+            }
+            request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri("https://api.sandbox.paypal.com/v2/checkout/orders/" + id + "/capture"),
+                Headers =
                     {
                         { "Authorization", "Bearer " + token }
                     },
-                    Content = new StringContent("", Encoding.UTF8, "application/json")
-                };
-                using (var response = await client.SendAsync(request))
+                Content = new StringContent("", Encoding.UTF8, "application/json")
+            };
+            using (var response = await client.SendAsync(request))
+            {
+                if (response.StatusCode == System.Net.HttpStatusCode.Created)
                 {
-                    if (response.StatusCode == System.Net.HttpStatusCode.Created)
+                    transaction.Status = 2;
+                    order.Status = 2;
+                    _unitOfWork.TransactionRepository.Update(transaction);
+                    _unitOfWork.OrderRepository.Update(order);
+                    var wallet = await _unitOfWork.WalletRepository.GetById(transaction.WalletId);
+                    wallet.AccountBalance += transaction.Amount;
+                    _unitOfWork.WalletRepository.Update(wallet);
+                    await _unitOfWork.SaveChangesAsync();
+                    return new()
                     {
-                        transaction.Status = 2;
-                        order.Status = 2;
-                        _unitOfWork.TransactionRepository.Update(transaction);
-                        _unitOfWork.OrderRepository.Update(order);
-                        var wallet = await _unitOfWork.WalletRepository.GetById(transaction.WalletId);
-                        wallet.AccountBalance += transaction.Amount;
-                        _unitOfWork.WalletRepository.Update(wallet);
-                        await _unitOfWork.SaveChangesAsync();
-                        return new()
-                        {
-                            StatusCode = 200,
-                            Message = "Thanh toán thành công!"
-                        };
-                    }
+                        StatusCode = 200,
+                        Message = "Thanh toán thành công!"
+                    };
                 }
+            }
             transaction.Status = 0;
             order.Status = 0;
             _unitOfWork.TransactionRepository.Update(transaction);

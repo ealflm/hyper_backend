@@ -157,7 +157,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 PriceOfBusServiceId = Guid.NewGuid(),
                 BasePriceId = basePrice.BasePriceOfBusServiceId,
                 MinDistance = model.MinDistance,
-                MaxDistance = model.MaxDistance * (decimal)rateArray[0],
+                MaxDistance = model.MaxDistance * (decimal)rateArray[0] + model.MinDistance,
                 Price = basePrice.Price * (decimal)rateArray[0] - 1000,
                 MinStation = 0,
                 MaxStation = 0,
