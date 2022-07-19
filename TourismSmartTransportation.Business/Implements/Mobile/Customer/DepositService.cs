@@ -277,7 +277,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
             transaction.Status = 0;
             order.Status = 0;
-            _unitOfWork.TransactionRepository.Update(transaction);
+            _unitOfWork.TransactionRepository.UpdateWithMultipleKey(transaction);
             _unitOfWork.OrderRepository.Update(order);
             await _unitOfWork.SaveChangesAsync();
             return new()
