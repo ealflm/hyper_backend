@@ -41,7 +41,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
             var priceRenting = await _unitOfWork.PriceOfRentingServiceRepository
                                     .Query()
-                                    .Where(x => x.CategoryId == model.CategoryId.Value && x.PublishYearId == model.PublishYearId.Value)
+                                    .Where(x => model.CategoryId == null ? false : x.CategoryId == model.CategoryId.Value &&
+                                                model.PublishYearId == null ? false : x.PublishYearId == model.PublishYearId.Value)
                                     .FirstOrDefaultAsync();
 
             var vehicle = new TourismSmartTransportation.Data.Models.Vehicle()
