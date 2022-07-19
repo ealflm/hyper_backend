@@ -46,9 +46,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 CreatedDate = DateTime.Now,
                 Status = 1
             };
-            await _unitOfWork.TransactionRepository.Add(transaction);
-            await _unitOfWork.SaveChangesAsync();
-            transaction = await _unitOfWork.TransactionRepository.GetById(transaction.TransactionId);
+            var uid = (await _unitOfWork.TransactionRepository.Query().OrderBy(x => x.Uid).LastOrDefaultAsync()).Uid+1;
+            //await _unitOfWork.SaveChangesAsync();
+            //var transactionModel = await _unitOfWork.TransactionRepository.GetById(transaction.TransactionId);
             var id = "";
             var result = new DepositViewModel();
             if (model.Method == 0)
@@ -96,7 +96,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     int end = body.IndexOf("\"", start + 1);
                     token = body.Substring(start, end - start);
                 }
-                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \""+ model.Amount+ "\"}}],\"application_context\": {\"return_url\": \"https://example.com/hyper?uid="+transaction.Uid+"&amount="+transaction.Amount+"&create-date="+transaction.CreatedDate.ToString()+"\",\"cancel_url\": \"\"}}";
+                var Json = "{\"intent\": \"CAPTURE\",\"purchase_units\": [{\"amount\": {\"currency_code\": \"USD\",\"value\": \""+ model.Amount+ "\"}}],\"application_context\": {\"return_url\": \"https://example.com/hyper?uid="+uid+"&amount="+transaction.Amount+"&create-date="+transaction.CreatedDate.Ticks.ToString()+"\",\"cancel_url\": \"\"}}";
                 request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
@@ -177,7 +177,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 transaction.Content = requestId;
                 //result.Id = responseFromMomo;
             }
-            await _unitOfWork.TransactionRepository.Add(transaction);
+             await _unitOfWork.TransactionRepository.Add(transaction);
             await _unitOfWork.SaveChangesAsync();
             return result;
         }
