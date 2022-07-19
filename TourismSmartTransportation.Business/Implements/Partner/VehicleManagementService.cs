@@ -39,6 +39,11 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 return validatorResult;
             }
 
+            var priceRenting = await _unitOfWork.PriceOfRentingServiceRepository
+                                    .Query()
+                                    .Where(x => x.CategoryId == model.CategoryId.Value && x.PublishYearId == model.PublishYearId.Value)
+                                    .FirstOrDefaultAsync();
+
             var vehicle = new TourismSmartTransportation.Data.Models.Vehicle()
             {
                 VehicleId = Guid.NewGuid(),
@@ -46,7 +51,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 VehicleTypeId = model.VehicleTypeId.Value,
                 RentStationId = model.RentStationId,
                 PartnerId = model.PartnerId.Value,
-                PriceRentingId = model.PriceRentingId.Value,
+                PriceRentingId = priceRenting != null ? priceRenting.PriceOfRentingServiceId : null,
                 Name = model.Name,
                 LicensePlates = model.LicensePlates,
                 Color = model.Color,
@@ -190,10 +195,21 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 entity.Status = model.Status.Value;
             }
 
+            if (model.CategoryId != null)
+            {
+                entity.PriceRentingId = (await _unitOfWork.PriceOfRentingServiceRepository
+                .Query()
+                .Where(x => x.CategoryId == model.CategoryId.Value && x.PublishYearId == model.PublishYearId.Value)
+                .FirstOrDefaultAsync()).PriceOfRentingServiceId;
+            }
+            else
+            {
+                entity.PriceRentingId = entity.PriceRentingId;
+            }
+
             entity.RentStationId = UpdateTypeOfNotNullAbleObject<Guid>(entity.RentStationId, model.RentStationId);
             entity.ServiceTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.ServiceTypeId, model.ServiceTypeId);
             entity.VehicleTypeId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleTypeId, model.VehicleTypeId);
-            entity.PriceRentingId = UpdateTypeOfNotNullAbleObject<Guid>(entity.PriceRentingId, model.PriceRentingId);
             entity.Color = UpdateTypeOfNullAbleObject<string>(entity.Color, model.Color);
             entity.LicensePlates = UpdateTypeOfNullAbleObject<string>(entity.LicensePlates, model.LicensePlates);
             entity.Name = UpdateTypeOfNullAbleObject<string>(entity.Name, model.Name);
@@ -323,9 +339,12 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             }
 
             // Check price renting
-            if (model.PriceRentingId != null)
+            if (model.CategoryId != null)
             {
-                var priceRenting = await _unitOfWork.PriceOfRentingServiceRepository.GetById(model.PriceRentingId.Value);
+                var priceRenting = await _unitOfWork.PriceOfRentingServiceRepository
+                                    .Query()
+                                    .Where(x => x.CategoryId == model.CategoryId.Value && x.PublishYearId == model.PublishYearId.Value)
+                                    .FirstOrDefaultAsync();
                 if (priceRenting == null)
                 {
                     return new()
