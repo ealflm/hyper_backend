@@ -72,7 +72,7 @@ namespace TourismSmartTransportation.Data.Repositories
             foreach (PropertyInfo prop in entity.GetType().GetProperties())
             {
                 if (prop.GetGetMethod().IsVirtual) continue;
-                if (prop.Name.Contains("Id")) continue;
+                if (prop.Name.ToLower().Contains("id")) continue;
                 if (prop.GetValue(entity, null) != null)
                 {
                     _dbContext.Entry(entity).Property(prop.Name).IsModified = true;

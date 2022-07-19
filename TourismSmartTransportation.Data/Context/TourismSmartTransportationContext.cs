@@ -819,9 +819,7 @@ namespace TourismSmartTransportation.Data.Context
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.Uid)
-                    .ValueGeneratedOnAdd()
-                    .HasColumnName("UId");
+                entity.Property(e => e.Uid).ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Order)
                     .WithMany(p => p.Transactions)
