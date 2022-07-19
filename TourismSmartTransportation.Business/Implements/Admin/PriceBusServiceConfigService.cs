@@ -87,8 +87,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsPriceOfBusServiceViewModel())
                             .ToListAsync();
+            foreach (var p in entity)
+            {
+                var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(p.BasePriceId);
+                p.BaseMinDistance = basePrice.MinDistance;
+                p.BaseMaxDistance = basePrice.MaxDistance;
+            }
             return entity;
-
         }
 
         public async Task<Response> UpdatePrice(Guid id, UpdatePriceBusServiceModel model)
