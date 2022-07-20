@@ -38,5 +38,8 @@ namespace ApiVer1Url
 
         // trip
         public const string Trip = BaseApiUrl + "/trip";
+
+        // dashboard
+        public const string Dashboard = BaseApiUrl + "/dashboard";
     }
 }

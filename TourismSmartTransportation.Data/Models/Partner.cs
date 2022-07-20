@@ -10,6 +10,7 @@ namespace TourismSmartTransportation.Data.Models
         public Partner()
         {
             Drivers = new HashSet<Driver>();
+            Orders = new HashSet<Order>();
             PartnerServiceTypes = new HashSet<PartnerServiceType>();
             RentStations = new HashSet<RentStation>();
             Routes = new HashSet<Route>();
@@ -35,6 +36,7 @@ namespace TourismSmartTransportation.Data.Models
         public string CompanyName { get; set; }
 
         public virtual ICollection<Driver> Drivers { get; set; }
+        public virtual ICollection<Order> Orders { get; set; }
         public virtual ICollection<PartnerServiceType> PartnerServiceTypes { get; set; }
         public virtual ICollection<RentStation> RentStations { get; set; }
         public virtual ICollection<Route> Routes { get; set; }
