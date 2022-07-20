@@ -126,7 +126,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 string accessKey = "WehkypIRwPP14mHb";
                 string serectkey = "3fq8h4CqAAPZcTTb3nCDpFKwEkQDsZzz";
                 string orderInfo = "test";
-                string redirectUrl = "hyper://customer.app?uid=" + uid + "&create-date=" + transaction.CreatedDate.ToString();
+                string redirectUrl = "hyper://customer.app?uid=" + uid + "&create-date=" + transaction.CreatedDate.Ticks.ToString();
                 string ipnUrl = "https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit-momo"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
                 string orderId = DateTime.Now.Ticks.ToString();
                 string amount = model.Amount.ToString();
