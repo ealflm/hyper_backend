@@ -60,5 +60,84 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 TotalItems = totalRecord
             };
         }
+
+        public async Task<List<PackageDetailsViewModel>> GetPackageDetails(PackageDetailsSearchModel model)
+        {
+            var customerTripsList = await _unitOfWork.CustomerTripRepository
+                                .Query()
+                                .Where(x => x.CustomerId == model.CustomerId)
+                                .Select(x => x.AsCustomerTripViewModel())
+                                .ToListAsync();
+
+            var pairs = new List<Tuple<Guid, decimal>>();
+            foreach (var p in customerTripsList)
+            {
+                if (pairs.Count == 0)
+                {
+                    var serviceType = (await _unitOfWork.VehicleRepository
+                                    .Query()
+                                    .Where(x => x.VehicleId == p.VehicleId)
+                                    .Select(x => x.AsVehicleViewModel())
+                                    .FirstOrDefaultAsync()).ServiceTypeId;
+                    pairs.Add(Tuple.Create(serviceType, p.Distance));
+                }
+                else
+                {
+                    bool check = false;
+                    for (int i = 0; i < pairs.Count; i++)
+                    {
+                        if (pairs[i].Item1 == p.VehicleId)
+                        {
+                            var item1 = pairs[i].Item1;
+                            var item2 = pairs[i].Item2 + p.Distance;
+                            pairs.RemoveAt(i);
+                            pairs.Add(Tuple.Create(item1, item2));
+                            check = true;
+                            break;
+                        }
+                    }
+
+                    if (!check)
+                    {
+                        var serviceType = (await _unitOfWork.VehicleRepository
+                                    .Query()
+                                    .Where(x => x.VehicleId == p.VehicleId)
+                                    .Select(x => x.AsVehicleViewModel())
+                                    .FirstOrDefaultAsync()).ServiceTypeId;
+                        pairs.Add(Tuple.Create(serviceType, p.Distance));
+                    }
+                }
+            }
+
+            var packageItemsList = await _unitOfWork.PackageItemRepository
+                            .Query()
+                            .Where(x => x.PackageId == model.PackageId)
+                            .Select(x => x.AsPackageItemViewModel())
+                            .ToListAsync();
+
+            List<PackageDetailsViewModel> result = new List<PackageDetailsViewModel>();
+
+            foreach (var p in packageItemsList)
+            {
+                for (int i = 0; i < pairs.Count; i++)
+                {
+                    if (p.ServiceTypeId == pairs[i].Item1)
+                    {
+                        result.Add(new()
+                        {
+                            ServiceTypeId = p.ServiceTypeId,
+                            ServiceName = (await _unitOfWork.ServiceTypeRepository.GetById(p.ServiceTypeId)).Name,
+                            LimitValue = p.Limit,
+                            CurrentValue = pairs[i].Item2,
+                            DiscountValue = p.Value
+                        });
+                        pairs.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return result;
+        }
     }
 }

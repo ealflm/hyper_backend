@@ -30,5 +30,12 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
         {
             return SendResponse(await _service.GetCustomerPackageHistory(model));
         }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Customer.PackageDetails)]
+        public async Task<IActionResult> GetPackageDetails([FromQuery] PackageDetailsSearchModel model)
+        {
+            return SendResponse(await _service.GetPackageDetails(model));
+        }
     }
 }
