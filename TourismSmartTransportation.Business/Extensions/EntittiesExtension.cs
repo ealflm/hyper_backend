@@ -461,5 +461,22 @@ namespace TourismSmartTransportation.Business.Extensions
                 Status = item.Status
             };
         }
+
+        public static CustomerTripViewModel AsCustomerTripViewModel(this CustomerTrip item)
+        {
+            return new()
+            {
+                CustomerId = item.CustomerId,
+                RouteId = item.RouteId,
+                VehicleId = item.VehicleId,
+                Distance = item.Distance,
+                CreatedDate = item.CreatedDate,
+                ModifiedDate = item.ModifiedDate,
+                LongitudeOfPickUpPoint = item.LongitudeOfPickUpPoint != null ? item.LongitudeOfPickUpPoint.Value : null,
+                LatitudeOfPickUpPoint = item.LatitudeOfPickUpPoint != null ? item.LatitudeOfPickUpPoint.Value : null,
+                LongitudeOfDestination = item.LongitudeOfDestination != null ? item.LongitudeOfDestination.Value : null,
+                LatitudeOfDestination = item.LatitudeOfDestination != null ? item.LatitudeOfDestination.Value : null,
+            };
+        }
     }
 }
