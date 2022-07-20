@@ -358,6 +358,11 @@ namespace TourismSmartTransportation.Data.Context
                     .HasForeignKey(d => d.DiscountId)
                     .HasConstraintName("FK_Order_Discount");
 
+                entity.HasOne(d => d.Partner)
+                    .WithMany(p => p.Orders)
+                    .HasForeignKey(d => d.PartnerId)
+                    .HasConstraintName("FK_Order_Partner");
+
                 entity.HasOne(d => d.ServiceType)
                     .WithMany(p => p.Orders)
                     .HasForeignKey(d => d.ServiceTypeId)
