@@ -181,5 +181,17 @@ namespace TourismSmartTransportation.Business.Implements
                 to: new Twilio.Types.PhoneNumber($"+{phone}")
             );
         }
+
+        public static bool VerifyPassword(string password, byte[] passwordHash, byte[] passwordSalt)
+        {
+            var hmac = new System.Security.Cryptography.HMACSHA512(passwordSalt);
+            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            for (int i = 0; i < computedHash.Length; i++)
+            {
+                if (computedHash[i] != passwordHash[i]) return false;
+            }
+
+            return true;
+        }
     }
 }

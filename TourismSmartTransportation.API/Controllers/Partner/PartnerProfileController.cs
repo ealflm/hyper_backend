@@ -10,13 +10,13 @@ using TourismSmartTransportation.Business.Interfaces;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.PartnerManagement;
 using TourismSmartTransportation.Business.SearchModel.Common;
+using TourismSmartTransportation.Business.SearchModel.Shared;
 using TourismSmartTransportation.Business.ViewModel.Admin.PartnerManagement;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace TourismSmartTransportation.API.Controllers.Partner
 {
-    [Route(ApiVer1Url.Partner.Profile)]
     [ApiController]
     [Authorize]
     public class PartnerProfileController : BaseController
@@ -28,16 +28,32 @@ namespace TourismSmartTransportation.API.Controllers.Partner
             _service = service;
         }
 
-        [HttpGet("{id}")]
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.Profile + "/{id}")]
         public async Task<IActionResult> GetPartnerById(Guid id)
         {
             return SendResponse(await _service.GetPartner(id));
         }
 
-        [HttpPut("{id}")]
+        [HttpPut]
+        [Route(ApiVer1Url.Partner.Profile + "/{id}")]
         public async Task<IActionResult> UpdatePartnerById(Guid id, [FromForm] UpdatePartnerProfile model)
         {
             return SendResponse(await _service.UpdatePartner(id, model));
+        }
+
+        // [HttpPut]
+        // [Route(ApiVer1Url.Partner.Profile + "/change-password/{id}")]
+        // public async Task<IActionResult> ChangePassword(Guid id, [FromForm] PasswordVerificationModel model)
+        // {
+        //     return SendResponse(await _service.ChangePassowrd(id, model));
+        // }
+
+        [HttpPut]
+        [Route(ApiVer1Url.Partner.Profile + "/change-password")]
+        public async Task<IActionResult> ChangePassword([FromForm] PasswordVerificationModel model)
+        {
+            return SendResponse(await _service.ChangePassowrd(model));
         }
     }
 }

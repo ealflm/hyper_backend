@@ -16,6 +16,8 @@ using TourismSmartTransportation.Business.ViewModel.Admin.ServiceTypeManagement;
 using Vonage.Request;
 using System.Net.Http;
 using TourismSmartTransportation.Business.ViewModel.Admin.EmailManagement;
+using TourismSmartTransportation.Business.SearchModel.Shared;
+using Microsoft.AspNetCore.Http;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -326,6 +328,59 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
+            };
+        }
+
+        public async Task<Response> ChangePassowrd(PasswordVerificationModel model)
+        {
+            var partner = await _unitOfWork.PartnerRepository
+                            .Query()
+                            .Where(x => x.Username == model.Username)
+                            .FirstOrDefaultAsync();
+            if (partner == null)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Tài khoản không lệ!"
+                };
+            }
+
+            if (!VerifyPassword(model.OldPassowrd, partner.Password, partner.Salt))
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Mặt khẩu cũ không chính xác!"
+                };
+            }
+
+            // To keep some fields do not need to change
+            partner.PhotoUrl = partner.PhotoUrl;
+            partner.FirstName = UpdateTypeOfNullAbleObject<string>(partner.FirstName, null);
+            partner.LastName = UpdateTypeOfNullAbleObject<string>(partner.LastName, null);
+            partner.Address1 = UpdateTypeOfNullAbleObject<string>(partner.Address1, null);
+            partner.Address2 = UpdateTypeOfNullAbleObject<string>(partner.Address2, null);
+            partner.Phone = UpdateTypeOfNullAbleObject<string>(partner.Phone, null);
+            partner.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(partner.DateOfBirth, null);
+            partner.Email = UpdateTypeOfNullAbleObject<string>(partner.Email, null);
+            partner.CompanyName = UpdateTypeOfNullAbleObject<string>(partner.CompanyName, null);
+            partner.Gender = UpdateTypeOfNotNullAbleObject<bool>(partner.Gender, null);
+            partner.Status = UpdateTypeOfNotNullAbleObject<int>(partner.Status, null);
+
+            // Some fields will be change
+            CreatePasswordHash(model.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            partner.Password = UpdateTypeOfNullAbleObject<byte[]>(partner.Password, passwordHash);
+            partner.Salt = UpdateTypeOfNullAbleObject<byte[]>(partner.Salt, passwordSalt);
+            partner.ModifiedDate = DateTime.Now;
+
+            _unitOfWork.PartnerRepository.Update(partner);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Đổi mật khẩu thành công!"
             };
         }
     }
