@@ -31,12 +31,23 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
             var existedTrip = await _unitOfWork.TripRepository
                             .Query()
-                            .AnyAsync(x => x.RouteId == model.RouteId.Value &&
-                                        x.VehicleId == model.VehicleId &&
-                                        (DateTime.Compare(x.TimeStart, model.TimeStart.Value) <= 0 && // TimeStart between Start & End
-                                        DateTime.Compare(x.TimeEnd, model.TimeStart.Value) >= 0) ||
-                                        (DateTime.Compare(x.TimeStart, model.TimeEnd.Value) <= 0 && // TimeEnd between Start & End
-                                        DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) >= 0));
+                            .AnyAsync(
+                                x => x.RouteId == model.RouteId.Value &&
+                                x.VehicleId == model.VehicleId &&
+                                x.DayOfWeek == model.DayOfWeek.Value &&
+                                (
+                                    (
+                                        DateTime.Compare(x.TimeStart, model.TimeStart.Value) <= 0 && // TimeStart between Start & End
+                                        DateTime.Compare(x.TimeEnd, model.TimeStart.Value) >= 0
+                                    )
+                                    ||
+                                    (
+                                        DateTime.Compare(x.TimeStart, model.TimeEnd.Value) <= 0 && // TimeEnd between Start & End
+                                        DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) >= 0
+                                    )
+                                )
+                            );
+
             if (existedTrip)
             {
                 return new()
