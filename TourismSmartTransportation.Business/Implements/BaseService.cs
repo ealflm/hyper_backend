@@ -160,7 +160,7 @@ namespace TourismSmartTransportation.Business.Implements
         public async Task<string> DeleteFile(string fileName, Container index, string photoUrl)
         {
             var blobContainer = _blobServiceClient.GetBlobContainerClient(_container[(int)index]);
-            if (blobContainer == null || fileName == null)
+            if (blobContainer == null || string.IsNullOrEmpty(fileName))
             {
                 return photoUrl;
             }
