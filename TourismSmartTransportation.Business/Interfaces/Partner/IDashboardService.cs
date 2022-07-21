@@ -14,5 +14,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Partner
         Task<Dictionary<decimal, object>> GetTripReportByMonth(ReportSearchModel model);
         Task<Dictionary<decimal, object>> GetRevenueReportByMonth(ReportSearchModel model);
         Task<StatisticalReportViewModel> GetStatisticalReport(ReportSearchModel model);
+        Task<List<ItemCounterReportViewModel>> GetVehicleReportByServiceType(ReportSearchModel model);
     }
 }

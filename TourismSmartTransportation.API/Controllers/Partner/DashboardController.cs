@@ -46,5 +46,12 @@ namespace TourismSmartTransportation.API.Controllers.Partner
         {
             return SendResponse(await _service.GetStatisticalReport(model));
         }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.Dashboard + "/vehicle-service-type")]
+        public async Task<IActionResult> GetVehicleReportByServiceType([FromQuery] ReportSearchModel model)
+        {
+            return SendResponse(await _service.GetVehicleReportByServiceType(model));
+        }
     }
 }

@@ -273,5 +273,48 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 Order = totalPrice
             };
         }
+
+        public async Task<List<ItemCounterReportViewModel>> GetVehicleReportByServiceType(ReportSearchModel model)
+        {
+            var list = await _unitOfWork.VehicleRepository
+                        .Query()
+                        .Where(x => x.PartnerId == model.PartnerId)
+                        .Join(_unitOfWork.ServiceTypeRepository.Query(),
+                            v => v.ServiceTypeId,
+                            s => s.ServiceTypeId,
+                            (v, s) => new
+                            {
+                                PartnerId = v.PartnerId,
+                                ServiceTypeId = v.ServiceTypeId,
+                                ServiceName = s.Name,
+                                VehicleId = v.VehicleId,
+                                VehicleName = v.Name,
+                                VehicleTypeId = v.VehicleTypeId,
+                            }
+                        )
+                        .GroupBy(
+                            key => key.ServiceName,
+                            value => value,
+                            (key, value) => new ItemCounterReportViewModel()
+                            {
+                                Name = key,
+                                Count = value.Count(),
+                            }
+                        )
+                        .ToListAsync();
+
+            // var groups = list.GroupBy(
+            //     key => key.ServiceName,
+            //     value => value,
+            //     (key, value) => new
+            //     {
+            //         Name = key,
+            //         Count = value.Count(),
+            //         Value = value.Select(x => x.ServiceTypeId).ToList()
+            //     }
+            // );
+
+            return list;
+        }
     }
 }
