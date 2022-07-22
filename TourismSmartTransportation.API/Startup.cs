@@ -188,6 +188,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IPowerBIService, PowerBIService>();
             services.AddScoped<IWalletManagementService, WalletManagementService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IRentService, RentService>();
 
             //Azure AD
             services.AddScoped(_ =>
