@@ -36,5 +36,8 @@ namespace ApiVer1Url
 
         // package-details
         public const string PackageDetails = BaseApiUrl + "/package-details";
+
+        //rent service
+        public const string RentService = BaseApiUrl + "/rent-service";
     }
 }
