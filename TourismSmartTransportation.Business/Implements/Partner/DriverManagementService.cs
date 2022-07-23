@@ -120,7 +120,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             .Where(x => model.Phone == null || x.Phone.Contains(model.Phone))
                             .Where(x => model.DateOfBirth == null || (x.DateOfBirth != null && x.DateOfBirth.Value.Equals(model.DateOfBirth.Value)))
                             .Where(x => model.PartnerId == null || x.PartnerId.Equals(model.PartnerId.Value))
-                            .Where(x => model.VehicleId == null || (x.VehicleId != null && x.VehicleId.Value.Equals(model.VehicleId)))
+                            .Where(x => model.VehicleId == null || (x.VehicleId != null && x.VehicleId.Value.Equals(model.VehicleId.Value)))
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsDriverViewModel())
                             .ToListAsync();
@@ -186,13 +186,32 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 var serviceTypeFromVehicle = await _unitOfWork.VehicleRepository.GetById(entity.VehicleId.Value);
                 var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(serviceTypeFromVehicle.ServiceTypeId)).Name;
-                if (serviceTypeName.Contains(Booking))
+                if (!serviceTypeName.Contains(Booking))
                 {
-                    entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Cập nhật xe không hợp lệ. Chỉ có thể cập nhật xe với dịch vụ đặt xe!"
+                    };
                 }
-                else
+                entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
+
+            }
+            else
+            {
+                if (model.VehicleId != null)
                 {
-                    entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, entity.VehicleId);
+                    var serviceTypeFromVehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId.Value);
+                    var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(serviceTypeFromVehicle.ServiceTypeId)).Name;
+                    if (!serviceTypeName.Contains(Booking))
+                    {
+                        return new()
+                        {
+                            StatusCode = 400,
+                            Message = "Cập nhật xe không hợp lệ. Chỉ có thể cập nhật xe với dịch vụ đặt xe!"
+                        };
+                    }
+                    entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
                 }
             }
 
