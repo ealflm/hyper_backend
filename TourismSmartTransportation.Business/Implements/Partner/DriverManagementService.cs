@@ -107,14 +107,27 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId.Value);
                 model.VehicleName = vehicle.Name;
+                model.LicensePlates = vehicle.LicensePlates;
+                model.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(vehicle.ServiceTypeId)).Name;
                 model.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
+            }
+            var rate = await _unitOfWork.FeedbackForDriverRepository
+                        .Query()
+                        .Where(d => d.DriverId == model.Id)
+                        .Select(x => (decimal)x.Rate)
+                        .ToListAsync();
+
+
+            if (rate.Count > 0)
+            {
+                model.FeedbackRating = rate.Average();
             }
             return model;
         }
 
         public async Task<List<DriverViewModel>> Search(DriverSearchModel model)
         {
-            var entity = await _unitOfWork.DriverRepository.Query()
+            var driversList = await _unitOfWork.DriverRepository.Query()
                             .Where(x => model.FirstName == null || x.FirstName.Contains(model.FirstName))
                             .Where(x => model.LastName == null || x.LastName.Contains(model.LastName))
                             .Where(x => model.Phone == null || x.Phone.Contains(model.Phone))
@@ -124,7 +137,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsDriverViewModel())
                             .ToListAsync();
-            foreach (DriverViewModel x in entity)
+            foreach (DriverViewModel x in driversList)
             {
                 if (x.VehicleId != null)
                 {
@@ -132,9 +145,22 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     x.LicensePlates = vehicle.LicensePlates;
                     x.VehicleName = vehicle.Name;
                     x.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
+                    x.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(vehicle.ServiceTypeId)).Name;
+                }
+
+                var rate = await _unitOfWork.FeedbackForDriverRepository
+                        .Query()
+                        .Where(d => d.DriverId == x.Id)
+                        .Select(x => (decimal)x.Rate)
+                        .ToListAsync();
+
+
+                if (rate.Count > 0)
+                {
+                    x.FeedbackRating = rate.Average();
                 }
             }
-            return entity;
+            return driversList;
         }
 
         public async Task<Response> Update(Guid id, UpdateDriverModel model, bool isSaveAsync = true)
