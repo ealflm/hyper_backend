@@ -54,12 +54,5 @@ namespace TourismSmartTransportation.API.Controllers.Partner
         {
             return SendResponse(await _service.Delete(id));
         }
-
-        [HttpGet]
-        [Route(ApiVer1Url.Partner.Vehicle + "/dropdown-options")]
-        public async Task<IActionResult> GetVehicleListDropdownOptions([FromQuery] VehicleForTripModel model)
-        {
-            return SendResponse(await _service.GetVehicleListDropdownOptions(model));
-        }
     }
 }

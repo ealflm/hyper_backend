@@ -13,12 +13,17 @@ using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.DriverManagement;
 using Vonage.Request;
 using System.Net.Http;
+using TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement;
+using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
 
 namespace TourismSmartTransportation.Business.Implements.Partner
 {
     public class DriverManagementService : AccountService, IDriverManagementService
     {
         // private readonly string MESSAGE = "Dang nhap bang SDT da dang ky voi MAT KHAU: ";
+        public readonly string Bus = "Đi xe theo chuyến";
+        public readonly string Booking = "Đặt xe";
+        public readonly string Renting = "Thuê xe";
 
         public DriverManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials, HttpClient client, ITwilioSettings twilioSettings) : base(unitOfWork, blobServiceClient, credentials, client, twilioSettings)
         {
@@ -176,7 +181,21 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 entity.Status = model.Status.Value;
             }
 
-            entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
+            // check update only vehicle for service type is booking service, can not update vehicle for bus service
+            if (entity.VehicleId != null)
+            {
+                var serviceTypeFromVehicle = await _unitOfWork.VehicleRepository.GetById(entity.VehicleId.Value);
+                var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(serviceTypeFromVehicle.ServiceTypeId)).Name;
+                if (serviceTypeName.Contains(Booking))
+                {
+                    entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
+                }
+                else
+                {
+                    entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, entity.VehicleId);
+                }
+            }
+
             entity.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(entity.DateOfBirth, model.DateOfBirth);
             entity.Gender = UpdateTypeOfNotNullAbleObject<bool>(entity.Gender, model.Gender);
             entity.LastName = UpdateTypeOfNullAbleObject<string>(entity.LastName, model.LastName);
@@ -196,30 +215,37 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             };
         }
 
-        public async Task<List<DriverViewModel>> GetDriverListDropdownOptions(DriverForTripModel model)
+        // Get vehicles list for service type is booking service
+        public async Task<List<VehicleViewModel>> GetVehicleListDropdownOptions(VehicleDropdownOptionsModel model)
         {
-            var driversList = await _unitOfWork.DriverRepository
+            var vehiclesList = await _unitOfWork.VehicleRepository
                             .Query()
                             .Where(x => x.PartnerId == model.PartnerId)
+                            .Where(x => x.ServiceTypeId == model.ServiceTypeId)
                             .Where(x => x.Status == 1)
-                            .Select(x => x.AsDriverViewModel())
+                            .Select(x => x.AsVehicleViewModel())
                             .ToListAsync();
 
-            for (int i = 0; i < driversList.Count; i++)
+            for (int i = 0; i < vehiclesList.Count; i++)
             {
-                var trip = await _unitOfWork.TripRepository
+                // Has been checked vehicle to be assigned for other drivers yet?
+                var check = await _unitOfWork.DriverRepository
                             .Query()
-                            .Where(x => x.DriverId == driversList[i].Id)
-                            .Where(x => driversList[i].VehicleId != null ? (x.VehicleId == driversList[i].VehicleId.Value) : false)
+                            .Where(x => x.VehicleId == vehiclesList[i].Id)
                             .FirstOrDefaultAsync();
 
-                if (trip != null && DateTime.Now.CompareTo(trip.TimeEnd) <= 0)
+                if (check != null)
                 {
-                    driversList.RemoveAt(i);
+                    vehiclesList.RemoveAt(i);
                 }
             }
 
-            return driversList;
+            foreach (VehicleViewModel x in vehiclesList)
+            {
+                x.VehicleTypeName = (await _unitOfWork.VehicleTypeRepository.GetById(x.VehicleTypeId)).Label;
+            }
+
+            return vehiclesList;
         }
 
         //--------------------------------------------------
