@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
+using Microsoft.EntityFrameworkCore;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.Order;
@@ -25,8 +27,17 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<Response> CreateOrder(CreateOrderModel order, OrderDetailsInfo orderDetailsInfo)
+        public async Task<Response> CreateOrder(CreateOrderModel order)
         {
+            var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(order.CustomerId)).FirstOrDefaultAsync();
+            if(wallet.AccountBalance< order.TotalPrice)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Yêu cầu không hợp lệ!"
+                };
+            }  
             var newOrder = new Order()
             {
                 OrderId = Guid.NewGuid(),
@@ -35,81 +46,102 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 DiscountId = order.DiscountId != null ? order.DiscountId.Value : null,
                 CreatedDate = DateTime.Now,
                 TotalPrice = order.TotalPrice,
+                PartnerId= order.PartnerId,
                 Status = 1,
             };
-
-            // Customer buy package
-            if (orderDetailsInfo.PackageId != null)
+            string content = "";
+            foreach (OrderDetailsInfo x in order.OrderDetailsInfos)
             {
-                var orderDetail = new OrderDetailOfPackage()
+                // Customer buy package
+                if (x.PackageId != null)
                 {
-                    OrderId = newOrder.OrderId,
-                    PackageId = orderDetailsInfo.PackageId.Value,
-                    Price = orderDetailsInfo.Price,
-                    Content = orderDetailsInfo.Content,
-                    Quantity = orderDetailsInfo.Quantity,
-                    Status = 1
-                };
-                await _unitOfWork.OrderDetailOfPackageRepository.Add(orderDetail);
-            }
-            // Customer using service
-            else
-            {
-                var serviceType = await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value);
-                if (serviceType == null)
-                {
-                    return new()
-                    {
-                        StatusCode = 400,
-                        Message = "Yêu cầu không hợp lệ!"
-                    };
-                }
 
-                if (serviceType.Name.Contains(Bus))
-                {
-                    var orderDetail = new OrderDetailOfBusService()
+                    var orderDetail = new OrderDetailOfPackage()
                     {
                         OrderId = newOrder.OrderId,
-                        PriceOfBusServiceId = orderDetailsInfo.PriceOfBusServiceId.Value,
-                        Price = orderDetailsInfo.Price,
-                        Content = orderDetailsInfo.Content,
-                        Quantity = orderDetailsInfo.Quantity,
+                        PackageId = x.PackageId.Value,
+                        Price = x.Price,
+                        Content = x.Content,
+                        Quantity = x.Quantity,
                         Status = 1
                     };
-                    await _unitOfWork.OrderDetailOfBusServiceRepository.Add(orderDetail);
+                    await _unitOfWork.OrderDetailOfPackageRepository.Add(orderDetail);
+                    content = "Mua gói dịch vụ";
                 }
-                else if (serviceType.Name.Contains(Booking))
-                {
-                    var orderDetail = new OrderDetailOfBookingService()
-                    {
-                        OrderId = newOrder.OrderId,
-                        PriceOfBookingServiceId = orderDetailsInfo.PriceOfBookingServiceId.Value,
-                        Price = orderDetailsInfo.Price,
-                        Content = orderDetailsInfo.Content,
-                        Quantity = orderDetailsInfo.Quantity,
-                        Status = 1
-                    };
-                    await _unitOfWork.OrderDetailOfBookingServiceRepository.Add(orderDetail);
-                }
-                else if (serviceType.Name.Contains(Renting))
-                {
-                    var orderDetail = new OrderDetailOfRentingService()
-                    {
-                        OrderId = newOrder.OrderId,
-                        PriceOfRentingService = orderDetailsInfo.PriceOfRentingServiceId.Value,
-                        Price = orderDetailsInfo.Price,
-                        Content = orderDetailsInfo.Content,
-                        Quantity = orderDetailsInfo.Quantity,
-                        Status = 1
-                    };
-                    await _unitOfWork.OrderDetailOfRentingServiceRepository.Add(orderDetail);
-                }
+                // Customer using service
                 else
                 {
-                    // more other service type 
+                    var serviceType = await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value);
+                    if (serviceType == null)
+                    {
+                        return new()
+                        {
+                            StatusCode = 400,
+                            Message = "Yêu cầu không hợp lệ!"
+                        };
+                    }
+
+                    if (serviceType.Name.Contains(Bus))
+                    {
+                        var orderDetail = new OrderDetailOfBusService()
+                        {
+                            OrderId = newOrder.OrderId,
+                            PriceOfBusServiceId = x.PriceOfBusServiceId.Value,
+                            Price = x.Price,
+                            Content = x.Content,
+                            Quantity = x.Quantity,
+                            Status = 1
+                        };
+                        await _unitOfWork.OrderDetailOfBusServiceRepository.Add(orderDetail);
+                        content = "Sử dụng dịch vụ di chuyển theo chuyến";
+                    }
+                    else if (serviceType.Name.Contains(Booking))
+                    {
+                        var orderDetail = new OrderDetailOfBookingService()
+                        {
+                            OrderId = newOrder.OrderId,
+                            PriceOfBookingServiceId = x.PriceOfBookingServiceId.Value,
+                            Price = x.Price,
+                            Content = x.Content,
+                            Quantity = x.Quantity,
+                            Status = 1
+                        };
+                        await _unitOfWork.OrderDetailOfBookingServiceRepository.Add(orderDetail);
+                        content = "Sử dụng dịch vụ đặt xe";
+                    }
+                    else if (serviceType.Name.Contains(Renting))
+                    {
+                        var orderDetail = new OrderDetailOfRentingService()
+                        {
+                            OrderId = newOrder.OrderId,
+                            PriceOfRentingService = x.PriceOfRentingServiceId.Value,
+                            Price = x.Price,
+                            Content = x.Content,
+                            Quantity = x.Quantity,
+                            Status = 1
+                        };
+                        await _unitOfWork.OrderDetailOfRentingServiceRepository.Add(orderDetail);
+                        content = "Sử dụng dịch vụ thuê xe";
+                    }
+                    else
+                    {
+                        // more other service type 
+                    }
                 }
             }
-
+            var transaction = new Transaction()
+            {
+                TransactionId = Guid.NewGuid(),
+                Content = content,
+                OrderId = newOrder.OrderId,
+                CreatedDate = newOrder.CreatedDate,
+                Amount = newOrder.TotalPrice,
+                Status = 1,
+                WalletId = wallet.WalletId
+            };
+            wallet.AccountBalance -= transaction.Amount;
+            await _unitOfWork.TransactionRepository.Add(transaction);
+             _unitOfWork.WalletRepository.Update(wallet);
             await _unitOfWork.OrderRepository.Add(newOrder);
             await _unitOfWork.SaveChangesAsync();
             return new()
@@ -119,7 +151,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-        public async Task<Response> MakeOrderTest(MakeOrderTestModel model)
+       /* public async Task<Response> MakeOrderTest(MakeOrderTestModel model)
         {
             var newOrder = new CreateOrderModel()
             {
@@ -142,6 +174,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
 
             return await CreateOrder(newOrder, newOrderDetailInfo);
-        }
+        }*/
     }
 }

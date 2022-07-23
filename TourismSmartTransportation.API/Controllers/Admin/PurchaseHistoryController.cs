@@ -45,11 +45,11 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             return SendResponse(await _service.GetTransaction(orderId));
         }
 
-        [HttpPost]
+       /* [HttpPost]
         [Route(ApiVer1Url.Admin.Order + "/make-order-test")]
         public async Task<IActionResult> CreateOrder(MakeOrderTestModel model)
         {
             return SendResponse(await _helperService.MakeOrderTest(model));
-        }
+        }*/
     }
 }
