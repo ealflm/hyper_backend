@@ -8,6 +8,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Mobile.Customer
 {
     public class PriceRentingViewModel
     {
+        public Guid PartnerId { get; set; }
         public Guid PriceOfRentingServiceId { get; set; }
         public string PublishYearName { get; set; }
         public string CategoryName { get; set; }

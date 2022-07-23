@@ -68,7 +68,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 VehicleName = vehicle.Name,
                 Color = vehicle.Color,
                 LicensePlates = vehicle.LicensePlates,
-                PricePerDay= price.FixedPrice
+                PricePerDay= price.FixedPrice,
+                PartnerId= vehicle.PartnerId
             };
             var dateNow = DateTime.Now;
             if(dateNow.DayOfWeek== DayOfWeek.Saturday || dateNow.DayOfWeek == DayOfWeek.Sunday)
