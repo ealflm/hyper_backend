@@ -14,6 +14,5 @@ namespace TourismSmartTransportation.Business.Interfaces.Partner
         Task<Response> Create(CreateVehicleModel model);
         Task<Response> Update(Guid id, UpdateVehicleModel model);
         Task<Response> Delete(Guid id);
-        Task<List<VehicleViewModel>> GetVehicleListDropdownOptions(VehicleForTripModel model);
     }
 }

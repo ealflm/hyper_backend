@@ -6,6 +6,7 @@ using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Partner;
 using TourismSmartTransportation.Business.SearchModel.Partner.DriverManagement;
+using TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement;
 
 namespace TourismSmartTransportation.API.Controllers.Partner
 {
@@ -56,10 +57,10 @@ namespace TourismSmartTransportation.API.Controllers.Partner
         }
 
         [HttpGet]
-        [Route(ApiVer1Url.Partner.Driver + "/dropdown-options")]
-        public async Task<IActionResult> GetDriverListDropdownOptions([FromQuery] DriverForTripModel model)
+        [Route(ApiVer1Url.Partner.Driver + "/vehicle-dropdown-options")]
+        public async Task<IActionResult> GetVehicleListDropdownOptions([FromQuery] VehicleDropdownOptionsModel model)
         {
-            return SendResponse(await _service.GetDriverListDropdownOptions(model));
+            return SendResponse(await _service.GetVehicleListDropdownOptions(model));
         }
     }
 }
