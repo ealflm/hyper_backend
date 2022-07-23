@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Partner;
+using TourismSmartTransportation.Business.SearchModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.Route;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement;
@@ -17,8 +18,12 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 {
     public class TripManagementService : BaseService, ITripManagementService
     {
-        public TripManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private readonly IDriverManagementService _driverService;
+
+        public TripManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient,
+                                        IDriverManagementService driverService) : base(unitOfWork, blobServiceClient)
         {
+            _driverService = driverService;
         }
 
         public async Task<Response> CreateTrip(CreateTripModel model)
@@ -31,12 +36,23 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
             var existedTrip = await _unitOfWork.TripRepository
                             .Query()
-                            .AnyAsync(x => x.RouteId == model.RouteId.Value &&
-                                        x.VehicleId == model.VehicleId &&
-                                        (DateTime.Compare(x.TimeStart, model.TimeStart.Value) <= 0 && // TimeStart between Start & End
-                                        DateTime.Compare(x.TimeEnd, model.TimeStart.Value) >= 0) ||
-                                        (DateTime.Compare(x.TimeStart, model.TimeEnd.Value) <= 0 && // TimeEnd between Start & End
-                                        DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) >= 0));
+                            .AnyAsync(
+                                x => x.RouteId == model.RouteId.Value &&
+                                x.VehicleId == model.VehicleId &&
+                                x.DayOfWeek == model.DayOfWeek.Value &&
+                                (
+                                    (
+                                        DateTime.Compare(x.TimeStart, model.TimeStart.Value) <= 0 && // TimeStart between Start & End
+                                        DateTime.Compare(x.TimeEnd, model.TimeStart.Value) >= 0
+                                    )
+                                    ||
+                                    (
+                                        DateTime.Compare(x.TimeStart, model.TimeEnd.Value) <= 0 && // TimeEnd between Start & End
+                                        DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) >= 0
+                                    )
+                                )
+                            );
+
             if (existedTrip)
             {
                 return new()
@@ -59,7 +75,11 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 Status = 1
             };
             await _unitOfWork.TripRepository.Add(newTrip);
+
+            UpdateDriverModel updateDriver = new UpdateDriverModel() { VehicleId = newTrip.VehicleId };
+            await _driverService.Update(newTrip.DriverId, updateDriver, false);
             await _unitOfWork.SaveChangesAsync();
+
             return new()
             {
                 StatusCode = 201,

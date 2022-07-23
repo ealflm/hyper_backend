@@ -244,6 +244,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Address1 = upm.Address1,
                 Address2 = upm.Address2,
                 Email = upm.Email,
+                UploadFile = upm.UploadFile,
+                DeleteFile = upm.DeleteFile,
                 DateOfBirth = upm.DateOfBirth != null ? upm.DateOfBirth.Value : null,
                 Status = upm.Status != null ? upm.Status.Value : null,
             };

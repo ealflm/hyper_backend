@@ -22,12 +22,14 @@ namespace TourismSmartTransportation.API.Controllers.Partner
         }
 
         [HttpGet]
+        [Route(ApiVer1Url.Partner.Driver)]
         public async Task<IActionResult> Search([FromQuery] DriverSearchModel model)
         {
             return SendResponse(await _service.Search(model));
         }
 
-        [HttpGet("{id}")]
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.Driver + "/{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             return SendResponse(await _service.GetById(id));
@@ -39,16 +41,25 @@ namespace TourismSmartTransportation.API.Controllers.Partner
             return SendResponse(await _service.Create(model));
         }
 
-        [HttpPut("{id}")]
+        [HttpPut]
+        [Route(ApiVer1Url.Partner.Driver + "/{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDriverModel model)
         {
             return SendResponse(await _service.Update(id, model));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete]
+        [Route(ApiVer1Url.Partner.Driver + "/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             return SendResponse(await _service.Delete(id));
+        }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.Driver + "/dropdown-options")]
+        public async Task<IActionResult> GetDriverListDropdownOptions([FromQuery] DriverForTripModel model)
+        {
+            return SendResponse(await _service.GetDriverListDropdownOptions(model));
         }
     }
 }

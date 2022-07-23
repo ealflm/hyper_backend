@@ -114,6 +114,32 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         }
 
+        public async Task<List<VehicleViewModel>> GetVehicleListDropdownOptions(VehicleForTripModel model)
+        {
+            var vehiclesList = await _unitOfWork.VehicleRepository
+                            .Query()
+                            .Where(x => x.PartnerId == model.PartnerId)
+                            .Where(x => x.ServiceTypeId == model.ServiceTypeId)
+                            .Where(x => x.Status == 1)
+                            .Select(x => x.AsVehicleViewModel())
+                            .ToListAsync();
+
+            for (int i = 0; i < vehiclesList.Count; i++)
+            {
+                var trip = await _unitOfWork.TripRepository
+                            .Query()
+                            .Where(x => x.VehicleId == vehiclesList[i].Id)
+                            .FirstOrDefaultAsync();
+
+                if (trip != null && DateTime.Now.CompareTo(trip.TimeEnd) <= 0)
+                {
+                    vehiclesList.RemoveAt(i);
+                }
+            }
+
+            return vehiclesList;
+        }
+
         public async Task<List<VehicleViewModel>> Search(VehicleSearchModel model)
         {
             var entity = await _unitOfWork.VehicleRepository.Query()

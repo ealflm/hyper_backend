@@ -113,9 +113,9 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             .Where(x => model.FirstName == null || x.FirstName.Contains(model.FirstName))
                             .Where(x => model.LastName == null || x.LastName.Contains(model.LastName))
                             .Where(x => model.Phone == null || x.Phone.Contains(model.Phone))
-                            .Where(x => model.DateOfBirth == null || x.DateOfBirth.Equals(model.DateOfBirth))
+                            .Where(x => model.DateOfBirth == null || (x.DateOfBirth != null && x.DateOfBirth.Value.Equals(model.DateOfBirth.Value)))
                             .Where(x => model.PartnerId == null || x.PartnerId.Equals(model.PartnerId.Value))
-                            .Where(x => model.VehicleId == null || x.VehicleId.Equals(model.VehicleId))
+                            .Where(x => model.VehicleId == null || (x.VehicleId != null && x.VehicleId.Value.Equals(model.VehicleId)))
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsDriverViewModel())
                             .ToListAsync();
@@ -132,7 +132,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             return entity;
         }
 
-        public async Task<Response> Update(Guid id, UpdateDriverModel model)
+        public async Task<Response> Update(Guid id, UpdateDriverModel model, bool isSaveAsync = true)
         {
             var entity = await _unitOfWork.DriverRepository.GetById(id);
             if (entity == null)
@@ -184,13 +184,45 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             // entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
             entity.ModifiedDate = DateTime.Now;
             _unitOfWork.DriverRepository.Update(entity);
-            await _unitOfWork.SaveChangesAsync();
+
+            if (isSaveAsync)
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
             return new()
             {
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
             };
         }
+
+        public async Task<List<DriverViewModel>> GetDriverListDropdownOptions(DriverForTripModel model)
+        {
+            var driversList = await _unitOfWork.DriverRepository
+                            .Query()
+                            .Where(x => x.PartnerId == model.PartnerId)
+                            .Where(x => x.Status == 1)
+                            .Select(x => x.AsDriverViewModel())
+                            .ToListAsync();
+
+            for (int i = 0; i < driversList.Count; i++)
+            {
+                var trip = await _unitOfWork.TripRepository
+                            .Query()
+                            .Where(x => x.DriverId == driversList[i].Id)
+                            .Where(x => driversList[i].VehicleId != null ? (x.VehicleId == driversList[i].VehicleId.Value) : false)
+                            .FirstOrDefaultAsync();
+
+                if (trip != null && DateTime.Now.CompareTo(trip.TimeEnd) <= 0)
+                {
+                    driversList.RemoveAt(i);
+                }
+            }
+
+            return driversList;
+        }
+
+        //--------------------------------------------------
 
         private async Task<Response> CheckReferenceToOther(Guid id)
         {
