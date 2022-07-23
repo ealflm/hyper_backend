@@ -11,7 +11,6 @@ namespace TourismSmartTransportation.API.Controllers.Partner
 {
     [ApiController]
     [Authorize]
-    [Route(ApiVer1Url.Partner.Vehicle)]
     public class VehicleManagementController : BaseController
     {
         private readonly IVehicleManagementService _service;
@@ -22,30 +21,35 @@ namespace TourismSmartTransportation.API.Controllers.Partner
         }
 
         [HttpGet]
+        [Route(ApiVer1Url.Partner.Vehicle)]
         public async Task<IActionResult> Search([FromQuery] VehicleSearchModel model)
         {
             return SendResponse(await _service.Search(model));
         }
 
-        [HttpGet("{id}")]
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.Vehicle + "/{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             return SendResponse(await _service.GetById(id));
         }
 
         [HttpPost]
+        [Route(ApiVer1Url.Partner.Vehicle)]
         public async Task<IActionResult> Create([FromBody] CreateVehicleModel model)
         {
             return SendResponse(await _service.Create(model));
         }
 
-        [HttpPut("{id}")]
+        [HttpPut]
+        [Route(ApiVer1Url.Partner.Vehicle + "/{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateVehicleModel model)
         {
             return SendResponse(await _service.Update(id, model));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete]
+        [Route(ApiVer1Url.Partner.Vehicle + "/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             return SendResponse(await _service.Delete(id));

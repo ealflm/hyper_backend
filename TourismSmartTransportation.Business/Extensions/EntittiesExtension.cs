@@ -409,16 +409,16 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 Id = item.DriverId,
-                CreatedDate = item.CreatedDate,
-                DateOfBirth = item.DateOfBirth,
-                FirstName = item.FirstName,
-                Gender = item.Gender,
-                LastName = item.LastName,
-                ModifiedDate = item.ModifiedDate,
                 PartnerId = item.PartnerId,
-                Phone = item.Phone,
-                PhotoUrl = item.PhotoUrl,
                 VehicleId = item.VehicleId != null ? item.VehicleId.Value : null,
+                FirstName = item.FirstName,
+                LastName = item.LastName,
+                Phone = item.Phone,
+                DateOfBirth = item.DateOfBirth != null ? item.DateOfBirth.Value : null,
+                Gender = item.Gender,
+                PhotoUrl = item.PhotoUrl,
+                CreatedDate = item.CreatedDate,
+                ModifiedDate = item.ModifiedDate,
                 Status = item.Status
             };
         }

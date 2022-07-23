@@ -13,12 +13,17 @@ using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.DriverManagement;
 using Vonage.Request;
 using System.Net.Http;
+using TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement;
+using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
 
 namespace TourismSmartTransportation.Business.Implements.Partner
 {
     public class DriverManagementService : AccountService, IDriverManagementService
     {
         // private readonly string MESSAGE = "Dang nhap bang SDT da dang ky voi MAT KHAU: ";
+        public readonly string Bus = "Đi xe theo chuyến";
+        public readonly string Booking = "Đặt xe";
+        public readonly string Renting = "Thuê xe";
 
         public DriverManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials, HttpClient client, ITwilioSettings twilioSettings) : base(unitOfWork, blobServiceClient, credentials, client, twilioSettings)
         {
@@ -113,9 +118,9 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             .Where(x => model.FirstName == null || x.FirstName.Contains(model.FirstName))
                             .Where(x => model.LastName == null || x.LastName.Contains(model.LastName))
                             .Where(x => model.Phone == null || x.Phone.Contains(model.Phone))
-                            .Where(x => model.DateOfBirth == null || x.DateOfBirth.Equals(model.DateOfBirth))
+                            .Where(x => model.DateOfBirth == null || (x.DateOfBirth != null && x.DateOfBirth.Value.Equals(model.DateOfBirth.Value)))
                             .Where(x => model.PartnerId == null || x.PartnerId.Equals(model.PartnerId.Value))
-                            .Where(x => model.VehicleId == null || x.VehicleId.Equals(model.VehicleId))
+                            .Where(x => model.VehicleId == null || (x.VehicleId != null && x.VehicleId.Value.Equals(model.VehicleId)))
                             .Where(x => model.Status == null || x.Status == model.Status.Value)
                             .Select(x => x.AsDriverViewModel())
                             .ToListAsync();
@@ -132,7 +137,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             return entity;
         }
 
-        public async Task<Response> Update(Guid id, UpdateDriverModel model)
+        public async Task<Response> Update(Guid id, UpdateDriverModel model, bool isSaveAsync = true)
         {
             var entity = await _unitOfWork.DriverRepository.GetById(id);
             if (entity == null)
@@ -176,7 +181,21 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 entity.Status = model.Status.Value;
             }
 
-            entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
+            // check update only vehicle for service type is booking service, can not update vehicle for bus service
+            if (entity.VehicleId != null)
+            {
+                var serviceTypeFromVehicle = await _unitOfWork.VehicleRepository.GetById(entity.VehicleId.Value);
+                var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(serviceTypeFromVehicle.ServiceTypeId)).Name;
+                if (serviceTypeName.Contains(Booking))
+                {
+                    entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
+                }
+                else
+                {
+                    entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, entity.VehicleId);
+                }
+            }
+
             entity.DateOfBirth = UpdateTypeOfNotNullAbleObject<DateTime>(entity.DateOfBirth, model.DateOfBirth);
             entity.Gender = UpdateTypeOfNotNullAbleObject<bool>(entity.Gender, model.Gender);
             entity.LastName = UpdateTypeOfNullAbleObject<string>(entity.LastName, model.LastName);
@@ -184,13 +203,52 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             // entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
             entity.ModifiedDate = DateTime.Now;
             _unitOfWork.DriverRepository.Update(entity);
-            await _unitOfWork.SaveChangesAsync();
+
+            if (isSaveAsync)
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
             return new()
             {
                 StatusCode = 201,
                 Message = "Cập nhật thành công!"
             };
         }
+
+        // Get vehicles list for service type is booking service
+        public async Task<List<VehicleViewModel>> GetVehicleListDropdownOptions(VehicleDropdownOptionsModel model)
+        {
+            var vehiclesList = await _unitOfWork.VehicleRepository
+                            .Query()
+                            .Where(x => x.PartnerId == model.PartnerId)
+                            .Where(x => x.ServiceTypeId == model.ServiceTypeId)
+                            .Where(x => x.Status == 1)
+                            .Select(x => x.AsVehicleViewModel())
+                            .ToListAsync();
+
+            for (int i = 0; i < vehiclesList.Count; i++)
+            {
+                // Has been checked vehicle to be assigned for other drivers yet?
+                var check = await _unitOfWork.DriverRepository
+                            .Query()
+                            .Where(x => x.VehicleId == vehiclesList[i].Id)
+                            .FirstOrDefaultAsync();
+
+                if (check != null)
+                {
+                    vehiclesList.RemoveAt(i);
+                }
+            }
+
+            foreach (VehicleViewModel x in vehiclesList)
+            {
+                x.VehicleTypeName = (await _unitOfWork.VehicleTypeRepository.GetById(x.VehicleTypeId)).Label;
+            }
+
+            return vehiclesList;
+        }
+
+        //--------------------------------------------------
 
         private async Task<Response> CheckReferenceToOther(Guid id)
         {

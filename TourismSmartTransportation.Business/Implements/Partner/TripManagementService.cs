@@ -7,9 +7,13 @@ using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Partner;
+using TourismSmartTransportation.Business.SearchModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.Route;
+using TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement;
 using TourismSmartTransportation.Business.ViewModel.Common;
+using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement;
+using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 
@@ -17,8 +21,12 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 {
     public class TripManagementService : BaseService, ITripManagementService
     {
-        public TripManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private readonly IDriverManagementService _driverService;
+
+        public TripManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient,
+                                        IDriverManagementService driverService) : base(unitOfWork, blobServiceClient)
         {
+            _driverService = driverService;
         }
 
         public async Task<Response> CreateTrip(CreateTripModel model)
@@ -31,12 +39,23 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
             var existedTrip = await _unitOfWork.TripRepository
                             .Query()
-                            .AnyAsync(x => x.RouteId == model.RouteId.Value &&
-                                        x.VehicleId == model.VehicleId &&
-                                        (DateTime.Compare(x.TimeStart, model.TimeStart.Value) <= 0 && // TimeStart between Start & End
-                                        DateTime.Compare(x.TimeEnd, model.TimeStart.Value) >= 0) ||
-                                        (DateTime.Compare(x.TimeStart, model.TimeEnd.Value) <= 0 && // TimeEnd between Start & End
-                                        DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) >= 0));
+                            .AnyAsync(
+                                x => x.RouteId == model.RouteId.Value &&
+                                x.VehicleId == model.VehicleId &&
+                                x.DayOfWeek == model.DayOfWeek.Value &&
+                                (
+                                    (
+                                        DateTime.Compare(x.TimeStart, model.TimeStart.Value) <= 0 && // TimeStart between Start & End
+                                        DateTime.Compare(x.TimeEnd, model.TimeStart.Value) >= 0
+                                    )
+                                    ||
+                                    (
+                                        DateTime.Compare(x.TimeStart, model.TimeEnd.Value) <= 0 && // TimeEnd between Start & End
+                                        DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) >= 0
+                                    )
+                                )
+                            );
+
             if (existedTrip)
             {
                 return new()
@@ -59,7 +78,11 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 Status = 1
             };
             await _unitOfWork.TripRepository.Add(newTrip);
+
+            UpdateDriverModel updateDriver = new UpdateDriverModel() { VehicleId = newTrip.VehicleId };
+            await _driverService.Update(newTrip.DriverId, updateDriver, false);
             await _unitOfWork.SaveChangesAsync();
+
             return new()
             {
                 StatusCode = 201,
@@ -225,6 +248,64 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             };
         }
 
+        public async Task<List<VehicleViewModel>> GetVehicleListDropdownOptions(VehicleDropdownOptionsTripModel model)
+        {
+            var vehiclesList = await _unitOfWork.VehicleRepository
+                            .Query()
+                            .Where(x => x.PartnerId == model.PartnerId)
+                            .Where(x => x.ServiceTypeId == model.ServiceTypeId)
+                            .Where(x => x.Status == 1)
+                            .Select(x => x.AsVehicleViewModel())
+                            .ToListAsync();
+
+            for (int i = 0; i < vehiclesList.Count; i++)
+            {
+                var trip = await _unitOfWork.TripRepository
+                            .Query()
+                            .Where(x => x.VehicleId == vehiclesList[i].Id)
+                            .FirstOrDefaultAsync();
+
+                if (trip != null && DateTime.Now.CompareTo(trip.TimeEnd) <= 0)
+                {
+                    vehiclesList.RemoveAt(i);
+                }
+            }
+
+            foreach (VehicleViewModel x in vehiclesList)
+            {
+                x.VehicleTypeName = (await _unitOfWork.VehicleTypeRepository.GetById(x.VehicleTypeId)).Label;
+            }
+
+            return vehiclesList;
+        }
+
+        public async Task<List<DriverViewModel>> GetDriverListDropdownOptions(DriverDropdownOptionsTripModel model)
+        {
+            var driversList = await _unitOfWork.DriverRepository
+                            .Query()
+                            .Where(x => x.PartnerId == model.PartnerId)
+                            .Where(x => x.Status == 1)
+                            .Select(x => x.AsDriverViewModel())
+                            .ToListAsync();
+
+            for (int i = 0; i < driversList.Count; i++)
+            {
+                var trip = await _unitOfWork.TripRepository
+                            .Query()
+                            .Where(x => x.DriverId == driversList[i].Id)
+                            .Where(x => driversList[i].VehicleId != null ? (x.VehicleId == driversList[i].VehicleId.Value) : false)
+                            .FirstOrDefaultAsync();
+
+                if (trip != null && DateTime.Now.CompareTo(trip.TimeEnd) <= 0)
+                {
+                    driversList.RemoveAt(i);
+                }
+            }
+
+            return driversList;
+        }
+
+        //------------------------------------------------------------------
         private async Task<Response> CheckValidationData(TripModel model)
         {
             // Check Route
