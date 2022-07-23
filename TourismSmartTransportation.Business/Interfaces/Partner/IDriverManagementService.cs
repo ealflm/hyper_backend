@@ -12,7 +12,8 @@ namespace TourismSmartTransportation.Business.Interfaces.Partner
         Task<List<DriverViewModel>> Search(DriverSearchModel model);
         Task<DriverViewModel> GetById(Guid id);
         Task<Response> Create(CreateDriverModel model);
-        Task<Response> Update(Guid id, UpdateDriverModel model);
+        Task<Response> Update(Guid id, UpdateDriverModel model, bool isSaveAsync = true);
         Task<Response> Delete(Guid id);
+        Task<List<DriverViewModel>> GetDriverListDropdownOptions(DriverForTripModel model);
     }
 }
