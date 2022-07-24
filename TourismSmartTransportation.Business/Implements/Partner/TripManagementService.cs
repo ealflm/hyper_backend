@@ -200,30 +200,54 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 };
             }
 
-            if ((model.RouteId != null && entity.RouteId != model.RouteId.Value) ||
-                (model.VehicleId != null && entity.VehicleId != model.VehicleId.Value))
+            bool isCheckExistedTrip = true;
+            if (
+                (
+                    model.RouteId == null &&
+                    model.VehicleId == null &&
+                    model.DayOfWeek == null &&
+                    model.TimeStart == null &&
+                    model.TimeEnd == null
+                )
+                ||
+                (
+                    model.RouteId.Value == entity.RouteId &&
+                    model.VehicleId.Value == entity.VehicleId &&
+                    model.DayOfWeek.Value == entity.DayOfWeek &&
+                    model.TimeStart == entity.TimeStart &&
+                    model.TimeEnd == entity.TimeEnd
+                )
+            )
+            {
+                isCheckExistedTrip = false;
+            }
+
+            if (isCheckExistedTrip)
             {
                 var existedTrip = await _unitOfWork.TripRepository
-                           .Query()
-                           .AnyAsync(x => x.RouteId == model.RouteId.Value &&
-                                       x.VehicleId == model.VehicleId.Value &&
-                                       x.DayOfWeek == model.DayOfWeek.Value &&
-                                        (
-                                            (
-                                                x.TimeEnd.CompareTo(model.TimeStart) == 0 // Trường hợp thời gian bắt đầu bằng với thời gian kết thúc của trip đã tồn tại
-                                            )
-                                            ||
-                                            (
-                                                x.TimeStart.CompareTo(model.TimeStart) <= 0 && // Trường hợp thời gian bắt đầu nằm trong khoảng thời gian của trip đã tồn tại
-                                                model.TimeStart.CompareTo(x.TimeEnd) <= 0
-                                            )
-                                            ||
-                                            (
-                                                x.TimeStart.CompareTo(model.TimeEnd) <= 0 && // Trường hợp thời gian kết thúc nằm trong khoảng thời gian của trip đã tồn tại
-                                                model.TimeEnd.CompareTo(x.TimeEnd) <= 0
-                                            )
-                                        )
-                                    );
+                       .Query()
+                       .Where(x => x.TripId != entity.TripId)
+                       .AnyAsync( // Kiểm trả trip đã tồn tại
+                            x => x.RouteId == (model.RouteId != null ? model.RouteId.Value : entity.RouteId) && // Cùng tuyến đường
+                            x.VehicleId == (model.VehicleId != null ? model.VehicleId.Value : entity.VehicleId) && // Cùng phương tiện
+                            x.DayOfWeek == (model.DayOfWeek != null ? model.DayOfWeek.Value : entity.DayOfWeek) && // Cùng ngày trong tuần
+                            (
+                                (
+                                    x.TimeEnd.CompareTo(model.TimeStart) == 0 // Trường hợp thời gian bắt đầu bằng với thời gian kết thúc của trip đã tồn tại
+                                )
+                                ||
+                                (
+                                    x.TimeStart.CompareTo(model.TimeStart) <= 0 && // Trường hợp thời gian bắt đầu nằm trong khoảng thời gian của trip đã tồn tại
+                                    model.TimeStart.CompareTo(x.TimeEnd) <= 0
+                                )
+                                ||
+                                (
+                                    x.TimeStart.CompareTo(model.TimeEnd) <= 0 && // Trường hợp thời gian kết thúc nằm trong khoảng thời gian của trip đã tồn tại
+                                    model.TimeEnd.CompareTo(x.TimeEnd) <= 0
+                                )
+                            )
+                        );
+
                 if (existedTrip)
                 {
                     return new()
@@ -241,8 +265,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             }
 
             entity.RouteId = UpdateTypeOfNotNullAbleObject<Guid>(entity.RouteId, model.RouteId);
-            entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId.Value);
-            entity.DriverId = UpdateTypeOfNotNullAbleObject<Guid>(entity.DriverId, model.DriverId.Value);
+            entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
+            entity.DriverId = UpdateTypeOfNotNullAbleObject<Guid>(entity.DriverId, model.DriverId);
             entity.TripName = UpdateTypeOfNullAbleObject<string>(entity.TripName, model.TripName);
             entity.DayOfWeek = UpdateTypeOfNotNullAbleObject<int>(entity.DayOfWeek, model.DayOfWeek);
             entity.TimeStart = UpdateTypeOfNullAbleObject<string>(entity.TimeStart, model.TimeStart);
