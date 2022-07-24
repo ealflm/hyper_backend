@@ -13,8 +13,8 @@ namespace TourismSmartTransportation.Data.Models
         public Guid RouteId { get; set; }
         public string TripName { get; set; }
         public int DayOfWeek { get; set; }
-        public DateTime TimeStart { get; set; }
-        public DateTime TimeEnd { get; set; }
+        public string TimeStart { get; set; }
+        public string TimeEnd { get; set; }
         public int Status { get; set; }
 
         public virtual Driver Driver { get; set; }

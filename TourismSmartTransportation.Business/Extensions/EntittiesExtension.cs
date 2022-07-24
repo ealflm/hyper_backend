@@ -466,16 +466,20 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
+                CustomerTripId = item.CustomerTripId,
                 CustomerId = item.CustomerId,
-                RouteId = item.RouteId,
+                RouteId = item.RouteId != null ? item.RouteId.Value : null,
                 VehicleId = item.VehicleId,
-                Distance = item.Distance,
+                Distance = item.Distance != null ? item.Distance.Value : null,
                 CreatedDate = item.CreatedDate,
                 ModifiedDate = item.ModifiedDate,
-                LongitudeOfPickUpPoint = item.LongitudeOfPickUpPoint != null ? item.LongitudeOfPickUpPoint.Value : null,
-                LatitudeOfPickUpPoint = item.LatitudeOfPickUpPoint != null ? item.LatitudeOfPickUpPoint.Value : null,
-                LongitudeOfDestination = item.LongitudeOfDestination != null ? item.LongitudeOfDestination.Value : null,
-                LatitudeOfDestination = item.LatitudeOfDestination != null ? item.LatitudeOfDestination.Value : null,
+                RentDeadline = item.RentDeadline,
+                Coordinates = item.Coordinates,
+                Status = item.Status,
+                // LongitudeOfPickUpPoint = item.LongitudeOfPickUpPoint != null ? item.LongitudeOfPickUpPoint.Value : null,
+                // LatitudeOfPickUpPoint = item.LatitudeOfPickUpPoint != null ? item.LatitudeOfPickUpPoint.Value : null,
+                // LongitudeOfDestination = item.LongitudeOfDestination != null ? item.LongitudeOfDestination.Value : null,
+                // LatitudeOfDestination = item.LatitudeOfDestination != null ? item.LatitudeOfDestination.Value : null,
             };
         }
     }

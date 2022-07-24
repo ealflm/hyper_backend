@@ -21,9 +21,9 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.Route
         public override int? DayOfWeek { get; set; }
 
         [Required]
-        public override DateTime? TimeStart { get; set; }
+        public override string TimeStart { get; set; }
 
         [Required]
-        public override DateTime? TimeEnd { get; set; }
+        public override string TimeEnd { get; set; }
     }
 }
