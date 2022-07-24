@@ -195,11 +195,11 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             }
             else if (model.Status.Value == 0)
             {
-                var result = await CheckReferenceToOther(id);
-                if (result.StatusCode != 0)
-                {
-                    return result;
-                }
+                // var result = await CheckReferenceToOther(id);
+                // if (result.StatusCode != 0)
+                // {
+                //     return result;
+                // }
                 entity.Status = 0;
             }
             else
@@ -300,9 +300,10 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             var checkExistedReferenceToTrip = await _unitOfWork.TripRepository
                                             .Query()
                                             .AnyAsync(
-                                                            x => x.DriverId == id &&
-                                                            DateTime.Compare(DateTime.Now, x.TimeStart) >= 0 &&
-                                                            DateTime.Compare(DateTime.Now, x.TimeEnd) <= 0
+                                                            x => x.DriverId == id
+                                                    // &&
+                                                    // DateTime.Compare(DateTime.Now, x.TimeStart) >= 0 &&
+                                                    // DateTime.Compare(DateTime.Now, x.TimeEnd) <= 0
                                                     );
             if (checkExistedReferenceToTrip)
             {

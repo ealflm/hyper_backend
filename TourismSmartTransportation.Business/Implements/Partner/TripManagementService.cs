@@ -40,23 +40,41 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 return validatorResult;
             }
 
+            // Thời gian bắt đầu của trip mới phải lớn hơn thời gian kết thúc của một trip đã tồn tại
             var existedTrip = await _unitOfWork.TripRepository
                             .Query()
-                            .AnyAsync(
-                                x => x.RouteId == model.RouteId.Value &&
-                                x.VehicleId == model.VehicleId &&
-                                x.DayOfWeek == model.DayOfWeek.Value &&
+                            .AnyAsync( // Kiểm trả trip đã tồn tại
+                                x => x.RouteId == model.RouteId.Value && // Cùng tuyến đường
+                                x.VehicleId == model.VehicleId.Value && // Cùng phương tiện
+                                x.DayOfWeek == model.DayOfWeek.Value && // Cùng ngày trong tuần
                                 (
                                     (
-                                        DateTime.Compare(x.TimeStart, model.TimeStart.Value) <= 0 && // TimeStart between Start & End
-                                        DateTime.Compare(x.TimeEnd, model.TimeStart.Value) >= 0
+                                        x.TimeEnd.CompareTo(model.TimeStart) == 0 // Trường hợp thời gian bắt đầu bằng với thời gian kết thúc của trip đã tồn tại
                                     )
                                     ||
                                     (
-                                        DateTime.Compare(x.TimeStart, model.TimeEnd.Value) <= 0 && // TimeEnd between Start & End
-                                        DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) >= 0
+                                        x.TimeStart.CompareTo(model.TimeStart) <= 0 && // Trường hợp thời gian bắt đầu nằm trong khoảng thời gian của trip đã tồn tại
+                                        model.TimeStart.CompareTo(x.TimeEnd) <= 0
+                                    )
+                                    ||
+                                    (
+                                        x.TimeStart.CompareTo(model.TimeEnd) <= 0 && // Trường hợp thời gian kết thúc nằm trong khoảng thời gian của trip đã tồn tại
+                                        model.TimeEnd.CompareTo(x.TimeEnd) <= 0
                                     )
                                 )
+
+                            // &&
+                            // (
+                            //     (
+                            //         DateTime.Compare(x.TimeStart, model.TimeStart.Value) <= 0 && // TimeStart between Start & End
+                            //         DateTime.Compare(x.TimeEnd, model.TimeStart.Value) >= 0
+                            //     )
+                            //     ||
+                            //     (
+                            //         DateTime.Compare(x.TimeStart, model.TimeEnd.Value) <= 0 && // TimeEnd between Start & End
+                            //         DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) >= 0
+                            //     )
+                            // )
                             );
 
             if (existedTrip)
@@ -76,8 +94,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 RouteId = model.RouteId.Value,
                 TripName = model.TripName,
                 DayOfWeek = model.DayOfWeek.Value,
-                TimeStart = model.TimeStart.Value,
-                TimeEnd = model.TimeEnd.Value,
+                TimeStart = model.TimeStart,
+                TimeEnd = model.TimeEnd,
                 Status = 1
             };
             await _unitOfWork.TripRepository.Add(newTrip);
@@ -105,11 +123,11 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 };
             }
 
-            var result = await CheckReferenceToOther(id);
-            if (result.StatusCode != 0)
-            {
-                return result;
-            }
+            // var result = await CheckReferenceToOther(id);
+            // if (result.StatusCode != 0)
+            // {
+            //     return result;
+            // }
 
             trip.Status = 0;
             _unitOfWork.TripRepository.Update(trip);
@@ -188,11 +206,24 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 var existedTrip = await _unitOfWork.TripRepository
                            .Query()
                            .AnyAsync(x => x.RouteId == model.RouteId.Value &&
-                                       x.VehicleId == model.VehicleId &&
-                                       (DateTime.Compare(x.TimeStart, model.TimeStart.Value) <= 0 && // TimeStart between Start & End
-                                       DateTime.Compare(x.TimeEnd, model.TimeStart.Value) >= 0) ||
-                                       (DateTime.Compare(x.TimeStart, model.TimeEnd.Value) <= 0 && // TimeEnd between Start & End
-                                       DateTime.Compare(x.TimeEnd, model.TimeEnd.Value) >= 0));
+                                       x.VehicleId == model.VehicleId.Value &&
+                                       x.DayOfWeek == model.DayOfWeek.Value &&
+                                        (
+                                            (
+                                                x.TimeEnd.CompareTo(model.TimeStart) == 0 // Trường hợp thời gian bắt đầu bằng với thời gian kết thúc của trip đã tồn tại
+                                            )
+                                            ||
+                                            (
+                                                x.TimeStart.CompareTo(model.TimeStart) <= 0 && // Trường hợp thời gian bắt đầu nằm trong khoảng thời gian của trip đã tồn tại
+                                                model.TimeStart.CompareTo(x.TimeEnd) <= 0
+                                            )
+                                            ||
+                                            (
+                                                x.TimeStart.CompareTo(model.TimeEnd) <= 0 && // Trường hợp thời gian kết thúc nằm trong khoảng thời gian của trip đã tồn tại
+                                                model.TimeEnd.CompareTo(x.TimeEnd) <= 0
+                                            )
+                                        )
+                                    );
                 if (existedTrip)
                 {
                     return new()
@@ -214,8 +245,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             entity.DriverId = UpdateTypeOfNotNullAbleObject<Guid>(entity.DriverId, model.DriverId.Value);
             entity.TripName = UpdateTypeOfNullAbleObject<string>(entity.TripName, model.TripName);
             entity.DayOfWeek = UpdateTypeOfNotNullAbleObject<int>(entity.DayOfWeek, model.DayOfWeek);
-            entity.TimeStart = UpdateTypeOfNotNullAbleObject<DateTime>(entity.TimeStart, model.TimeStart);
-            entity.TimeEnd = UpdateTypeOfNotNullAbleObject<DateTime>(entity.TimeEnd, model.TimeEnd);
+            entity.TimeStart = UpdateTypeOfNullAbleObject<string>(entity.TimeStart, model.TimeStart);
+            entity.TimeEnd = UpdateTypeOfNullAbleObject<string>(entity.TimeEnd, model.TimeEnd);
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
 
             _unitOfWork.TripRepository.Update(entity);
@@ -232,9 +263,10 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             var checkExistedReferenceToTrip = await _unitOfWork.TripRepository
                                             .Query()
                                             .AnyAsync(
-                                                            x => x.VehicleId == id &&
-                                                            DateTime.Compare(DateTime.Now, x.TimeStart) >= 0 &&
-                                                            DateTime.Compare(DateTime.Now, x.TimeEnd) <= 0
+                                                            x => x.VehicleId == id
+                                                    // &&
+                                                    // DateTime.Compare(DateTime.Now, x.TimeStart) >= 0 &&
+                                                    // DateTime.Compare(DateTime.Now, x.TimeEnd) <= 0
                                                     );
             if (checkExistedReferenceToTrip)
             {

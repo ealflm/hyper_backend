@@ -69,7 +69,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                 .Select(x => x.AsCustomerTripViewModel())
                                 .ToListAsync();
 
-            var pairs = new List<Tuple<Guid, decimal>>();
+            var pairs = new List<Tuple<Guid, decimal?>>();
             foreach (var p in customerTripsList)
             {
                 if (pairs.Count == 0)
@@ -128,7 +128,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             ServiceTypeId = p.ServiceTypeId,
                             ServiceName = (await _unitOfWork.ServiceTypeRepository.GetById(p.ServiceTypeId)).Name,
                             LimitValue = p.Limit,
-                            CurrentValue = pairs[i].Item2,
+                            CurrentValue = pairs[i].Item2.Value,
                             DiscountValue = p.Value
                         });
                         pairs.RemoveAt(i);
