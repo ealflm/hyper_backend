@@ -44,8 +44,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             var existedTrip = await _unitOfWork.TripRepository
                             .Query()
                             .AnyAsync( // Kiểm trả trip đã tồn tại
-                                x => x.RouteId == model.RouteId.Value && // Cùng tuyến đường
-                                x.VehicleId == model.VehicleId.Value && // Cùng phương tiện
+                                       // x => x.RouteId == model.RouteId.Value && // Cùng tuyến đường
+                                x => x.VehicleId == model.VehicleId.Value && // Cùng phương tiện
                                 x.DayOfWeek == model.DayOfWeek.Value && // Cùng ngày trong tuần
                                 (
                                     (
@@ -82,7 +82,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 return new()
                 {
                     StatusCode = 400,
-                    Message = "Tuyến đã tồn tại!"
+                    Message = "Tạo mới không thành công. Tuyến đã tồn tại hoặc xe đã được đăng ký cho tuyến khác"
                 };
             }
 
@@ -107,7 +107,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             return new()
             {
                 StatusCode = 201,
-                Message = "Tạo tuyến thành công!"
+                Message = "Tạo mới tuyến thành công!"
             };
         }
 
@@ -159,6 +159,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 var trips = await _unitOfWork.TripRepository
                                     .Query()
                                     .Where(x => x.RouteId == route.RouteId)
+                                    .Where(x => model.Status == null || model.Status.Value == x.Status)
                                     .Where(x => model.TripName == null || x.TripName.Contains(model.TripName))
                                     .Select(x => x.AsTripViewModel())
                                     .ToListAsync();
@@ -196,7 +197,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 return new()
                 {
                     StatusCode = 404,
-                    Message = "Không tìm thấy!"
+                    Message = "Không tìm thấy tuyến!"
                 };
             }
 
