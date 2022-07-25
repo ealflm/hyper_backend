@@ -13,6 +13,8 @@ using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 using Azure.Storage.Blobs;
 using TourismSmartTransportation.Business.CommonModel;
+using System.Net.Http;
+using Newtonsoft.Json.Linq;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -27,6 +29,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             var station = new Station()
             {
+                StationId = Guid.NewGuid(),
                 Address = model.Address,
                 Title = model.Title,
                 Description = model.Description,
@@ -34,6 +37,34 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Longitude = model.Longitude,
                 Status = 1
             };
+            var linkStations = await _unitOfWork.StationRepository.Query().ToListAsync();
+            HttpClient client = new HttpClient();
+            foreach(Station x in linkStations)
+            {
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Get,
+                    RequestUri = new Uri("https://api.mapbox.com/directions/v5/mapbox/driving/"+x.Longitude+","+x.Latitude+";"+station.Longitude+","+station.Latitude+"?annotations=maxspeed&overview=full&geometries=geojson&access_token=pk.eyJ1Ijoic2FuZ2RlcHRyYWkiLCJhIjoiY2w0bXFvaDRwMW9uZjNpbWtpMjZ3eGxnbCJ9.2gQ3NUL1eBYTwP1Q_qS34A")
+                };
+                using (var response = await client.SendAsync(request))
+                {
+                    response.EnsureSuccessStatusCode();
+                    var body = await response.Content.ReadAsStringAsync();
+                    var jmessage = JObject.Parse(body);
+                    var distance = double.Parse(jmessage["routes"][0]["distance"].ToString());
+                    if ( distance<= 200)
+                    {
+                        var linkStation = new LinkStation()
+                        {
+                            LinkStationId = Guid.NewGuid(),
+                            FirstStationId = station.StationId,
+                            SecondStationId = x.StationId,
+                            Content = "Đi bộ khoảng cách " + distance+"m"
+                        };
+                        await _unitOfWork.LinkStationRepository.Add(linkStation);
+                    }   
+                }
+            }
             await _unitOfWork.StationRepository.Add(station);
             await _unitOfWork.SaveChangesAsync();
             return new()
@@ -56,6 +87,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
             station.Status = 0;
             _unitOfWork.StationRepository.Update(station);
+            var linkStations = await _unitOfWork.LinkStationRepository.Query().Where(x => x.FirstStationId.Equals(id) || x.SecondStationId.Equals(id)).ToListAsync();
+            foreach (LinkStation x in linkStations)
+            {
+                await _unitOfWork.LinkStationRepository.Remove(x.LinkStationId);
+            }
             await _unitOfWork.SaveChangesAsync();
             return new()
             {
@@ -117,6 +153,43 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             station.Longitude = UpdateTypeOfNotNullAbleObject<decimal>(station.Longitude, model.Longitude);
             station.Status = UpdateTypeOfNotNullAbleObject<int>(station.Status, model.Status);
             _unitOfWork.StationRepository.Update(station);
+            await _unitOfWork.SaveChangesAsync();
+            var linkStations = await _unitOfWork.LinkStationRepository.Query().Where(x => x.FirstStationId.Equals(id) || x.SecondStationId.Equals(id)).ToListAsync();
+            foreach(LinkStation x in linkStations)
+            {
+                await _unitOfWork.LinkStationRepository.Remove(x.LinkStationId);
+            }
+            var stations = await _unitOfWork.StationRepository.Query().ToListAsync();
+            HttpClient client = new HttpClient();
+            foreach (Station x in stations)
+            {
+                if (!x.StationId.Equals(id))
+                {
+                    var request = new HttpRequestMessage
+                    {
+                        Method = HttpMethod.Get,
+                        RequestUri = new Uri("https://api.mapbox.com/directions/v5/mapbox/driving/" + x.Longitude + "," + x.Latitude + ";" + station.Longitude + "," + station.Latitude + "?annotations=maxspeed&overview=full&geometries=geojson&access_token=pk.eyJ1Ijoic2FuZ2RlcHRyYWkiLCJhIjoiY2w0bXFvaDRwMW9uZjNpbWtpMjZ3eGxnbCJ9.2gQ3NUL1eBYTwP1Q_qS34A")
+                    };
+                    using (var response = await client.SendAsync(request))
+                    {
+                        response.EnsureSuccessStatusCode();
+                        var body = await response.Content.ReadAsStringAsync();
+                        var jmessage = JObject.Parse(body);
+                        var distance = double.Parse(jmessage["routes"][0]["distance"].ToString());
+                        if (distance <= 200)
+                        {
+                            var linkStation = new LinkStation()
+                            {
+                                LinkStationId = Guid.NewGuid(),
+                                FirstStationId = station.StationId,
+                                SecondStationId = x.StationId,
+                                Content = "Đi bộ khoảng cách " + distance + "m"
+                            };
+                            await _unitOfWork.LinkStationRepository.Add(linkStation);
+                        }
+                    }
+                }
+            }
             await _unitOfWork.SaveChangesAsync();
             return new()
             {

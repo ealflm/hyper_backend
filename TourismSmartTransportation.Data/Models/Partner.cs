@@ -15,6 +15,7 @@ namespace TourismSmartTransportation.Data.Models
             RentStations = new HashSet<RentStation>();
             Routes = new HashSet<Route>();
             Vehicles = new HashSet<Vehicle>();
+            Wallets = new HashSet<Wallet>();
         }
 
         public Guid PartnerId { get; set; }
@@ -41,5 +42,6 @@ namespace TourismSmartTransportation.Data.Models
         public virtual ICollection<RentStation> RentStations { get; set; }
         public virtual ICollection<Route> Routes { get; set; }
         public virtual ICollection<Vehicle> Vehicles { get; set; }
+        public virtual ICollection<Wallet> Wallets { get; set; }
     }
 }

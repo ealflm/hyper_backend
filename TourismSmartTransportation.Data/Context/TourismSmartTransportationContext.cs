@@ -28,6 +28,8 @@ namespace TourismSmartTransportation.Data.Context
         public virtual DbSet<Driver> Drivers { get; set; }
         public virtual DbSet<FeedbackForDriver> FeedbackForDrivers { get; set; }
         public virtual DbSet<FeedbackForVehicle> FeedbackForVehicles { get; set; }
+        public virtual DbSet<LinkRoute> LinkRoutes { get; set; }
+        public virtual DbSet<LinkStation> LinkStations { get; set; }
         public virtual DbSet<Order> Orders { get; set; }
         public virtual DbSet<OrderDetailOfBookingService> OrderDetailOfBookingServices { get; set; }
         public virtual DbSet<OrderDetailOfBusService> OrderDetailOfBusServices { get; set; }
@@ -103,6 +105,10 @@ namespace TourismSmartTransportation.Data.Context
                 entity.ToTable("BasePriceOfBusService");
 
                 entity.Property(e => e.BasePriceOfBusServiceId).ValueGeneratedNever();
+
+                entity.Property(e => e.MaxDistance).HasColumnType("decimal(18, 0)");
+
+                entity.Property(e => e.MinDistance).HasColumnType("decimal(18, 0)");
 
                 entity.Property(e => e.Price).HasColumnType("decimal(18, 7)");
             });
@@ -339,6 +345,46 @@ namespace TourismSmartTransportation.Data.Context
                     .HasForeignKey(d => d.VehicelId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_FeedbackForVehicle_Vehicle");
+            });
+
+            modelBuilder.Entity<LinkRoute>(entity =>
+            {
+                entity.HasKey(e => new { e.FirstRouteId, e.SecondRouteId });
+
+                entity.ToTable("LinkRoute");
+
+                entity.HasOne(d => d.FirstRoute)
+                    .WithMany(p => p.LinkRouteFirstRoutes)
+                    .HasForeignKey(d => d.FirstRouteId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_LinkRoute_Route");
+
+                entity.HasOne(d => d.SecondRoute)
+                    .WithMany(p => p.LinkRouteSecondRoutes)
+                    .HasForeignKey(d => d.SecondRouteId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_LinkRoute_Route1");
+            });
+
+            modelBuilder.Entity<LinkStation>(entity =>
+            {
+                entity.ToTable("LinkStation");
+
+                entity.Property(e => e.LinkStationId).HasDefaultValueSql("(newid())");
+
+                entity.Property(e => e.Content).IsRequired();
+
+                entity.HasOne(d => d.FirstStation)
+                    .WithMany(p => p.LinkStationFirstStations)
+                    .HasForeignKey(d => d.FirstStationId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_LinkStation_Station2");
+
+                entity.HasOne(d => d.SecondStation)
+                    .WithMany(p => p.LinkStationSecondStations)
+                    .HasForeignKey(d => d.SecondStationId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_LinkStation_Station3");
             });
 
             modelBuilder.Entity<Order>(entity =>
@@ -806,7 +852,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Transaction");
 
-                entity.Property(e => e.TransactionId).ValueGeneratedNever();
+                entity.Property(e => e.TransactionId).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 0)");
 
@@ -936,11 +982,20 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.AccountBalance).HasColumnType("decimal(18, 0)");
 
+                entity.HasOne(d => d.Admin)
+                    .WithMany(p => p.Wallets)
+                    .HasForeignKey(d => d.AdminId)
+                    .HasConstraintName("FK_Wallet_Admin");
+
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Wallets)
                     .HasForeignKey(d => d.CustomerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Wallet__Customer__1CBC4616");
+
+                entity.HasOne(d => d.Partner)
+                    .WithMany(p => p.Wallets)
+                    .HasForeignKey(d => d.PartnerId)
+                    .HasConstraintName("FK_Wallet_Partner");
             });
 
             OnModelCreatingPartial(modelBuilder);
