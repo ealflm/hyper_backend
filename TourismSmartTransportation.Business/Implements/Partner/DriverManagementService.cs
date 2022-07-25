@@ -15,6 +15,7 @@ using Vonage.Request;
 using System.Net.Http;
 using TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
+using TourismSmartTransportation.Business.ViewModel.Common;
 
 namespace TourismSmartTransportation.Business.Implements.Partner
 {
@@ -292,6 +293,66 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
             return vehiclesList;
         }
+
+        public async Task<SearchResultViewModel<DriverTripHistoryViewModel>> GetDriverHistory(DriverTripHistorySearchModel model)
+        {
+            var driverHistoriesList = await _unitOfWork.CustomerTripRepository
+                                    .Query()
+                                    .Join(_unitOfWork.RouteRepository.Query(),
+                                        customerTrip => customerTrip.RouteId,
+                                        route => route.RouteId,
+                                        (customerTrip, route) => new { customerTrip, route }
+                                    )
+                                    .Join(_unitOfWork.TripRepository.Query(),
+                                        customerTrip_Route => customerTrip_Route.route.RouteId,
+                                        trip => trip.RouteId,
+                                        (customerTrip_Route, trip) => new { customerTrip_Route, trip }
+                                    )
+                                    .Join(_unitOfWork.DriverRepository.Query(),
+                                        customerTrip_Route_Trip => customerTrip_Route_Trip.trip.DriverId,
+                                        driver => driver.DriverId,
+                                        (customerTrip_Route_Trip, driver) => new { customerTrip_Route_Trip, driver }
+                                    )
+                                    .Join(_unitOfWork.VehicleRepository.Query(),
+                                        customerTrip_Route_Trip_Driver => customerTrip_Route_Trip_Driver.driver.VehicleId,
+                                        vehicle => vehicle.VehicleId,
+                                        (customerTrip_Route_Trip_Driver, vehicle) => new DriverTripHistoryViewModel()
+                                        {
+                                            VehicleId = vehicle.VehicleId,
+                                            VehicleName = vehicle.Name,
+                                            LicensePlates = vehicle.LicensePlates,
+                                            DriverId = customerTrip_Route_Trip_Driver.driver.DriverId,
+                                            DriverFirstName = customerTrip_Route_Trip_Driver.driver.FirstName,
+                                            DriverLastName = customerTrip_Route_Trip_Driver.driver.LastName,
+                                            RouteId = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.route.RouteId,
+                                            RouteName = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.route.Name,
+                                            Distance = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.customerTrip.Distance != null
+                                                        ?
+                                                       customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.customerTrip.Distance.Value
+                                                        :
+                                                       null,
+                                            CreatedDate = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.customerTrip.CreatedDate,
+                                            ModifiedDate = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.customerTrip.ModifiedDate
+                                        }
+                                    )
+                                    .Where(x => x.DriverId == model.DriverId)
+                                    .ToListAsync();
+
+            var listAfterSorting = GetListAfterSorting(driverHistoriesList, model.SortBy);
+            var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
+            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
+            SearchResultViewModel<DriverTripHistoryViewModel> result = null;
+            result = new SearchResultViewModel<DriverTripHistoryViewModel>()
+            {
+                Items = listItemsAfterPaging,
+                PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
+                TotalItems = totalRecord
+            };
+            return result;
+        }
+
+
+
 
         //--------------------------------------------------
 
