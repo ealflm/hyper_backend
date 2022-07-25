@@ -84,5 +84,8 @@ namespace ApiVer1Url
 
         //Power BI
         public const string PowerBI = BaseApiUrl + "/power-bi";
+
+        // Base price of bus service
+        public const string BasePriceOfBusService = BaseApiUrl + "/base-price-bus-service";
     }
 }

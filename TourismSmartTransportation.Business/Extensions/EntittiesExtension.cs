@@ -21,6 +21,7 @@ using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.PackageItem;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
+using TourismSmartTransportation.Business.ViewModel.Admin.BasePriceOfBusService;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -443,7 +444,7 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                Id = item.BasePriceOfBusServiceId,
+                BasePriceOfBusServiceId = item.BasePriceOfBusServiceId,
                 MinDistance = item.MinDistance,
                 MaxDistance = item.MaxDistance,
                 Price = item.Price,
@@ -456,7 +457,7 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 WalletId = item.WalletId,
-                CustomerId = item.CustomerId.Value,
+                CustomerId = item.CustomerId != null ? item.CustomerId.Value : null,
                 AccountBalance = item.AccountBalance,
                 Status = item.Status
             };
