@@ -13,6 +13,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement
         public string VehicleName { get; set; }
         public string LicensePlates { get; set; }
         public Guid RouteId { get; set; }
+        public string RouteName { get; set; }
         public string TripName { get; set; }
         public int DayOfWeek { get; set; }
         public string TimeStart { get; set; }

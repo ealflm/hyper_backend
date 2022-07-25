@@ -161,7 +161,38 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                                     .Where(x => x.RouteId == route.RouteId)
                                     .Where(x => model.Status == null || model.Status.Value == x.Status)
                                     .Where(x => model.TripName == null || x.TripName.Contains(model.TripName))
-                                    .Select(x => x.AsTripViewModel())
+                                    .Join(_unitOfWork.RouteRepository.Query(),
+                                        trip => trip.RouteId,
+                                        route => route.RouteId,
+                                        (trip, route) => new { trip, route }
+                                    )
+                                    .Join(_unitOfWork.VehicleRepository.Query(),
+                                        tripRoute => tripRoute.trip.VehicleId,
+                                        vehicle => vehicle.VehicleId,
+                                        (tripRoute, vehicle) => new { tripRoute, vehicle }
+                                    )
+                                    .Join(_unitOfWork.DriverRepository.Query(),
+                                        tripRouteVehicle => tripRouteVehicle.tripRoute.trip.DriverId,
+                                        driver => driver.DriverId,
+                                        (tripRouteVehicle, driver) => new TripViewModel()
+                                        {
+                                            TripId = tripRouteVehicle.tripRoute.trip.TripId,
+                                            TripName = tripRouteVehicle.tripRoute.trip.TripName,
+                                            RouteId = tripRouteVehicle.tripRoute.route.RouteId,
+                                            RouteName = tripRouteVehicle.tripRoute.route.Name,
+                                            DriverId = driver.DriverId,
+                                            DriverFirstName = driver.FirstName,
+                                            DriverLastName = driver.LastName,
+                                            DriverPhotoUrl = driver.PhotoUrl,
+                                            VehicleId = tripRouteVehicle.vehicle.VehicleId,
+                                            VehicleName = tripRouteVehicle.vehicle.Name,
+                                            LicensePlates = tripRouteVehicle.vehicle.LicensePlates,
+                                            DayOfWeek = tripRouteVehicle.tripRoute.trip.DayOfWeek,
+                                            TimeStart = tripRouteVehicle.tripRoute.trip.TimeStart,
+                                            TimeEnd = tripRouteVehicle.tripRoute.trip.TimeEnd,
+                                            Status = tripRouteVehicle.tripRoute.trip.Status
+                                        }
+                                    )
                                     .ToListAsync();
                 tripsList.AddRange(trips);
             }
@@ -169,16 +200,17 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             var listAfterSorting = GetListAfterSorting(tripsList, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
-            foreach (var t in listItemsAfterPaging)
-            {
-                var vehicle = await _unitOfWork.VehicleRepository.GetById(t.VehicleId);
-                t.LicensePlates = vehicle.LicensePlates;
-                t.VehicleName = vehicle.Name;
-                var driver = await _unitOfWork.DriverRepository.GetById(t.DriverId);
-                t.DriverFirstName = driver.FirstName;
-                t.DriverLastName = driver.LastName;
-                t.DriverPhotoUrl = driver.PhotoUrl;
-            }
+            // foreach (var t in listItemsAfterPaging)
+            // {
+            //     var vehicle = await _unitOfWork.VehicleRepository.GetById(t.VehicleId);
+            //     t.LicensePlates = vehicle.LicensePlates;
+            //     t.VehicleName = vehicle.Name;
+
+            //     var driver = await _unitOfWork.DriverRepository.GetById(t.DriverId);
+            //     t.DriverFirstName = driver.FirstName;
+            //     t.DriverLastName = driver.LastName;
+            //     t.DriverPhotoUrl = driver.PhotoUrl;
+            // }
             SearchResultViewModel<TripViewModel> result = null;
             result = new SearchResultViewModel<TripViewModel>()
             {
