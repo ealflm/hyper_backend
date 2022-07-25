@@ -44,7 +44,8 @@ namespace TourismSmartTransportation.Data.Repositories
         public IGenericRepository<Vehicle> VehicleRepository { get; }
         public IGenericRepository<VehicleType> VehicleTypeRepository { get; }
         public IGenericRepository<Wallet> WalletRepository { get; }
-
+        public IGenericRepository<LinkStation> LinkStationRepository { get; }
+        public IGenericRepository<LinkRoute> LinkRouteRepository { get; }
         public UnitOfWork(
             tourismsmarttransportationContext dbContext,
             IGenericRepository<Admin> adminRepository,
@@ -80,7 +81,9 @@ namespace TourismSmartTransportation.Data.Repositories
             IGenericRepository<Trip> tripRepository,
             IGenericRepository<Vehicle> vehicleRepository,
             IGenericRepository<VehicleType> vehicleTypeRepository,
-            IGenericRepository<Wallet> walletRepository
+            IGenericRepository<Wallet> walletRepository,
+            IGenericRepository<LinkStation> linkStationRepository,
+            IGenericRepository<LinkRoute> linkRouteRepository
             )
         {
             _dbContext = dbContext;
@@ -119,6 +122,8 @@ namespace TourismSmartTransportation.Data.Repositories
             VehicleRepository = vehicleRepository;
             VehicleTypeRepository = vehicleTypeRepository;
             WalletRepository = walletRepository;
+            LinkStationRepository = linkStationRepository;
+            LinkRouteRepository = linkRouteRepository;
         }
 
         public tourismsmarttransportationContext Context()

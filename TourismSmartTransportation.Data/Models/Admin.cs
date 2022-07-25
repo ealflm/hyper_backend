@@ -7,6 +7,11 @@ namespace TourismSmartTransportation.Data.Models
 {
     public partial class Admin
     {
+        public Admin()
+        {
+            Wallets = new HashSet<Wallet>();
+        }
+
         public Guid AdminId { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
@@ -18,5 +23,7 @@ namespace TourismSmartTransportation.Data.Models
         public byte[] Password { get; set; }
         public byte[] Salt { get; set; }
         public int Status { get; set; }
+
+        public virtual ICollection<Wallet> Wallets { get; set; }
     }
 }

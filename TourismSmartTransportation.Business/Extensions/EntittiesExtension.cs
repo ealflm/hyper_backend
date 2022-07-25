@@ -456,7 +456,7 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 WalletId = item.WalletId,
-                CustomerId = item.CustomerId,
+                CustomerId = item.CustomerId.Value,
                 AccountBalance = item.AccountBalance,
                 Status = item.Status
             };

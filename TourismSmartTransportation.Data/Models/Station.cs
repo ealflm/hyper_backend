@@ -9,6 +9,8 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Station()
         {
+            LinkStationFirstStations = new HashSet<LinkStation>();
+            LinkStationSecondStations = new HashSet<LinkStation>();
             StationRoutes = new HashSet<StationRoute>();
         }
 
@@ -20,6 +22,8 @@ namespace TourismSmartTransportation.Data.Models
         public decimal Latitude { get; set; }
         public int Status { get; set; }
 
+        public virtual ICollection<LinkStation> LinkStationFirstStations { get; set; }
+        public virtual ICollection<LinkStation> LinkStationSecondStations { get; set; }
         public virtual ICollection<StationRoute> StationRoutes { get; set; }
     }
 }

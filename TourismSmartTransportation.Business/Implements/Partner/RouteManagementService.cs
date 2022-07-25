@@ -126,9 +126,61 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 };
                 await _unitOfWork.RoutePriceBusingRepository.Add(routePrice);
             }
-
             await _unitOfWork.SaveChangesAsync();
+            var stationList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(entity.RouteId)).ToListAsync();
+            foreach(StationRoute x in stationList)
+            {
+                var routeList = await _unitOfWork.StationRouteRepository.Query().Where(k => k.StationId.Equals(x.StationId)).ToListAsync();
+                foreach(StationRoute y in routeList)
+                {
+                    if (!y.RouteId.Equals(x.RouteId))
+                    {
 
+                        var linkRoute = new LinkRoute()
+                        {
+                            FirstRouteId = x.RouteId,
+                            SecondRouteId = y.RouteId
+                        };
+                        await _unitOfWork.LinkRouteRepository.Add(linkRoute);
+                    }
+                }
+                var linkStationList = await _unitOfWork.LinkStationRepository.Query().Where(k => k.FirstStationId.Equals(x.StationId)).ToListAsync();
+                foreach(LinkStation y in linkStationList)
+                {
+                    var LinkStationRouteList= await _unitOfWork.StationRouteRepository.Query().Where(k => k.StationId.Equals(y.SecondStationId)).ToListAsync();
+                    foreach(StationRoute z in LinkStationRouteList)
+                    {
+                        if (!z.RouteId.Equals(x.RouteId))
+                        {
+
+                            var linkRoute = new LinkRoute()
+                            {
+                                FirstRouteId = x.RouteId,
+                                SecondRouteId = z.RouteId
+                            };
+                            await _unitOfWork.LinkRouteRepository.Add(linkRoute);
+                        }
+                    }
+                }
+                linkStationList = await _unitOfWork.LinkStationRepository.Query().Where(k => k.SecondStationId.Equals(x.StationId)).ToListAsync();
+                foreach (LinkStation y in linkStationList)
+                {
+                    var LinkStationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(k => k.StationId.Equals(y.FirstStationId)).ToListAsync();
+                    foreach (StationRoute z in LinkStationRouteList)
+                    {
+                        if (!z.RouteId.Equals(x.RouteId))
+                        {
+
+                            var linkRoute = new LinkRoute()
+                            {
+                                FirstRouteId = x.RouteId,
+                                SecondRouteId = z.RouteId
+                            };
+                            await _unitOfWork.LinkRouteRepository.Add(linkRoute);
+                        }
+                    }
+                }
+            }
             return new()
             {
                 StatusCode = 201,
