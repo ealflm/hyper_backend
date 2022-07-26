@@ -13,6 +13,8 @@ namespace TourismSmartTransportation.Data.Models
         public Guid? LinkStationId { get; set; }
 
         public virtual Route FirstRoute { get; set; }
+        public virtual LinkStation LinkStation { get; set; }
         public virtual Route SecondRoute { get; set; }
+        public virtual Station Station { get; set; }
     }
 }

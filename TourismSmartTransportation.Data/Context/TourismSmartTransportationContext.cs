@@ -227,7 +227,8 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Vehicle)
                     .WithMany(p => p.CustomerTrips)
                     .HasForeignKey(d => d.VehicleId)
-                    .HasConstraintName("FK__CustomerT__Vehic__2645B050");
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_CustomerTrip_Vehicle");
             });
 
             modelBuilder.Entity<Discount>(entity =>
@@ -359,11 +360,21 @@ namespace TourismSmartTransportation.Data.Context
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_LinkRoute_Route");
 
+                entity.HasOne(d => d.LinkStation)
+                    .WithMany(p => p.LinkRoutes)
+                    .HasForeignKey(d => d.LinkStationId)
+                    .HasConstraintName("FK_LinkRoute_LinkStation");
+
                 entity.HasOne(d => d.SecondRoute)
                     .WithMany(p => p.LinkRouteSecondRoutes)
                     .HasForeignKey(d => d.SecondRouteId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_LinkRoute_Route1");
+
+                entity.HasOne(d => d.Station)
+                    .WithMany(p => p.LinkRoutes)
+                    .HasForeignKey(d => d.StationId)
+                    .HasConstraintName("FK_LinkRoute_Station");
             });
 
             modelBuilder.Entity<LinkStation>(entity =>
@@ -373,6 +384,8 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.LinkStationId).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Content).IsRequired();
+
+                entity.Property(e => e.Distance).HasColumnType("decimal(7, 3)");
 
                 entity.HasOne(d => d.FirstStation)
                     .WithMany(p => p.LinkStationFirstStations)
@@ -981,11 +994,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.WalletId).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.AccountBalance).HasColumnType("decimal(18, 0)");
-
-                entity.HasOne(d => d.Admin)
-                    .WithMany(p => p.Wallets)
-                    .HasForeignKey(d => d.AdminId)
-                    .HasConstraintName("FK_Wallet_Admin");
 
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Wallets)
