@@ -7,6 +7,12 @@ namespace TourismSmartTransportation.Data.Models
 {
     public partial class CustomerTrip
     {
+        public CustomerTrip()
+        {
+            FeedbackForDrivers = new HashSet<FeedbackForDriver>();
+            FeedbackForVehicles = new HashSet<FeedbackForVehicle>();
+        }
+
         public Guid CustomerId { get; set; }
         public Guid? RouteId { get; set; }
         public Guid VehicleId { get; set; }
@@ -21,5 +27,7 @@ namespace TourismSmartTransportation.Data.Models
         public virtual Customer Customer { get; set; }
         public virtual Route Route { get; set; }
         public virtual Vehicle Vehicle { get; set; }
+        public virtual ICollection<FeedbackForDriver> FeedbackForDrivers { get; set; }
+        public virtual ICollection<FeedbackForVehicle> FeedbackForVehicles { get; set; }
     }
 }

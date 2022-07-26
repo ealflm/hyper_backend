@@ -308,44 +308,43 @@ namespace TourismSmartTransportation.Data.Context
 
             modelBuilder.Entity<FeedbackForDriver>(entity =>
             {
-                entity.HasKey(e => new { e.OrderId, e.DriverId });
-
                 entity.ToTable("FeedbackForDriver");
 
+                entity.Property(e => e.FeedbackForDriverId).HasDefaultValueSql("(newid())");
+
                 entity.Property(e => e.Content).IsRequired();
+
+                entity.HasOne(d => d.CustomerTrip)
+                    .WithMany(p => p.FeedbackForDrivers)
+                    .HasForeignKey(d => d.CustomerTripId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_FeedbackForDriver_CustomerTrip");
 
                 entity.HasOne(d => d.Driver)
                     .WithMany(p => p.FeedbackForDrivers)
                     .HasForeignKey(d => d.DriverId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_FeedbackForDriver_Driver");
-
-                entity.HasOne(d => d.Order)
-                    .WithMany(p => p.FeedbackForDrivers)
-                    .HasForeignKey(d => d.OrderId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_FeedbackForDriver_Order");
             });
 
             modelBuilder.Entity<FeedbackForVehicle>(entity =>
             {
-                entity.HasKey(e => new { e.OrderId, e.VehicelId });
+                entity.HasKey(e => e.FeedbackVehicleId)
+                    .HasName("PK_FeedbackForVehicle_1");
 
                 entity.ToTable("FeedbackForVehicle");
 
+                entity.Property(e => e.FeedbackVehicleId).ValueGeneratedNever();
+
                 entity.Property(e => e.Content).IsRequired();
 
-                entity.HasOne(d => d.Order)
-                    .WithMany(p => p.FeedbackForVehicles)
-                    .HasForeignKey(d => d.OrderId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_FeedbackForVehicle_Order");
+                entity.Property(e => e.CustomerTripId).HasDefaultValueSql("(newid())");
 
-                entity.HasOne(d => d.Vehicel)
+                entity.HasOne(d => d.CustomerTrip)
                     .WithMany(p => p.FeedbackForVehicles)
-                    .HasForeignKey(d => d.VehicelId)
+                    .HasForeignKey(d => d.CustomerTripId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_FeedbackForVehicle_Vehicle");
+                    .HasConstraintName("FK_FeedbackForVehicle_CustomerTrip");
             });
 
             modelBuilder.Entity<LinkRoute>(entity =>
@@ -391,13 +390,13 @@ namespace TourismSmartTransportation.Data.Context
                     .WithMany(p => p.LinkStationFirstStations)
                     .HasForeignKey(d => d.FirstStationId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_LinkStation_Station2");
+                    .HasConstraintName("FK_LinkStation_Station");
 
                 entity.HasOne(d => d.SecondStation)
                     .WithMany(p => p.LinkStationSecondStations)
                     .HasForeignKey(d => d.SecondStationId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_LinkStation_Station3");
+                    .HasConstraintName("FK_LinkStation_Station1");
             });
 
             modelBuilder.Entity<Order>(entity =>
@@ -857,7 +856,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Station)
                     .WithMany(p => p.StationRoutes)
                     .HasForeignKey(d => d.StationId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__StationRo__Stati__31B762FC");
             });
 

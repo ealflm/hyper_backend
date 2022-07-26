@@ -11,7 +11,6 @@ namespace TourismSmartTransportation.Data.Models
         {
             CustomerTrips = new HashSet<CustomerTrip>();
             Drivers = new HashSet<Driver>();
-            FeedbackForVehicles = new HashSet<FeedbackForVehicle>();
             Trips = new HashSet<Trip>();
         }
 
@@ -33,7 +32,6 @@ namespace TourismSmartTransportation.Data.Models
         public virtual VehicleType VehicleType { get; set; }
         public virtual ICollection<CustomerTrip> CustomerTrips { get; set; }
         public virtual ICollection<Driver> Drivers { get; set; }
-        public virtual ICollection<FeedbackForVehicle> FeedbackForVehicles { get; set; }
         public virtual ICollection<Trip> Trips { get; set; }
     }
 }
