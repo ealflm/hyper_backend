@@ -1,8 +1,7 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using TourismSmartTransportation.Business.Validation;
 
-namespace TourismSmartTransportation.Business.SearchModel.Admin.PriceBusServiceConfig
+namespace TourismSmartTransportation.Business.SearchModel.Admin.BasePriceOfBusService
 {
     public class AddBasePriceOfBusService
     {

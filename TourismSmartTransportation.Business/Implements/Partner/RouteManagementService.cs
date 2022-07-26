@@ -74,9 +74,9 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             var price = new PriceOfBusService()
                             {
                                 PriceOfBusServiceId = Guid.NewGuid(),
-                                BasePriceId = basePrice.Id,
-                                MinDistance = basePrice.MaxDistance * (decimal)rateArray[i],
-                                MaxDistance = basePrice.MaxDistance * (decimal)rateArray[i + 1],
+                                BasePriceId = basePrice.BasePriceOfBusServiceId,
+                                MinDistance = (basePrice.MaxDistance - basePrice.MinDistance) * (decimal)rateArray[i] + basePrice.MinDistance,
+                                MaxDistance = (basePrice.MaxDistance - basePrice.MinDistance) * (decimal)rateArray[i + 1] + basePrice.MinDistance,
                                 Price = basePrice.Price * (decimal)rateArray[i],
                                 MinStation = 1,
                                 MaxStation = Math.Ceiling(entity.TotalStation * (decimal)rateArray[i + 1]),
@@ -93,9 +93,9 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             var price = new PriceOfBusService()
                             {
                                 PriceOfBusServiceId = Guid.NewGuid(),
-                                BasePriceId = basePrice.Id,
-                                MinDistance = basePrice.MaxDistance * (decimal)rateArray[i],
-                                MaxDistance = basePrice.MaxDistance * (decimal)rateArray[index],
+                                BasePriceId = basePrice.BasePriceOfBusServiceId,
+                                MinDistance = (basePrice.MaxDistance - basePrice.MinDistance) * (decimal)rateArray[i] + basePrice.MinDistance,
+                                MaxDistance = (basePrice.MaxDistance - basePrice.MinDistance) * (decimal)rateArray[index] + basePrice.MinDistance,
                                 Price = basePrice.Price * (decimal)rateArray[i],
                                 MinStation = Math.Ceiling(entity.TotalStation * (decimal)rateArray[i]),
                                 MaxStation = Math.Ceiling(entity.TotalStation * (decimal)rateArray[index]),
@@ -112,7 +112,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             // Get list price to assign for the route
             var priceOfBusServiceList = await _unitOfWork.PriceOfBusServiceRepository
                                         .Query()
-                                        .Where(x => x.BasePriceId == basePrice.Id)
+                                        .Where(x => x.BasePriceId == basePrice.BasePriceOfBusServiceId)
                                         .Select(x => x.AsPriceOfBusServiceViewModel())
                                         .ToListAsync();
             list.AddRange(priceOfBusServiceList);

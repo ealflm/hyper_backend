@@ -190,6 +190,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IRentService, RentService>();
             services.AddScoped<IBusTripService, BusTripService>();
+            services.AddScoped<IBasePriceOfBusService, BasePriceOfBusServiceManagement>();
             //Azure AD
             services.AddScoped(_ =>
             {

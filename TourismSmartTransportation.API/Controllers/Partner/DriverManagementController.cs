@@ -62,5 +62,12 @@ namespace TourismSmartTransportation.API.Controllers.Partner
         {
             return SendResponse(await _service.GetVehicleListDropdownOptions(model));
         }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.Driver + "/history-trip")]
+        public async Task<IActionResult> GetDriverHistory([FromQuery] DriverTripHistorySearchModel model)
+        {
+            return SendResponse(await _service.GetDriverHistory(model));
+        }
     }
 }
