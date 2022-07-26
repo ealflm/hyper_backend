@@ -9,8 +9,6 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Order()
         {
-            FeedbackForDrivers = new HashSet<FeedbackForDriver>();
-            FeedbackForVehicles = new HashSet<FeedbackForVehicle>();
             OrderDetailOfBookingServices = new HashSet<OrderDetailOfBookingService>();
             OrderDetailOfBusServices = new HashSet<OrderDetailOfBusService>();
             OrderDetailOfPackages = new HashSet<OrderDetailOfPackage>();
@@ -30,8 +28,6 @@ namespace TourismSmartTransportation.Data.Models
         public virtual Discount Discount { get; set; }
         public virtual Partner Partner { get; set; }
         public virtual ServiceType ServiceType { get; set; }
-        public virtual ICollection<FeedbackForDriver> FeedbackForDrivers { get; set; }
-        public virtual ICollection<FeedbackForVehicle> FeedbackForVehicles { get; set; }
         public virtual ICollection<OrderDetailOfBookingService> OrderDetailOfBookingServices { get; set; }
         public virtual ICollection<OrderDetailOfBusService> OrderDetailOfBusServices { get; set; }
         public virtual ICollection<OrderDetailOfPackage> OrderDetailOfPackages { get; set; }

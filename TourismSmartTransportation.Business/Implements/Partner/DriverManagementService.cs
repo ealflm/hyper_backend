@@ -294,12 +294,12 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             return vehiclesList;
         }
 
-        public async Task<SearchResultViewModel<DriverTripHistoryViewModel>> GetDriverHistory(DriverTripHistorySearchModel model)
+        public async Task<SearchResultViewModel<DriverHistoryViewModel>> GetDriverHistory(DriverTripHistorySearchModel model)
         {
-            var driverHistoriesList = await _unitOfWork.CustomerTripRepository
+            var driverHistoriesOfBusServiceList = await _unitOfWork.CustomerTripRepository
                                     .Query()
                                     .Join(_unitOfWork.RouteRepository.Query(),
-                                        customerTrip => customerTrip.RouteId,
+                                        customerTrip => customerTrip.RouteId != null ? customerTrip.RouteId.Value : customerTrip.RouteId,
                                         route => route.RouteId,
                                         (customerTrip, route) => new { customerTrip, route }
                                     )
@@ -316,35 +316,435 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                                     .Join(_unitOfWork.VehicleRepository.Query(),
                                         customerTrip_Route_Trip_Driver => customerTrip_Route_Trip_Driver.driver.VehicleId,
                                         vehicle => vehicle.VehicleId,
-                                        (customerTrip_Route_Trip_Driver, vehicle) => new DriverTripHistoryViewModel()
+                                        (customerTrip_Route_Trip_Driver, vehicle) => new { customerTrip_Route_Trip_Driver, vehicle }
+                                    )
+                                    .Join(_unitOfWork.VehicleTypeRepository.Query(),
+                                        customerTrip_Route_Trip_Driver_Vehicle => customerTrip_Route_Trip_Driver_Vehicle.vehicle.VehicleTypeId,
+                                        vehicleType => vehicleType.VehicleTypeId,
+                                        (customerTrip_Route_Trip_Driver_Vehicle, vehicleType) => new { customerTrip_Route_Trip_Driver_Vehicle, vehicleType }
+                                    )
+                                    .Join(_unitOfWork.ServiceTypeRepository.Query(),
+                                        customerTrip_Route_Trip_Driver_Vehicle_VehicleType => customerTrip_Route_Trip_Driver_Vehicle_VehicleType.customerTrip_Route_Trip_Driver_Vehicle.vehicle.ServiceTypeId,
+                                        serviceType => serviceType.ServiceTypeId,
+                                        (customerTrip_Route_Trip_Driver_Vehicle_VehicleType, serviceType) => new { customerTrip_Route_Trip_Driver_Vehicle_VehicleType, serviceType }
+                                    )
+                                    .Join(_unitOfWork.FeedbackForDriverRepository.Query(),
+                                        customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType => customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                                                            .customerTrip_Route_Trip_Driver
+                                                                                            .customerTrip_Route_Trip
+                                                                                            .customerTrip_Route
+                                                                                            .customerTrip
+                                                                                            .CustomerTripId,
+                                        feedback => feedback.CustomerTripId,
+                                        (customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType, feedback) => new DriverTripHistoryViewModel()
                                         {
-                                            VehicleId = vehicle.VehicleId,
-                                            VehicleName = vehicle.Name,
-                                            LicensePlates = vehicle.LicensePlates,
-                                            DriverId = customerTrip_Route_Trip_Driver.driver.DriverId,
-                                            DriverFirstName = customerTrip_Route_Trip_Driver.driver.FirstName,
-                                            DriverLastName = customerTrip_Route_Trip_Driver.driver.LastName,
-                                            RouteId = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.route.RouteId,
-                                            RouteName = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.route.Name,
-                                            Distance = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.customerTrip.Distance != null
+                                            CustomerTripId = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .customerTrip_Route_Trip_Driver
+                                                            .customerTrip_Route_Trip
+                                                            .customerTrip_Route
+                                                            .customerTrip
+                                                            .CustomerTripId,
+
+                                            VehicleId = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle
+                                                        .vehicle
+                                                        .VehicleId,
+
+                                            VehicleName = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle
+                                                        .vehicle
+                                                        .Name,
+
+                                            LicensePlates = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .vehicle
+                                                            .LicensePlates,
+
+                                            ServiceTypeId = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .serviceType
+                                                            .ServiceTypeId,
+
+                                            ServiceTypeName = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .serviceType
+                                                            .Name,
+
+                                            Id = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle
+                                                        .customerTrip_Route_Trip_Driver
+                                                        .driver
+                                                        .DriverId,
+
+                                            PartnerId = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle
+                                                        .customerTrip_Route_Trip_Driver
+                                                        .driver
+                                                        .PartnerId,
+
+                                            VehicleTypeLabel = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                                .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                                .vehicleType
+                                                                .Label,
+
+                                            FirstName = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .customerTrip_Route_Trip_Driver
+                                                            .driver
+                                                            .FirstName,
+
+                                            LastName = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .customerTrip_Route_Trip_Driver
+                                                            .driver
+                                                            .LastName,
+
+                                            PhotoUrl = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .customerTrip_Route_Trip_Driver
+                                                            .driver
+                                                            .PhotoUrl,
+
+                                            Gender = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .customerTrip_Route_Trip_Driver
+                                                            .driver
+                                                            .Gender,
+
+                                            Phone = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .customerTrip_Route_Trip_Driver
+                                                            .driver
+                                                            .Phone,
+
+                                            DateOfBirth = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .customerTrip_Route_Trip_Driver
+                                                            .driver
+                                                            .DateOfBirth,
+
+                                            CreatedDate = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .customerTrip_Route_Trip_Driver
+                                                            .driver
+                                                            .CreatedDate,
+
+                                            ModifiedDate = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                            .customerTrip_Route_Trip_Driver_Vehicle
+                                                            .customerTrip_Route_Trip_Driver
+                                                            .driver
+                                                            .ModifiedDate,
+
+                                            RouteId = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                    .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                    .customerTrip_Route_Trip_Driver_Vehicle
+                                                    .customerTrip_Route_Trip_Driver
+                                                    .customerTrip_Route_Trip
+                                                    .customerTrip_Route
+                                                    .route
+                                                    .RouteId,
+
+                                            RouteName = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle
+                                                        .customerTrip_Route_Trip_Driver
+                                                        .customerTrip_Route_Trip
+                                                        .customerTrip_Route
+                                                        .route
+                                                        .Name,
+
+                                            FeedbackRating = feedback.Rate,
+
+                                            Distance = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle
+                                                        .customerTrip_Route_Trip_Driver
+                                                        .customerTrip_Route_Trip
+                                                        .customerTrip_Route
+                                                        .customerTrip
+                                                        .Distance != null
                                                         ?
-                                                       customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.customerTrip.Distance.Value
+                                                       customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle
+                                                        .customerTrip_Route_Trip_Driver
+                                                        .customerTrip_Route_Trip
+                                                        .customerTrip_Route
+                                                        .customerTrip
+                                                        .Distance
+                                                        .Value
                                                         :
                                                        null,
-                                            CreatedDate = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.customerTrip.CreatedDate,
-                                            ModifiedDate = customerTrip_Route_Trip_Driver.customerTrip_Route_Trip.customerTrip_Route.customerTrip.ModifiedDate
+
+                                            CreatedDateDriverHis = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle
+                                                        .customerTrip_Route_Trip_Driver
+                                                        .customerTrip_Route_Trip
+                                                        .customerTrip_Route
+                                                        .customerTrip
+                                                        .CreatedDate,
+
+                                            ModifiedDateDriverHis = customerTrip_Route_Trip_Driver_Vehicle_VehicleType_ServiceType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle_VehicleType
+                                                        .customerTrip_Route_Trip_Driver_Vehicle
+                                                        .customerTrip_Route_Trip_Driver
+                                                        .customerTrip_Route_Trip
+                                                        .customerTrip_Route
+                                                        .customerTrip
+                                                        .ModifiedDate
                                         }
                                     )
-                                    .Where(x => x.DriverId == model.DriverId)
+                                    .Where(x => x.Id == model.DriverId)
                                     .ToListAsync();
 
-            var listAfterSorting = GetListAfterSorting(driverHistoriesList, model.SortBy);
+            var driverHistoriesOfBookingServiceList = await _unitOfWork.CustomerTripRepository
+                                                    .Query()
+                                                    .Where(x => x.RouteId == null)
+                                                    .Join(_unitOfWork.VehicleRepository.Query(),
+                                                        customerTrip => customerTrip.VehicleId,
+                                                        vehicle => vehicle.VehicleId,
+                                                        (customerTrip, vehicle) => new { customerTrip, vehicle }
+                                                    )
+                                                    .Join(_unitOfWork.VehicleTypeRepository.Query(),
+                                                        customerTrip_Vehicle => customerTrip_Vehicle.vehicle.VehicleTypeId,
+                                                        vehicleType => vehicleType.VehicleTypeId,
+                                                        (customerTrip_Vehicle, vehicleType) => new { customerTrip_Vehicle, vehicleType }
+                                                    )
+                                                    .Join(_unitOfWork.DriverRepository.Query(),
+                                                        customerTrip_Vehicle_VehicleType => customerTrip_Vehicle_VehicleType.customerTrip_Vehicle.vehicle.VehicleId,
+                                                        driver => driver.VehicleId != null ? driver.VehicleId.Value : driver.VehicleId,
+                                                        (customerTrip_Vehicle_VehicleType, driver) => new { customerTrip_Vehicle_VehicleType, driver }
+                                                    )
+                                                    .Join(_unitOfWork.ServiceTypeRepository.Query(),
+                                                        customerTrip_Vehicle_VehicleType_Driver => customerTrip_Vehicle_VehicleType_Driver.customerTrip_Vehicle_VehicleType.customerTrip_Vehicle.vehicle.ServiceTypeId,
+                                                        serviceType => serviceType.ServiceTypeId,
+                                                        (customerTrip_Vehicle_VehicleType_Driver, serviceType) => new { customerTrip_Vehicle_VehicleType_Driver, serviceType }
+                                                    )
+                                                    .Join(_unitOfWork.FeedbackForDriverRepository.Query(),
+                                                        customerTrip_Vehicle_VehicleType_Driver_ServiceType => customerTrip_Vehicle_VehicleType_Driver_ServiceType.customerTrip_Vehicle_VehicleType_Driver.customerTrip_Vehicle_VehicleType.customerTrip_Vehicle.customerTrip.CustomerTripId,
+                                                        feedback => feedback.CustomerTripId,
+                                                        (customerTrip_Vehicle_VehicleType_Driver_ServiceType, feedback) => new DriverTripHistoryViewModel()
+                                                        {
+                                                            CustomerTripId = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                                .customerTrip_Vehicle_VehicleType_Driver
+                                                                                .customerTrip_Vehicle_VehicleType
+                                                                                .customerTrip_Vehicle
+                                                                                .customerTrip
+                                                                                .CustomerTripId,
+
+                                                            VehicleId = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .customerTrip_Vehicle_VehicleType
+                                                                        .customerTrip_Vehicle
+                                                                        .vehicle
+                                                                        .VehicleId,
+
+                                                            VehicleName = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                            .customerTrip_Vehicle_VehicleType_Driver
+                                                                            .customerTrip_Vehicle_VehicleType
+                                                                            .customerTrip_Vehicle
+                                                                            .vehicle
+                                                                            .Name,
+
+                                                            LicensePlates = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                            .customerTrip_Vehicle_VehicleType_Driver
+                                                                            .customerTrip_Vehicle_VehicleType
+                                                                            .customerTrip_Vehicle
+                                                                            .vehicle
+                                                                            .LicensePlates,
+
+                                                            ServiceTypeId = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                            .serviceType
+                                                                            .ServiceTypeId,
+
+                                                            ServiceTypeName = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                                .serviceType
+                                                                                .Name,
+
+                                                            Id = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .DriverId,
+
+                                                            PartnerId = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .PartnerId,
+
+                                                            VehicleTypeLabel = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                                .customerTrip_Vehicle_VehicleType_Driver
+                                                                                .customerTrip_Vehicle_VehicleType
+                                                                                .vehicleType
+                                                                                .Label,
+
+                                                            FirstName = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .FirstName,
+
+                                                            LastName = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .LastName,
+
+                                                            PhotoUrl = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .PhotoUrl,
+
+                                                            Gender = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .Gender,
+
+                                                            Phone = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .Phone,
+
+                                                            DateOfBirth = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .DateOfBirth,
+
+                                                            CreatedDate = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .CreatedDate,
+
+                                                            ModifiedDate = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .ModifiedDate,
+
+                                                            Status = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .driver
+                                                                        .Status,
+
+                                                            Distance = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .customerTrip_Vehicle_VehicleType
+                                                                        .customerTrip_Vehicle
+                                                                        .customerTrip
+                                                                        .Distance != null
+                                                                        ?
+                                                                        customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .customerTrip_Vehicle_VehicleType
+                                                                        .customerTrip_Vehicle
+                                                                        .customerTrip
+                                                                        .Distance.Value
+                                                                        :
+                                                                        null,
+
+                                                            FeedbackRating = feedback.Rate,
+
+                                                            CreatedDateDriverHis = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .customerTrip_Vehicle_VehicleType
+                                                                        .customerTrip_Vehicle
+                                                                        .customerTrip
+                                                                        .CreatedDate,
+
+                                                            ModifiedDateDriverHis = customerTrip_Vehicle_VehicleType_Driver_ServiceType
+                                                                        .customerTrip_Vehicle_VehicleType_Driver
+                                                                        .customerTrip_Vehicle_VehicleType
+                                                                        .customerTrip_Vehicle
+                                                                        .customerTrip
+                                                                        .ModifiedDate,
+                                                        }
+                                                    )
+                                                    .Where(x => x.Id == model.DriverId)
+                                                    .ToListAsync();
+
+            List<DriverTripHistoryViewModel> list = new List<DriverTripHistoryViewModel>();
+            list.AddRange(driverHistoriesOfBusServiceList);
+            list.AddRange(driverHistoriesOfBookingServiceList);
+
+            var listAfterSorting = GetListAfterSorting(list, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
-            SearchResultViewModel<DriverTripHistoryViewModel> result = null;
-            result = new SearchResultViewModel<DriverTripHistoryViewModel>()
+
+            DriverHistoryViewModel driverHis = new DriverHistoryViewModel();
+            driverHis.History = new List<History>();
+            List<decimal> feedbacksList = new List<decimal>();
+            for (int i = 0; i < listItemsAfterPaging.Count; i++)
             {
-                Items = listItemsAfterPaging,
+                if (i == 0)
+                {
+                    driverHis.Driver = new DriverViewModel()
+                    {
+                        Id = listItemsAfterPaging[i].Id,
+                        PartnerId = listItemsAfterPaging[i].PartnerId,
+                        VehicleId = listItemsAfterPaging[i].VehicleId != null ? listItemsAfterPaging[i].VehicleId.Value : null,
+                        VehicleName = listItemsAfterPaging[i].VehicleName,
+                        VehicleTypeLabel = listItemsAfterPaging[i].VehicleTypeLabel,
+                        LicensePlates = listItemsAfterPaging[i].LicensePlates,
+                        ServiceTypeName = listItemsAfterPaging[i].ServiceTypeName,
+                        FirstName = listItemsAfterPaging[i].FirstName,
+                        LastName = listItemsAfterPaging[i].LastName,
+                        PhotoUrl = listItemsAfterPaging[i].PhotoUrl,
+                        Gender = listItemsAfterPaging[i].Gender,
+                        Phone = listItemsAfterPaging[i].Phone,
+                        DateOfBirth = listItemsAfterPaging[i].DateOfBirth != null ? listItemsAfterPaging[i].DateOfBirth.Value : null,
+                        CreatedDate = listItemsAfterPaging[i].CreatedDate,
+                        ModifiedDate = listItemsAfterPaging[i].ModifiedDate,
+                        Status = listItemsAfterPaging[i].Status
+                    };
+                }
+
+                var history = new History()
+                {
+                    CustomerTripId = listItemsAfterPaging[i].CustomerTripId,
+                    VehicleId = listItemsAfterPaging[i].VehicleId.Value,
+                    VehicleName = listItemsAfterPaging[i].VehicleName,
+                    LicensePlates = listItemsAfterPaging[i].LicensePlates,
+                    ServiceTypeId = listItemsAfterPaging[i].ServiceTypeId,
+                    ServiceTypeName = listItemsAfterPaging[i].ServiceTypeName,
+                    RouteId = listItemsAfterPaging[i].RouteId != null ? listItemsAfterPaging[i].RouteId.Value : null,
+                    RouteName = listItemsAfterPaging[i].RouteName,
+                    FeedbackDriverRating = (int)listItemsAfterPaging[i].FeedbackRating,
+                    Distance = listItemsAfterPaging[i].Distance != null ? listItemsAfterPaging[i].Distance.Value : null,
+                    CreatedDate = listItemsAfterPaging[i].CreatedDateDriverHis,
+                    ModifiedDate = listItemsAfterPaging[i].ModifiedDateDriverHis,
+                };
+
+                driverHis.History.Add(history);
+                if (history.FeedbackDriverRating != 0)
+                {
+                    feedbacksList.Add(history.FeedbackDriverRating);
+                }
+            }
+
+            if (driverHis.Driver != null)
+            {
+                driverHis.Driver.FeedbackRating = feedbacksList.Average();
+            }
+
+            List<DriverHistoryViewModel> driverHisList = new List<DriverHistoryViewModel>();
+            driverHisList.Add(driverHis);
+
+            SearchResultViewModel<DriverHistoryViewModel> result = null;
+            result = new SearchResultViewModel<DriverHistoryViewModel>()
+            {
+                Items = driverHisList,
                 PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
                 TotalItems = totalRecord
             };
