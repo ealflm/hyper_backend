@@ -168,7 +168,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     var request = new HttpRequestMessage
                     {
                         Method = HttpMethod.Get,
-                        RequestUri = new Uri("https://api.mapbox.com/directions/v5/mapbox/driving/" + x.Longitude + "," + x.Latitude + ";" + station.Longitude + "," + station.Latitude + "?annotations=maxspeed&overview=full&geometries=geojson&access_token=pk.eyJ1Ijoic2FuZ2RlcHRyYWkiLCJhIjoiY2w0bXFvaDRwMW9uZjNpbWtpMjZ3eGxnbCJ9.2gQ3NUL1eBYTwP1Q_qS34A")
+                        RequestUri = new Uri("https://api.mapbox.com/directions/v5/mapbox/driving/" + x.Longitude + "," + x.Latitude + ";" + station.Longitude + "," + station.Latitude + "?annotations=maxspeed&overview=simplified&geometries=geojson&access_token=pk.eyJ1Ijoic2FuZ2RlcHRyYWkiLCJhIjoiY2w0bXFvaDRwMW9uZjNpbWtpMjZ3eGxnbCJ9.2gQ3NUL1eBYTwP1Q_qS34A")
                     };
                     using (var response = await client.SendAsync(request))
                     {
@@ -183,7 +183,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                                 LinkStationId = Guid.NewGuid(),
                                 FirstStationId = station.StationId,
                                 SecondStationId = x.StationId,
-                                Content = "Đi bộ khoảng cách " + distance + "m"
+                                Distance= (decimal)distance
                             };
                             await _unitOfWork.LinkStationRepository.Add(linkStation);
                         }

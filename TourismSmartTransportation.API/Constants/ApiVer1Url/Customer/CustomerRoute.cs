@@ -46,5 +46,8 @@ namespace ApiVer1Url
         // rent station
         public const string RentStation = BaseApiUrl + "/rentStation";
 
+        // bus trip
+        public const string BusTrip = BaseApiUrl + "/bus-trip";
+
     }
 }

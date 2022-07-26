@@ -5,8 +5,8 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.PriceBusServiceVie
     public class BasePriceOfBusServiceViewModel
     {
         public Guid Id { get; set; }
-        public int MaxDistance { get; set; }
-        public int MinDistance { get; set; }
+        public decimal MaxDistance { get; set; }
+        public decimal MinDistance { get; set; }
         public decimal Price { get; set; }
         public int Status { get; set; }
     }
