@@ -11,13 +11,17 @@ using Azure.Storage.Blobs;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
+using TourismSmartTransportation.Data.EntityChangeNotifier;
+using TourismSmartTransportation.Data.Context;
 
 namespace TourismSmartTransportation.Business.Implements.Partner
 {
     public class VehicleManagementService : BaseService, IVehicleManagementService
     {
+        private readonly IUnitOfWork uni;
         public VehicleManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
+            uni = unitOfWork;
         }
 
         public async Task<Response> Create(CreateVehicleModel model)
@@ -139,6 +143,12 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     x.CategoryId = priceEntity.CategoryId;
                     x.PublishYearId = priceEntity.PublishYearId;
                 }
+            }
+
+            using (var notifer = new EntityChangeNotifier<TourismSmartTransportation.Data.Models.Vehicle>(x => x.LicensePlates == "61A-12345"))
+            {
+                Console.WriteLine("Press any key to stop listening for changes...");
+                // Console.ReadKey(true);
             }
             return entity;
 
