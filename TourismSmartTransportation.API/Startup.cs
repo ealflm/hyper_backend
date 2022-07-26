@@ -28,6 +28,7 @@ using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Implements.Company;
 using TourismSmartTransportation.Business.Implements.Mobile.Customer;
 using TourismSmartTransportation.Business.Implements.Partner;
+using TourismSmartTransportation.Business.Implements.Shared;
 using TourismSmartTransportation.Business.Implements.Vehicle;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Company;
@@ -190,6 +191,13 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IRentService, RentService>();
             services.AddScoped<IBasePriceOfBusService, BasePriceOfBusServiceManagement>();
+
+            // SignalR
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
             //Azure AD
             services.AddScoped(_ =>
             {
@@ -283,6 +291,8 @@ namespace TourismSmartTransportation.API
                     endpoints.MapControllers().WithMetadata(new AllowAnonymousAttribute());
                 else
                     endpoints.MapControllers();
+
+                endpoints.MapHub<HyperHubService>("/notify");
             });
         }
     }
