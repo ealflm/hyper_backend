@@ -262,6 +262,25 @@ namespace TourismSmartTransportation.Business.Implements
                 };
 
                 await _unitOfWork.AdminRepository.Add(admin);
+
+                // Check existed wallet
+                var wallet = await _unitOfWork.WalletRepository
+                            .Query()
+                            .Where(x => x.CustomerId == null && x.PartnerId == null)
+                            .FirstOrDefaultAsync();
+                if (wallet == null)
+                {
+                    var newWallet = new Wallet()
+                    {
+                        WalletId = Guid.NewGuid(),
+                        CustomerId = null,
+                        PartnerId = null,
+                        AccountBalance = 0,
+                        Status = 1
+                    };
+                    await _unitOfWork.WalletRepository.Add(newWallet);
+                }
+
                 await _unitOfWork.SaveChangesAsync();
 
             }

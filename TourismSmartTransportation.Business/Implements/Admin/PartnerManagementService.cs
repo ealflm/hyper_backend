@@ -98,7 +98,18 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     await _unitOfWork.PartnerServiceTypeRepository.Add(partnerService);
                 }
             }
+
+            var wallet = new Wallet()
+            {
+                WalletId = Guid.NewGuid(),
+                PartnerId = partner.PartnerId,
+                AccountBalance = 0,
+                Status = 1
+            };
+            await _unitOfWork.WalletRepository.Add(wallet);
+
             await _unitOfWork.SaveChangesAsync();
+
             if (partner.Email != null)
             {
                 var email = new EmailViewModel()
@@ -113,6 +124,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             {
                 SendSMS(partner.Phone, "Ten tai khoan: " + username + "& Mat khau: " + password);
             }
+
             return new()
             {
                 StatusCode = 201,
