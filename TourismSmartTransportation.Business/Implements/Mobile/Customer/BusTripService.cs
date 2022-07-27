@@ -84,7 +84,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
             }
 
-            int LinkRouteCount = await _unitOfWork.LinkRouteRepository.Query().CountAsync()-1;
+            int LinkRouteCount = await _unitOfWork.LinkRouteRepository.Query().CountAsync();
             int routeCount = await _unitOfWork.RouteRepository.Query().CountAsync();
             Hashtable countAppearRouteList = new Hashtable();
             var startRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.StationId.Equals(start.StationId)).ToListAsync();
@@ -124,7 +124,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                 }
                                 finally
                                 {
-                                    if (check && curentRoute.Count < routeCount)
+                                    if (check && curentRoute.Count < routeCount && !routeId.Equals(startRoute.RouteId))
                                     {
                                         queue.Enqueue(new Node(routeId, curentRoute));
                                         countAppearRouteList[routeId] = ((int)countAppearRouteList[routeId])-1;
@@ -138,7 +138,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         {
                             resultPathList.Add(curentRoute);
                         }
-                        if (((int)countAppearRouteList[endRoute.RouteId]) == 0)
+                        if (countAppearRouteList[endRoute.RouteId]!=null && ((int)countAppearRouteList[endRoute.RouteId]) == 0)
                         {
                             break;
                         }

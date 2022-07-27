@@ -10,6 +10,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Mobile.Customer
     {
         public Guid PartnerId { get; set; }
         public Guid PriceOfRentingServiceId { get; set; }
+        public Guid ServiceTypeId { get; set; }
         public string PublishYearName { get; set; }
         public string CategoryName { get; set; }
         public decimal MinTime { get; set; }

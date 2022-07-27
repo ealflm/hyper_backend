@@ -58,6 +58,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             id = DecryptString(id);
             var vehicle = await _unitOfWork.VehicleRepository.GetById(new Guid(id));
             var price = await _unitOfWork.PriceOfRentingServiceRepository.GetById(vehicle.PriceRentingId.Value);
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Thuê xe")).FirstOrDefaultAsync();
             var result = new PriceRentingViewModel()
             {
                 PriceOfRentingServiceId = price.PriceOfRentingServiceId,
@@ -69,7 +70,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 Color = vehicle.Color,
                 LicensePlates = vehicle.LicensePlates,
                 PricePerDay= price.FixedPrice,
-                PartnerId= vehicle.PartnerId
+                PartnerId= vehicle.PartnerId,
+                ServiceTypeId= serviceType.ServiceTypeId
             };
             var dateNow = DateTime.Now;
             if(dateNow.DayOfWeek== DayOfWeek.Saturday || dateNow.DayOfWeek == DayOfWeek.Sunday)
