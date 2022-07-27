@@ -22,6 +22,7 @@ using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.ViewModel.Admin.PackageItem;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 using TourismSmartTransportation.Business.ViewModel.Admin.BasePriceOfBusService;
+using TourismSmartTransportation.Business.ViewModel.Shared;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -457,7 +458,8 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 WalletId = item.WalletId,
-                CustomerId = item.CustomerId != null ? item.CustomerId.Value : null,
+                CustomerId = item.CustomerId,
+                PartnerId = item.PartnerId,
                 AccountBalance = item.AccountBalance,
                 Status = item.Status
             };

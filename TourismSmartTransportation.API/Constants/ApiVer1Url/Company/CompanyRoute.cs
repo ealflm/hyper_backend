@@ -41,5 +41,8 @@ namespace ApiVer1Url
 
         // dashboard
         public const string Dashboard = BaseApiUrl + "/dashboard";
+
+        // wallet
+        public const string Wallet = BaseApiUrl + "/wallet";
     }
 }

@@ -87,5 +87,8 @@ namespace ApiVer1Url
 
         // Base price of bus service
         public const string BasePriceOfBusService = BaseApiUrl + "/base-price-bus-service";
+
+        // wallet
+        public const string Wallet = BaseApiUrl + "/wallet";
     }
 }
