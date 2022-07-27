@@ -19,5 +19,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
 
         // Task<Response> ChangePassowrd(Guid id, PasswordVerificationModel model);
         Task<Response> ChangePassowrd(PasswordVerificationModel model);
+        Task<PartnerHistoryViewModel> GetPartnerHistory(Guid partnerId);
     }
 }

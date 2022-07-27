@@ -35,6 +35,13 @@ namespace TourismSmartTransportation.API.Controllers.Partner
             return SendResponse(await _service.GetPartner(id));
         }
 
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.Profile + "/history/{partnerId}")]
+        public async Task<IActionResult> GetPartnerHistory(Guid partnerId)
+        {
+            return SendResponse(await _service.GetPartnerHistory(partnerId));
+        }
+
         [HttpPut]
         [Route(ApiVer1Url.Partner.Profile + "/{id}")]
         public async Task<IActionResult> UpdatePartnerById(Guid id, [FromForm] UpdatePartnerProfile model)
