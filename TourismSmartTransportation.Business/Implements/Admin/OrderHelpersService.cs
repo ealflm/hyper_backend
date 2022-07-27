@@ -30,14 +30,14 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<Response> CreateOrder(CreateOrderModel order)
         {
             var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(order.CustomerId)).FirstOrDefaultAsync();
-            if(wallet.AccountBalance< order.TotalPrice)
+            if (wallet.AccountBalance < order.TotalPrice)
             {
                 return new()
                 {
                     StatusCode = 400,
                     Message = "Yêu cầu không hợp lệ!"
                 };
-            }  
+            }
             var newOrder = new Order()
             {
                 OrderId = Guid.NewGuid(),
@@ -46,7 +46,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 DiscountId = order.DiscountId != null ? order.DiscountId.Value : null,
                 CreatedDate = DateTime.Now,
                 TotalPrice = order.TotalPrice,
-                PartnerId= order.PartnerId,
+                PartnerId = order.PartnerId,
                 Status = 1,
             };
             string content = "";
@@ -141,9 +141,51 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
             wallet.AccountBalance -= transaction.Amount;
             await _unitOfWork.TransactionRepository.Add(transaction);
-             _unitOfWork.WalletRepository.Update(wallet);
+            _unitOfWork.WalletRepository.Update(wallet);
             await _unitOfWork.OrderRepository.Add(newOrder);
+
+            // Add amout to partner wallet
+            var partnerWallet = await _unitOfWork.WalletRepository
+                                .Query()
+                                .Where(x => x.PartnerId == newOrder.PartnerId)
+                                .FirstOrDefaultAsync();
+
+            var partnerTransaction = new Transaction()
+            {
+                TransactionId = Guid.NewGuid(),
+                Content = $"Partner recieves 90% amount from total price of order",
+                OrderId = newOrder.OrderId,
+                CreatedDate = DateTime.Now,
+                Amount = newOrder.TotalPrice * 0.9M,
+                Status = 1,
+                WalletId = partnerWallet.WalletId
+            };
+            partnerWallet.AccountBalance += partnerTransaction.Amount;
+            await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+            _unitOfWork.WalletRepository.Update(partnerWallet);
+
+            // Add amout to admin wallet
+            var adminWallet = await _unitOfWork.WalletRepository
+                                .Query()
+                                .Where(x => x.PartnerId == null || x.CustomerId == null)
+                                .FirstOrDefaultAsync();
+
+            var adminTransaction = new Transaction()
+            {
+                TransactionId = Guid.NewGuid(),
+                Content = $"Hyper system recieves 10% amount from total price of order",
+                OrderId = newOrder.OrderId,
+                CreatedDate = DateTime.Now,
+                Amount = newOrder.TotalPrice * 0.1M,
+                Status = 1,
+                WalletId = adminWallet.WalletId
+            };
+            adminWallet.AccountBalance += adminTransaction.Amount;
+            await _unitOfWork.TransactionRepository.Add(adminTransaction);
+            _unitOfWork.WalletRepository.Update(adminWallet);
+
             await _unitOfWork.SaveChangesAsync();
+
             return new()
             {
                 StatusCode = 201,
@@ -151,29 +193,29 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-       /* public async Task<Response> MakeOrderTest(MakeOrderTestModel model)
-        {
-            var newOrder = new CreateOrderModel()
-            {
-                CustomerId = model.CustomerId,
-                ServiceTypeId = model.ServiceTypeId != null ? model.ServiceTypeId.Value : null,
-                DiscountId = model.DiscountId != null ? model.DiscountId.Value : null,
-                TotalPrice = model.TotalPrice
-            };
+        /* public async Task<Response> MakeOrderTest(MakeOrderTestModel model)
+         {
+             var newOrder = new CreateOrderModel()
+             {
+                 CustomerId = model.CustomerId,
+                 ServiceTypeId = model.ServiceTypeId != null ? model.ServiceTypeId.Value : null,
+                 DiscountId = model.DiscountId != null ? model.DiscountId.Value : null,
+                 TotalPrice = model.TotalPrice
+             };
 
-            var newOrderDetailInfo = new OrderDetailsInfo()
-            {
-                PackageId = model.PriceOfBusServiceId != null ? model.PackageId.Value : null,
-                PriceOfBusServiceId = model.PriceOfBusServiceId != null ? model.PriceOfBusServiceId.Value : null,
-                PriceOfBookingServiceId = model.PriceOfBookingServiceId != null ? model.PriceOfBookingServiceId.Value : null,
-                PriceOfRentingServiceId = model.PriceOfRentingServiceId != null ? model.PriceOfRentingServiceId.Value : null,
-                Price = model.Price,
-                Quantity = model.Quantity,
-                Content = model.Content,
+             var newOrderDetailInfo = new OrderDetailsInfo()
+             {
+                 PackageId = model.PriceOfBusServiceId != null ? model.PackageId.Value : null,
+                 PriceOfBusServiceId = model.PriceOfBusServiceId != null ? model.PriceOfBusServiceId.Value : null,
+                 PriceOfBookingServiceId = model.PriceOfBookingServiceId != null ? model.PriceOfBookingServiceId.Value : null,
+                 PriceOfRentingServiceId = model.PriceOfRentingServiceId != null ? model.PriceOfRentingServiceId.Value : null,
+                 Price = model.Price,
+                 Quantity = model.Quantity,
+                 Content = model.Content,
 
-            };
+             };
 
-            return await CreateOrder(newOrder, newOrderDetailInfo);
-        }*/
+             return await CreateOrder(newOrder, newOrderDetailInfo);
+         }*/
     }
 }
