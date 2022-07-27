@@ -40,7 +40,7 @@ namespace TourismSmartTransportation.Business.Implements.Vehicle
             };
             await _vehicles.InsertOneAsync(vehicleView);
             UpdateVehicleModel model = new UpdateVehicleModel() { IsRunning = 1 };
-            await _vehicleManagementService.Update(vehicleView.VehicleId, model); // Temp basic solution to update. 
+            await _vehicleManagementService.Update(Guid.Parse(vehicleView.VehicleId), model); // Temp basic solution to update. 
             return new()
             {
                 StatusCode = 200,
@@ -121,7 +121,7 @@ namespace TourismSmartTransportation.Business.Implements.Vehicle
         /// </summary>
         /// <param name="vehicleId"></param>
         /// <returns></returns>
-        public async Task<VehicleCollection> GetByVehicleId(Guid vehicleId)
+        public async Task<VehicleCollection> GetByVehicleId(string vehicleId)
         {
             var vehicle = await _vehicles.Find(vehicle => vehicle.VehicleId.Equals(vehicleId)).ToListAsync();
             if (vehicle.Count == 0)

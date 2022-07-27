@@ -8,7 +8,7 @@ namespace TourismSmartTransportation.Data.MongoCollections.Vehicle
     public class AddVehicleCollectionModel
     {
 
-        public Guid VehicleId { get; set; }
+        public string VehicleId { get; set; }
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
     }

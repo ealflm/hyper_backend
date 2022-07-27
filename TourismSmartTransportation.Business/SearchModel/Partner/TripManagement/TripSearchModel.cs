@@ -8,6 +8,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.Route
     {
         public string TripName { get; set; }
         public Guid? PartnerId { get; set; }
+        public Guid? VehicleId { get; set; }
         public DateTime? TimeStart { get; set; }
         public DateTime? TimeEnd { get; set; }
         public int? Status { get; set; }
