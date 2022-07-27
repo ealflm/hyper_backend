@@ -10,7 +10,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Shared
     {
         public Task<List<VehicleCollection>> GetAll();
         public Task<VehicleCollection> GetById(string id);
-        public Task<VehicleCollection> GetByVehicleId(Guid vehicleId);
+        public Task<VehicleCollection> GetByVehicleId(string vehicleId);
         public Task<Response> Create(AddVehicleCollectionModel product);
         public Task<Response> Update(VehicleCollection product);
         public Task<Response> Delete(string id);

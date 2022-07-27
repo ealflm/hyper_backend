@@ -11,7 +11,7 @@ namespace TourismSmartTransportation.Data.MongoCollections.Vehicle
         [BsonRepresentation(BsonType.ObjectId)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string Id { get; set; }
-        public Guid VehicleId { get; set; }
+        public string VehicleId { get; set; }
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
         public Int32 CreatedDate { get; set; }

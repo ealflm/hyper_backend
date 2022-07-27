@@ -159,6 +159,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 var trips = await _unitOfWork.TripRepository
                                     .Query()
                                     .Where(x => x.RouteId == route.RouteId)
+                                    .Where(x => model.VehicleId == null || model.VehicleId.Value == x.VehicleId)
                                     .Where(x => model.Status == null || model.Status.Value == x.Status)
                                     .Where(x => model.TripName == null || x.TripName.Contains(model.TripName))
                                     .Join(_unitOfWork.RouteRepository.Query(),
