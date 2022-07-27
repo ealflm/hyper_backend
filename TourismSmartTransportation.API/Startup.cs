@@ -28,6 +28,7 @@ using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Implements.Company;
 using TourismSmartTransportation.Business.Implements.Mobile.Customer;
 using TourismSmartTransportation.Business.Implements.Partner;
+using TourismSmartTransportation.Business.Implements.Shared;
 using TourismSmartTransportation.Business.Implements.Vehicle;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Company;

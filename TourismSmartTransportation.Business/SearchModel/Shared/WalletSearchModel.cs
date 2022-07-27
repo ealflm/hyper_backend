@@ -1,6 +1,6 @@
 using System;
 
-namespace TourismSmartTransportation.Business.SearchModel.Mobile.Customer
+namespace TourismSmartTransportation.Business.SearchModel.Shared
 {
     public class WalletSearchModel
     {
