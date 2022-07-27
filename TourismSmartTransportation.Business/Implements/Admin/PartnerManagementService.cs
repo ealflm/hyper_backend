@@ -18,6 +18,7 @@ using System.Net.Http;
 using TourismSmartTransportation.Business.ViewModel.Admin.EmailManagement;
 using TourismSmartTransportation.Business.SearchModel.Shared;
 using Microsoft.AspNetCore.Http;
+using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.OrderDetail;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -396,6 +397,118 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 StatusCode = 201,
                 Message = "Đổi mật khẩu thành công!"
             };
+        }
+
+        public async Task<PartnerHistoryViewModel> GetPartnerHistory(Guid partnerId)
+        {
+            var wallet = await _unitOfWork.WalletRepository
+                        .Query()
+                        .Where(x => x.PartnerId == partnerId)
+                        .Select(x => x.AsWalletViewModel())
+                        .SingleOrDefaultAsync();
+
+            var ordersList = await _unitOfWork.OrderRepository
+                                    .Query()
+                                    .Where(order => order.PartnerId == partnerId)
+                                    .Join(_unitOfWork.ServiceTypeRepository.Query(),
+                                        order => order.ServiceTypeId,
+                                        serviceType => serviceType.ServiceTypeId,
+                                        (order, serviceType) => new
+                                        {
+                                            OrderId = order.OrderId,
+                                            PartnerId = order.PartnerId,
+                                            ServiceTypeId = serviceType.ServiceTypeId,
+                                            ServiceTypeName = serviceType.Name,
+                                            CreatedDate = order.CreatedDate,
+                                            TotalPrice = order.TotalPrice,
+                                            Status = order.Status
+                                        }
+                                    )
+                                    .ToListAsync();
+
+            PartnerHistoryViewModel partnerHistoryViewModel = new PartnerHistoryViewModel();
+            partnerHistoryViewModel.Wallet = wallet;
+            partnerHistoryViewModel.Orders = new List<PartnerOrderViewModel>();
+
+            foreach (var order in ordersList)
+            {
+                var orderDetailsPackage = await _unitOfWork.OrderDetailOfPackageRepository
+                                            .Query()
+                                            .Where(x => x.OrderId == order.OrderId)
+                                            .Select(x => new OrderDetailsInfo()
+                                            {
+                                                PackageId = x.PackageId,
+                                                Price = x.Price,
+                                                Quantity = x.Quantity,
+                                                Content = x.Content
+                                            })
+                                            .ToListAsync();
+
+                var orderDetailsBus = await _unitOfWork.OrderDetailOfBusServiceRepository
+                                                .Query()
+                                                .Where(x => x.OrderId == order.OrderId)
+                                                .Select(x => new OrderDetailsInfo()
+                                                {
+                                                    PriceOfBusServiceId = x.PriceOfBusServiceId,
+                                                    Price = x.Price,
+                                                    Quantity = x.Quantity,
+                                                    Content = x.Content
+                                                })
+                                                .ToListAsync();
+
+                var orderDetailsBooking = await _unitOfWork.OrderDetailOfBookingServiceRepository
+                                            .Query()
+                                            .Where(x => x.OrderId == order.OrderId)
+                                            .Select(x => new OrderDetailsInfo()
+                                            {
+                                                PriceOfBookingServiceId = x.PriceOfBookingServiceId,
+                                                Price = x.Price,
+                                                Quantity = x.Quantity,
+                                                Content = x.Content
+                                            })
+                                            .ToListAsync();
+
+                var orderDetailsRenting = await _unitOfWork.OrderDetailOfRentingServiceRepository
+                                        .Query()
+                                        .Where(x => x.OrderId == order.OrderId)
+                                        .Select(x => new OrderDetailsInfo()
+                                        {
+                                            PriceOfRentingServiceId = x.PriceOfRentingService,
+                                            Price = x.Price,
+                                            Quantity = x.Quantity,
+                                            Content = x.Content
+                                        })
+                                        .ToListAsync();
+
+                var transactions = await _unitOfWork.TransactionRepository
+                                    .Query()
+                                    .Where(x => x.OrderId == order.OrderId)
+                                    .Select(x => x.AsTransactionViewModel())
+                                    .ToListAsync();
+
+                List<OrderDetailsInfo> listOrderDetails = new List<OrderDetailsInfo>();
+                listOrderDetails.AddRange(orderDetailsPackage);
+                listOrderDetails.AddRange(orderDetailsBus);
+                listOrderDetails.AddRange(orderDetailsBooking);
+                listOrderDetails.AddRange(orderDetailsRenting);
+
+                var partnerOrder = new PartnerOrderViewModel()
+                {
+                    OrderId = order.OrderId,
+                    PartnerId = order.PartnerId,
+                    ServiceTypeId = order.ServiceTypeId,
+                    ServiceTypeName = order.ServiceTypeName,
+                    CreatedDate = order.CreatedDate,
+                    TotalPrice = order.TotalPrice,
+                    Status = order.Status,
+                    OrderDetails = listOrderDetails,
+                    Transactions = transactions,
+                };
+
+                partnerHistoryViewModel.Orders.Add(partnerOrder);
+            }
+
+            return partnerHistoryViewModel;
         }
     }
 }
