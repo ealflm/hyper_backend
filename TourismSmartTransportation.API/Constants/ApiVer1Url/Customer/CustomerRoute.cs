@@ -49,5 +49,7 @@ namespace ApiVer1Url
         // bus trip
         public const string BusTrip = BaseApiUrl + "/bus-trip";
 
+        //purchase history
+        public const string PurchaseHistory = BaseApiUrl + "/purchase-history";
     }
 }

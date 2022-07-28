@@ -171,7 +171,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IPartnerManagementService, PartnerManagementService>();
             services.AddScoped<ICustomerManagementService, CustomerManagementService>();
             services.AddScoped<IRentStationManagementService, RentStationManagementService>();
-            services.AddScoped<IPurchaseHistoryService, PurchaseHistoryService>();
+            services.AddScoped<Business.Interfaces.Admin.IPurchaseHistoryService, Business.Implements.Admin.PurchaseHistoryService>();
             services.AddScoped<IServiceTypeManagementService, ServiceTypeManagementService>();
             services.AddScoped<ICustomerPackagesHistoryService, CustomerPackagesHistoryService>();
             services.AddScoped<IPackageService, PackageService>();
@@ -194,6 +194,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IRentService, RentService>();
             services.AddScoped<IBusTripService, BusTripService>();
             services.AddScoped<IBasePriceOfBusService, BasePriceOfBusServiceManagement>();
+            services.AddScoped<TourismSmartTransportation.Business.Interfaces.Mobile.Customer.IPurchaseHistoryService, TourismSmartTransportation.Business.Implements.Mobile.Customer.PurchaseHistoryService>();
             //Azure AD
             services.AddScoped(_ =>
             {
