@@ -121,6 +121,7 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Uid)
                     .IsRequired()
+                    .HasMaxLength(10)
                     .IsUnicode(false);
 
                 entity.HasOne(d => d.Customer)
@@ -164,6 +165,10 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.FirstName)
                     .IsRequired()
                     .HasMaxLength(50);
+
+                entity.Property(e => e.IdentityCard)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.LastName)
                     .IsRequired()
