@@ -117,7 +117,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     Subject = SUBJECT,
                     ToAddress = partner.Email,
-                    Body = "Tên tài khoản: " + username + "\nMật khẩu: " + password
+                    // Body = "Tên tài khoản: " + username + "\nMật khẩu: " + password
+                    Body = $@"Xin chào {partner.LastName} {partner.FirstName},
+Hyper rất vui khi được hợp tác với công ty bạn '{partner.CompanyName}' trong dự án 'Kết nối vận chuyển khách du lịch ở Phú Quốc'.
+Thông tin tài khoản đăng nhập vào hệ thống của bạn:
+Tài khoản: {username}
+Mặt khẩu: {password}
+                    "
                 };
                 await SendEmail(email);
             }
