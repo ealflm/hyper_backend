@@ -187,8 +187,8 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                OrderId = item.OrderId,
-                PriceOfRentingServiceId = item.PriceOfRentingService,
+                OrderId = item.OrderId.Value,
+                PriceOfRentingServiceId = item.PriceOfRentingService.Value,
                 Content = item.Content,
                 Price = item.Price,
                 Quantity = item.Quantity,

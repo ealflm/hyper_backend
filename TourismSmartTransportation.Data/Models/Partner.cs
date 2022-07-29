@@ -35,6 +35,7 @@ namespace TourismSmartTransportation.Data.Models
         public DateTime? ModifiedDate { get; set; }
         public int Status { get; set; }
         public string CompanyName { get; set; }
+        public string RegistrationToken { get; set; }
 
         public virtual ICollection<Driver> Drivers { get; set; }
         public virtual ICollection<Order> Orders { get; set; }

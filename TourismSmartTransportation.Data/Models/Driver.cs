@@ -27,6 +27,7 @@ namespace TourismSmartTransportation.Data.Models
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
         public int Status { get; set; }
+        public string RegistrationToken { get; set; }
 
         public virtual Partner Partner { get; set; }
         public virtual Vehicle Vehicle { get; set; }
