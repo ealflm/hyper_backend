@@ -30,6 +30,7 @@ namespace TourismSmartTransportation.Data.Models
         public DateTime ModifiedDate { get; set; }
         public int Status { get; set; }
         public string IdentityCard { get; set; }
+        public string RegistrationToken { get; set; }
 
         public virtual ICollection<Card> Cards { get; set; }
         public virtual ICollection<CustomerTrip> CustomerTrips { get; set; }

@@ -188,6 +188,8 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.PhotoUrl).IsUnicode(false);
 
+                entity.Property(e => e.RegistrationToken).IsUnicode(false);
+
                 entity.Property(e => e.Salt)
                     .IsRequired()
                     .HasMaxLength(128)
@@ -294,6 +296,8 @@ namespace TourismSmartTransportation.Data.Context
                     .IsUnicode(false);
 
                 entity.Property(e => e.PhotoUrl).IsUnicode(false);
+
+                entity.Property(e => e.RegistrationToken).IsUnicode(false);
 
                 entity.Property(e => e.Salt)
                     .IsRequired()
@@ -502,9 +506,12 @@ namespace TourismSmartTransportation.Data.Context
 
             modelBuilder.Entity<OrderDetailOfRentingService>(entity =>
             {
-                entity.HasKey(e => new { e.OrderId, e.PriceOfRentingService });
+                entity.HasKey(e => e.OrderDetailId)
+                    .HasName("PK_OrderDetailOfRentingService_1");
 
                 entity.ToTable("OrderDetailOfRentingService");
+
+                entity.Property(e => e.OrderDetailId).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Content).IsRequired();
 
@@ -513,11 +520,13 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Order)
                     .WithMany(p => p.OrderDetailOfRentingServices)
                     .HasForeignKey(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_OrderDetailOfRentingService_Order");
 
                 entity.HasOne(d => d.PriceOfRentingServiceNavigation)
                     .WithMany(p => p.OrderDetailOfRentingServices)
                     .HasForeignKey(d => d.PriceOfRentingService)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_OrderDetailOfRentingService_PriceOfRentingService");
             });
 
@@ -617,6 +626,8 @@ namespace TourismSmartTransportation.Data.Context
                     .IsUnicode(false);
 
                 entity.Property(e => e.PhotoUrl).IsUnicode(false);
+
+                entity.Property(e => e.RegistrationToken).IsUnicode(false);
 
                 entity.Property(e => e.Salt)
                     .IsRequired()
