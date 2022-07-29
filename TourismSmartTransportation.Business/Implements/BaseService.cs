@@ -15,7 +15,7 @@ namespace TourismSmartTransportation.Business.Implements
     public class BaseService : IBaseService
     {
         protected readonly IUnitOfWork _unitOfWork;
-        private readonly BlobServiceClient _blobServiceClient;
+        protected readonly BlobServiceClient _blobServiceClient;
         private static readonly string[] _container = { "admin", "partner", "customer", "driver", "upload-file" };
         public BaseService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient)
         {

@@ -10,7 +10,6 @@ using TourismSmartTransportation.Business.SearchModel.Mobile.Customer;
 namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 {
     [ApiController]
-    [Route(ApiVer1Url.Customer.BusTrip)]
     [Authorize]
     public class BusTripController : BaseController
     {
@@ -22,9 +21,24 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
         }
 
         [HttpPost]
+        [Route(ApiVer1Url.Customer.BusTrip)]
         public async Task<IActionResult> FindBusTrip([FromBody] BusTripSearchModel model)
         {
             return SendResponse(await _service.FindBusTrip(model));
+        }
+
+        [HttpPost]
+        [Route(ApiVer1Url.Customer.PayBusTripMobile)]
+        public async Task<IActionResult> PayWithMobileApp([FromForm] BusPaySearchModel model)
+        {
+            return SendResponse(await _service.PayWithMobileApp(model));
+        }
+
+        [HttpPost]
+        [Route(ApiVer1Url.Customer.PayBusTripIOT)]
+        public async Task<IActionResult> PayWithIOT([FromForm] BusPaySearchModel model)
+        {
+            return SendResponse(await _service.PayWithIOT(model));
         }
     }
 }

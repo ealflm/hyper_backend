@@ -52,6 +52,27 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
         }
 
+        public async Task<Response> CreateCustomerTrip(CustomerTripSearchModel model)
+        {
+            var customerTrip = new CustomerTrip()
+            {
+                CustomerTripId= Guid.NewGuid(),
+                CreatedDate= DateTime.Now,
+                ModifiedDate= DateTime.Now,
+                CustomerId= model.CustomerId,
+                VehicleId= model.VehicleId,
+                RentDeadline= model.RentDeadline,
+                Status=1
+            };
+            await _unitOfWork.CustomerTripRepository.Add(customerTrip);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Tạo chuyến đi thành công"
+            };
+        }
+
         public async Task<PriceRentingViewModel> GetPrice(string id)
         {
 
