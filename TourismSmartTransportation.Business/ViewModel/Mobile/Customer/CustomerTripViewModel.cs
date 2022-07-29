@@ -17,6 +17,6 @@ namespace TourismSmartTransportation.Business.ViewModel.Mobile.Customer
         // public decimal? LatitudeOfPickUpPoint { get; set; }
         // public decimal? LongitudeOfDestination { get; set; }
         // public decimal? LatitudeOfDestination { get; set; }
-        public string Status { get; set; }
+        public int Status { get; set; }
     }
 }

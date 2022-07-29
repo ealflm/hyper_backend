@@ -21,7 +21,7 @@ namespace TourismSmartTransportation.Data.Models
         public DateTime ModifiedDate { get; set; }
         public DateTime? RentDeadline { get; set; }
         public string Coordinates { get; set; }
-        public string Status { get; set; }
+        public int Status { get; set; }
         public Guid CustomerTripId { get; set; }
 
         public virtual Customer Customer { get; set; }

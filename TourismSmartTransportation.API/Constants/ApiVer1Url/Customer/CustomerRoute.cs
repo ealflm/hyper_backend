@@ -39,7 +39,7 @@ namespace ApiVer1Url
 
         //rent service
         public const string RentService = BaseApiUrl + "/rent-service";
-        
+
         //order
         public const string Order = BaseApiUrl + "/order";
 
@@ -51,5 +51,8 @@ namespace ApiVer1Url
 
         //purchase history
         public const string PurchaseHistory = BaseApiUrl + "/purchase-history";
+
+        // save registration token (firebase service)
+        public const string Firebase = BaseApiUrl + "/firebase";
     }
 }

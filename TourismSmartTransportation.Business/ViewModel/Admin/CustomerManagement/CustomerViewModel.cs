@@ -17,6 +17,8 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.CustomerManagement
         public string Address2 { get; set; }
         public string PhotoUrl { get; set; }
         public string CardUid { get; set; }
+        public string IdentityCard { get; set; }
+        public string RegistrationToken { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string Email { get; set; }
         public DateTime CreatedDate { get; set; }

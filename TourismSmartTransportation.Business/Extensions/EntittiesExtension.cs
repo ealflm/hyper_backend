@@ -109,6 +109,8 @@ namespace TourismSmartTransportation.Business.Extensions
                 PhotoUrl = item.PhotoUrl,
                 Email = item.Email,
                 CreatedDate = item.CreatedDate,
+                RegistrationToken = item.RegistrationToken,
+                IdentityCard = item.IdentityCard,
                 ModifiedDate = item.ModifiedDate,
                 Status = item.Status
             };
@@ -187,8 +189,9 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                OrderId = item.OrderId.Value,
-                PriceOfRentingServiceId = item.PriceOfRentingService.Value,
+                OrderDetailId = item.OrderDetailId,
+                OrderId = item.OrderId,
+                PriceOfRentingServiceId = item.PriceOfRentingService,
                 Content = item.Content,
                 Price = item.Price,
                 Quantity = item.Quantity,
