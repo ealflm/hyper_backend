@@ -11,7 +11,8 @@ using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 {
     [ApiController]
-    [Route(ApiVer1Url.Customer.RentService)]
+    [Authorize]
+    
     public class RentServiceController : BaseController
     {
         private readonly IRentService _service;
@@ -23,12 +24,17 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 
 
         [HttpPost]
-        [Authorize]
+        [Route(ApiVer1Url.Customer.RentService)]
         public async Task<IActionResult> GetPrice([FromForm]string id)
         {
             return SendResponse(await _service.GetPrice(id));
         }
-
+        [HttpPost]
+        [Route(ApiVer1Url.Customer.RentCustomerTrip)]
+        public async Task<IActionResult> CreateCustomertrip([FromBody] CustomerTripSearchModel model)
+        {
+            return SendResponse(await _service.CreateCustomerTrip(model));
+        }
 
 
     }

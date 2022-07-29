@@ -12,7 +12,10 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
+using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
+using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.Order;
+using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.OrderDetail;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Common;
@@ -284,6 +287,158 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
 
             return result;
+        }
+
+        public async Task<Response> PayWithIOT(BusPaySearchModel model)
+        {
+
+            var customerId = (await _unitOfWork.CardRepository.Query().Where(x=> x.Uid.Equals(model.Uid)).FirstOrDefaultAsync()).CustomerId;
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
+            var today = DateTime.Now;
+            var trip = await _unitOfWork.TripRepository.Query().Where(x => x.VehicleId.Equals(model.VehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek - 1) % 7 && today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0).FirstOrDefaultAsync();
+
+
+            var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
+            var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
+            var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
+            var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
+            priceBusing = await _unitOfWork.PriceOfBusServiceRepository.Query().Where(x => x.BasePriceId.Equals(basePrice.BasePriceOfBusServiceId)).OrderByDescending(x => x.MaxStation).FirstOrDefaultAsync();
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe theo chuyến")).FirstOrDefaultAsync();
+
+            OrderHelpersService orderheplper = new OrderHelpersService(_unitOfWork, _blobServiceClient);
+            OrderDetailsInfo orderDetails = new OrderDetailsInfo()
+            {
+                Content = "Đi xe theo chuyến",
+                Price = basePrice.Price,
+                Quantity = 1,
+                PriceOfBusServiceId = priceBusing.PriceOfBusServiceId
+            };
+            var orderDetailList = new List<OrderDetailsInfo>();
+            orderDetailList.Add(orderDetails);
+            CreateOrderModel createOrder = new CreateOrderModel()
+            {
+                CustomerId = customerId.Value,
+                PartnerId = vehicle.PartnerId,
+                ServiceTypeId = serviceType.ServiceTypeId,
+                TotalPrice = basePrice.Price,
+                OrderDetailsInfos = orderDetailList
+            };
+            var respone = await orderheplper.CreateOrder(createOrder);
+            if (respone.StatusCode != 201)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Thanh toán thất bại"
+                };
+            }
+            var customerTrip = new CustomerTrip()
+            {
+                CustomerTripId = Guid.NewGuid(),
+                CreatedDate = DateTime.Now,
+                ModifiedDate = DateTime.Now,
+                CustomerId = customerId.Value,
+                RouteId = route.RouteId,
+                VehicleId = model.VehicleId,
+                Distance = route.Distance,
+                Coordinates= model.Longitude+";"+ model.Latitude,
+                Status = 1
+            };
+            await _unitOfWork.CustomerTripRepository.Add(customerTrip);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Thanh toán thành công"
+            };
+        }
+
+        public async Task<Response> PayWithMobileApp(BusPaySearchModel model)
+        {
+            var vehicleId = new Guid(DecryptString(model.Uid));
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(vehicleId);
+            var today = DateTime.Now;
+            var trip = await _unitOfWork.TripRepository.Query().Where(x => x.VehicleId.Equals(vehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek-1) % 7 && today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0).FirstOrDefaultAsync();
+            
+
+            var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
+            var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
+            var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
+            var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
+            priceBusing = await _unitOfWork.PriceOfBusServiceRepository.Query().Where(x => x.BasePriceId.Equals(basePrice.BasePriceOfBusServiceId)).OrderByDescending(x => x.MaxStation).FirstOrDefaultAsync();
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe theo chuyến")).FirstOrDefaultAsync();
+
+            OrderHelpersService orderheplper = new OrderHelpersService(_unitOfWork, _blobServiceClient);
+            OrderDetailsInfo orderDetails = new OrderDetailsInfo()
+            {
+                Content = "Đi xe theo chuyến",
+                Price = basePrice.Price,
+                Quantity = 1,
+                PriceOfBusServiceId = priceBusing.PriceOfBusServiceId
+            };
+            var orderDetailList = new List<OrderDetailsInfo>();
+            orderDetailList.Add(orderDetails);
+            CreateOrderModel createOrder = new CreateOrderModel()
+            {
+                CustomerId= model.CustomerId,
+                PartnerId= vehicle.PartnerId,
+                ServiceTypeId= serviceType.ServiceTypeId,
+                TotalPrice= basePrice.Price,
+                OrderDetailsInfos= orderDetailList
+            };
+            var respone= await orderheplper.CreateOrder(createOrder);
+            if(respone.StatusCode!= 201)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Thanh toán thất bại"
+                };
+            }
+            var customerTrip = new CustomerTrip()
+            {
+                CustomerTripId= Guid.NewGuid(),
+                CreatedDate= DateTime.Now,
+                ModifiedDate= DateTime.Now,
+                CustomerId= model.CustomerId,
+                RouteId= route.RouteId,
+                VehicleId= vehicleId,
+                Distance= route.Distance,
+                Coordinates = model.Longitude + ";" + model.Latitude,
+                Status =1
+            };
+            await _unitOfWork.CustomerTripRepository.Add(customerTrip);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Thanh toán thành công"
+            };
+        }
+
+        public static string DecryptString(string cipherText)
+        {
+            string key = "b14pa58l8aee4133bhce2ea2315b1916";
+            byte[] iv = new byte[16];
+            byte[] buffer = Convert.FromBase64String(cipherText);
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.IV = iv;
+                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                using (MemoryStream memoryStream = new MemoryStream(buffer))
+                {
+                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
+                        {
+                            return streamReader.ReadToEnd();
+                        }
+                    }
+                }
+            }
         }
     }
 }

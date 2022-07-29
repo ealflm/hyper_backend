@@ -54,5 +54,14 @@ namespace ApiVer1Url
 
         // save registration token (firebase service)
         public const string Firebase = BaseApiUrl + "/firebase";
+
+        //rent customer trip
+        public const string RentCustomerTrip = BaseApiUrl + "/rent-service-customer-trip";
+
+        //pay bus trip mobile
+        public const string PayBusTripMobile = BaseApiUrl + "/bus-trip-pay-mobile";
+
+        //pay bus trip mobile
+        public const string PayBusTripIOT = BaseApiUrl + "/bus-trip-pay-iot";
     }
 }
