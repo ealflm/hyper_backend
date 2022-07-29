@@ -8,7 +8,7 @@ namespace TourismSmartTransportation.Data.Models
     public partial class OrderDetailOfRentingService
     {
         public Guid OrderDetailId { get; set; }
-        public Guid? OrderId { get; set; }
+        public Guid OrderId { get; set; }
         public Guid? PriceOfRentingService { get; set; }
         public decimal Price { get; set; }
         public string Content { get; set; }

@@ -1,4 +1,6 @@
 using Azure.Storage.Blobs;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -195,6 +197,8 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IBusTripService, BusTripService>();
             services.AddScoped<IBasePriceOfBusService, BasePriceOfBusServiceManagement>();
             services.AddScoped<TourismSmartTransportation.Business.Interfaces.Mobile.Customer.IPurchaseHistoryService, TourismSmartTransportation.Business.Implements.Mobile.Customer.PurchaseHistoryService>();
+            services.AddScoped<ICustomerTripService, CustomerTripService>();
+
             //Azure AD
             services.AddScoped(_ =>
             {
@@ -238,6 +242,17 @@ namespace TourismSmartTransportation.API
               Configuration
                   .GetSection(nameof(TwilioSettings))
                   .Get<TwilioSettings>());
+
+            // Firebase
+            services.AddSingleton(
+                FirebaseApp.Create(
+                    new AppOptions()
+                    {
+                        Credential = GoogleCredential.FromFile(Configuration.GetSection("Firebase").GetSection("private_key_json").Value),
+                    }
+                )
+            );
+            services.AddScoped<IFirebaseCloudMsgService, FirebaseCloudMsgService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -214,12 +214,6 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.RentDeadline).HasColumnType("datetime");
 
-                entity.Property(e => e.Status)
-                    .IsRequired()
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .HasComputedColumnSql("(case when [RentDeadline]>(getdate() AT TIME ZONE 'SE Asia Standard Time') then '1' else '2' end)", false);
-
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.CustomerTrips)
                     .HasForeignKey(d => d.CustomerId)
