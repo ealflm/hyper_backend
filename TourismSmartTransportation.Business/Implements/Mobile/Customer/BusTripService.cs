@@ -205,10 +205,16 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(path.StationId)).FirstOrDefaultAsync();
                             var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
                             int step= stationRouteOld.OrderNumber<stationRouteNew.OrderNumber?1:-1;
+                            int j = 0;
                             for(int i=stationRouteOld.OrderNumber; i!=stationRouteNew.OrderNumber+step; i +=step)
                             {
                                 var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
                                 route.StationList.Add(station.AsStationViewModel());
+                                j++;
+                            }
+                            if (j == 1)
+                            {
+                                check = false;
                             }
                             route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
                             resultPath.Add(route);
@@ -224,10 +230,16 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                 var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
                                 var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
                                 int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
+                                int j = 0;
                                 for (int i = stationRouteOld.OrderNumber+step; i != stationRouteNew.OrderNumber + step; i += step)
                                 {
                                     var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
                                     route.StationList.Add(station.AsStationViewModel());
+                                    j++;
+                                }
+                                if (j == 1)
+                                {
+                                    check = false;
                                 }
                                 route.StationList.Add(secondStation.AsStationViewModel());
                                 route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
@@ -248,10 +260,16 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                 var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(secondStation.StationId)).FirstOrDefaultAsync();
                                 var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
                                 int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
+                                int j = 0;
                                 for (int i = stationRouteOld.OrderNumber+step; i!= stationRouteNew.OrderNumber + step; i += step)
                                 {
                                     var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
                                     route.StationList.Add(station.AsStationViewModel());
+                                    j++;
+                                }
+                                if (j == 1)
+                                {
+                                    check = false;
                                 }
                                 route.StationList.Add(firstStation.AsStationViewModel());
                                 route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
