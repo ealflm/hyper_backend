@@ -63,5 +63,8 @@ namespace ApiVer1Url
 
         //pay bus trip mobile
         public const string PayBusTripIOT = BaseApiUrl + "/bus-trip-pay-iot";
+
+        // station
+        public const string Station = BaseApiUrl + "/Station";
     }
 }
