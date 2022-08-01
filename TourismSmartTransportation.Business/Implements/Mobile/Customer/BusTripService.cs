@@ -96,55 +96,95 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var resultPathList = new List<Node>();
             foreach(StationRoute startRoute in startRouteList)
             {
-                queue.Clear();
-                queue.Enqueue(new Node(startRoute.RouteId, null));
-                countAppearRouteList.Clear();
-                countAppearRouteList.Add(startRoute.RouteId, LinkRouteCount);
+                
                 foreach (StationRoute endRoute in endRouteList)
                 {
-                    while (queue.Count != 0)
+                    if (!endRoute.RouteId.Equals(startRoute.RouteId))
                     {
-                        var curentRoute = queue.Dequeue();
-                        if (!curentRoute.Value.Equals(endRoute.RouteId))
+                        queue.Clear();
+                        queue.Enqueue(new Node(startRoute.RouteId, null));
+                        countAppearRouteList.Clear();
+                        countAppearRouteList.Add(startRoute.RouteId, LinkRouteCount);
+                        Guid stationLink = Guid.Empty;
+                        bool checkLink = true;
+                        while (queue.Count != 0)
                         {
-                            var linkRouteList = await _unitOfWork.LinkRouteRepository.Query().Where(x => x.FirstRouteId.Equals(curentRoute.Value) || x.SecondRouteId.Equals(curentRoute.Value)).ToListAsync();
-                            foreach (LinkRoute route in linkRouteList)
+                            var curentRoute = queue.Dequeue();
+                            if (!curentRoute.Value.Equals(endRoute.RouteId) && checkLink)
                             {
-                                var routeId = route.FirstRouteId;
-                                if (routeId.Equals(curentRoute.Value))
+                                var linkRouteList = await _unitOfWork.LinkRouteRepository.Query().Where(x => x.FirstRouteId.Equals(curentRoute.Value) || x.SecondRouteId.Equals(curentRoute.Value)).ToListAsync();
+                                foreach (LinkRoute route in linkRouteList)
                                 {
-                                    routeId = route.SecondRouteId;
-                                }
-                                bool check = false;
-                                try
-                                {
-                                    countAppearRouteList.Add(routeId, LinkRouteCount);
-                                    check = true;
-                                }
-                                catch
-                                {
-                                    check = ((int)countAppearRouteList[routeId]) > 0;
-                                }
-                                finally
-                                {
-                                    if (check && curentRoute.Count < routeCount && !routeId.Equals(startRoute.RouteId))
+                                    var routeId = route.FirstRouteId;
+                                    if (routeId.Equals(curentRoute.Value))
                                     {
-                                        queue.Enqueue(new Node(routeId, curentRoute));
-                                        countAppearRouteList[routeId] = ((int)countAppearRouteList[routeId])-1;
+                                        routeId = route.SecondRouteId;
                                     }
+                                    bool check = false;
+                                    try
+                                    {
+                                        countAppearRouteList.Add(routeId, LinkRouteCount);
+                                        check = true;
+                                    }
+                                    catch
+                                    {
+                                        check = ((int)countAppearRouteList[routeId]) > 0;
+                                    }
+                                    finally
+                                    {
+
+                                        if (route.StationId != null)
+                                        {
+                                            if (route.StationId.Equals(stationLink))
+                                            {
+                                                checkLink = false;
+                                            }
+                                            else
+                                            {
+                                                stationLink = route.StationId.Value;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            var linkStation = await _unitOfWork.LinkStationRepository.GetById(route.LinkStationId.Value);
+                                            if (linkStation.FirstStationId.Equals(stationLink) || linkStation.SecondStationId.Equals(stationLink))
+                                            {
+                                                checkLink = false;
+                                            }
+                                            else
+                                            {
+                                                stationLink = linkStation.FirstStationId;
+                                                var stationRoute = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(routeId) && x.StationId.Equals(linkStation.FirstStationId)).FirstOrDefaultAsync();
+                                                if (stationRoute == null)
+                                                {
+                                                    stationLink = linkStation.SecondStationId;
+                                                }
+
+                                            }
+                                        }
+                                        if (check && checkLink && curentRoute.Count < routeCount && !routeId.Equals(startRoute.RouteId))
+                                        {
+                                            queue.Enqueue(new Node(routeId, curentRoute));
+                                            countAppearRouteList[routeId] = ((int)countAppearRouteList[routeId]) - 1;
+                                        }
+                                    }
+
+
                                 }
-
-
+                            }
+                            else
+                            {
+                                resultPathList.Add(curentRoute);
+                            }
+                            if (countAppearRouteList[endRoute.RouteId] != null && ((int)countAppearRouteList[endRoute.RouteId]) == 0)
+                            {
+                                break;
                             }
                         }
-                        else
-                        {
-                            resultPathList.Add(curentRoute);
-                        }
-                        if (countAppearRouteList[endRoute.RouteId]!=null && ((int)countAppearRouteList[endRoute.RouteId]) == 0)
-                        {
-                            break;
-                        }
+                    }
+                    else
+                    {
+                        resultPathList.Add(new Node(startRoute.RouteId, null));
                     }
                 }
             }
@@ -230,16 +270,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                 var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
                                 var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
                                 int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
-                                int j = 0;
+                                
                                 for (int i = stationRouteOld.OrderNumber+step; i != stationRouteNew.OrderNumber + step; i += step)
                                 {
                                     var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
                                     route.StationList.Add(station.AsStationViewModel());
-                                    j++;
-                                }
-                                if (j == 1)
-                                {
-                                    check = false;
+                                    
                                 }
                                 route.StationList.Add(secondStation.AsStationViewModel());
                                 route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
@@ -260,16 +296,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                 var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(secondStation.StationId)).FirstOrDefaultAsync();
                                 var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
                                 int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
-                                int j = 0;
+                               
                                 for (int i = stationRouteOld.OrderNumber+step; i!= stationRouteNew.OrderNumber + step; i += step)
                                 {
                                     var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                    route.StationList.Add(station.AsStationViewModel());
-                                    j++;
-                                }
-                                if (j == 1)
-                                {
-                                    check = false;
+                                    route.StationList.Add(station.AsStationViewModel());            
                                 }
                                 route.StationList.Add(firstStation.AsStationViewModel());
                                 route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
