@@ -97,20 +97,22 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             foreach(StationRoute startRoute in startRouteList)
             {
                 
+
                 foreach (StationRoute endRoute in endRouteList)
                 {
+                    queue.Clear();
+                    queue.Enqueue(new Node(startRoute.RouteId, null));
+                    countAppearRouteList.Clear();
+                    countAppearRouteList.Add(startRoute.RouteId, LinkRouteCount);
+                    Guid stationLink = Guid.Empty;
+                    bool checkLink = true;
                     if (!endRoute.RouteId.Equals(startRoute.RouteId))
                     {
-                        queue.Clear();
-                        queue.Enqueue(new Node(startRoute.RouteId, null));
-                        countAppearRouteList.Clear();
-                        countAppearRouteList.Add(startRoute.RouteId, LinkRouteCount);
-                        Guid stationLink = Guid.Empty;
-                        bool checkLink = true;
+                        
                         while (queue.Count != 0)
                         {
                             var curentRoute = queue.Dequeue();
-                            if (!curentRoute.Value.Equals(endRoute.RouteId) && checkLink)
+                            if (!curentRoute.Value.Equals(endRoute.RouteId))
                             {
                                 var linkRouteList = await _unitOfWork.LinkRouteRepository.Query().Where(x => x.FirstRouteId.Equals(curentRoute.Value) || x.SecondRouteId.Equals(curentRoute.Value)).ToListAsync();
                                 foreach (LinkRoute route in linkRouteList)
