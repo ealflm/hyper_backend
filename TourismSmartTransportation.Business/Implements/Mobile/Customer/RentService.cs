@@ -65,7 +65,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 Status=1
             };
             var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
-            vehicle.Status = 2;
+            vehicle.Status = 3;
             _unitOfWork.VehicleRepository.Update(vehicle);
             await _unitOfWork.CustomerTripRepository.Add(customerTrip);
             await _unitOfWork.SaveChangesAsync();
@@ -81,7 +81,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             id = DecryptString(id);
             var vehicle = await _unitOfWork.VehicleRepository.GetById(new Guid(id));
-            if (vehicle.Status != 2)
+            if (vehicle.Status != 3)
             {
                 var price = await _unitOfWork.PriceOfRentingServiceRepository.GetById(vehicle.PriceRentingId.Value);
                 var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Thuê xe")).FirstOrDefaultAsync();
