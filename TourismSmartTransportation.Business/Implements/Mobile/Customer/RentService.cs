@@ -64,6 +64,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 RentDeadline= model.RentDeadline,
                 Status=1
             };
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
+            vehicle.Status = 3;
+            _unitOfWork.VehicleRepository.Update(vehicle);
             await _unitOfWork.CustomerTripRepository.Add(customerTrip);
             await _unitOfWork.SaveChangesAsync();
             return new()
@@ -78,45 +81,49 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             id = DecryptString(id);
             var vehicle = await _unitOfWork.VehicleRepository.GetById(new Guid(id));
-            var price = await _unitOfWork.PriceOfRentingServiceRepository.GetById(vehicle.PriceRentingId.Value);
-            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Thuê xe")).FirstOrDefaultAsync();
-            var result = new PriceRentingViewModel()
+            if (vehicle.Status != 3)
             {
-                PriceOfRentingServiceId = price.PriceOfRentingServiceId,
-                MaxTime = price.MaxTime,
-                MinTime = price.MinTime,
-                PricePerHour = price.PricePerHour,
-                Status = price.Status,
-                VehicleName = vehicle.Name,
-                Color = vehicle.Color,
-                LicensePlates = vehicle.LicensePlates,
-                PricePerDay= price.FixedPrice,
-                PartnerId= vehicle.PartnerId,
-                ServiceTypeId= serviceType.ServiceTypeId
-            };
-            var dateNow = DateTime.Now;
-            if(dateNow.DayOfWeek== DayOfWeek.Saturday || dateNow.DayOfWeek == DayOfWeek.Sunday)
-            {
-                result.PricePerDay = price.WeekendPrice;
-            }
-            var client = new HttpClient();
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri("https://holidays.abstractapi.com/v1/?api_key=ba043ce3a5274588ae52c2b1c4a6aebc&country=VN&year="+dateNow.Year+"&month="+dateNow.Month+"&day="+ dateNow.Day),
-            };
-            using (var response = await client.SendAsync(request))
-            {
-                response.EnsureSuccessStatusCode();
-                var body = await response.Content.ReadAsStringAsync();
-                if (body.IndexOf("name") >= 0)
+                var price = await _unitOfWork.PriceOfRentingServiceRepository.GetById(vehicle.PriceRentingId.Value);
+                var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Thuê xe")).FirstOrDefaultAsync();
+                var result = new PriceRentingViewModel()
                 {
-                    result.PricePerDay = price.HolidayPrice;
+                    PriceOfRentingServiceId = price.PriceOfRentingServiceId,
+                    MaxTime = price.MaxTime,
+                    MinTime = price.MinTime,
+                    PricePerHour = price.PricePerHour,
+                    Status = price.Status,
+                    VehicleName = vehicle.Name,
+                    Color = vehicle.Color,
+                    LicensePlates = vehicle.LicensePlates,
+                    PricePerDay = price.FixedPrice,
+                    PartnerId = vehicle.PartnerId,
+                    ServiceTypeId = serviceType.ServiceTypeId
+                };
+                var dateNow = DateTime.Now;
+                if (dateNow.DayOfWeek == DayOfWeek.Saturday || dateNow.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    result.PricePerDay = price.WeekendPrice;
                 }
+                var client = new HttpClient();
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Get,
+                    RequestUri = new Uri("https://holidays.abstractapi.com/v1/?api_key=ba043ce3a5274588ae52c2b1c4a6aebc&country=VN&year=" + dateNow.Year + "&month=" + dateNow.Month + "&day=" + dateNow.Day),
+                };
+                using (var response = await client.SendAsync(request))
+                {
+                    response.EnsureSuccessStatusCode();
+                    var body = await response.Content.ReadAsStringAsync();
+                    if (body.IndexOf("name") >= 0)
+                    {
+                        result.PricePerDay = price.HolidayPrice;
+                    }
+                }
+                result.CategoryName = (await _unitOfWork.CategoryRepository.GetById(price.CategoryId)).Name;
+                result.PublishYearName = (await _unitOfWork.PublishYearRepository.GetById(price.PublishYearId)).Name;
+                return result;
             }
-            result.CategoryName = (await _unitOfWork.CategoryRepository.GetById(price.CategoryId)).Name;
-            result.PublishYearName = (await _unitOfWork.PublishYearRepository.GetById(price.PublishYearId)).Name;
-            return result;
+            return null;
         }
     }
 }
