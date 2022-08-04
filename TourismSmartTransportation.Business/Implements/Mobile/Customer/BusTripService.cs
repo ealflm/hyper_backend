@@ -345,7 +345,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             var customerId = (await _unitOfWork.CardRepository.Query().Where(x=> x.Uid.Equals(model.Uid)).FirstOrDefaultAsync()).CustomerId;
             var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
-            var today = DateTime.Now;
+            var today = DateTime.UtcNow.AddHours(7);
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId.Value) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
             var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe theo chuyến")).FirstOrDefaultAsync();
             if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes-oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes<60)
@@ -532,7 +532,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         {
             var vehicleId = new Guid(DecryptString(model.Uid));
             var vehicle = await _unitOfWork.VehicleRepository.GetById(vehicleId);
-            var today = DateTime.Now;
+            var today = DateTime.UtcNow.AddHours(7);
             var trip = await _unitOfWork.TripRepository.Query().Where(x => x.VehicleId.Equals(vehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek-1) % 7 && today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0).FirstOrDefaultAsync();
             
 
@@ -614,6 +614,29 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     }
                 }
             }
+        }
+
+        public async Task<BusPriceViewModel> GetPrice(string uid)
+        {
+            var vehicleId = new Guid(DecryptString(uid));
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(vehicleId);
+            var today = DateTime.UtcNow.AddHours(7);
+            var trip = await _unitOfWork.TripRepository.Query().Where(x => x.VehicleId.Equals(vehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek - 1) % 7 && today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0).FirstOrDefaultAsync();
+
+
+            var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
+            var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
+            var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
+            var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
+
+            var busPrice = new BusPriceViewModel()
+            {
+                Name= route.Name,
+                Distance= route.Distance,
+                TotalStation= route.TotalStation,
+                Price= basePrice.Price
+            };
+            return busPrice;
         }
     }
 }

@@ -41,5 +41,12 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
         {
             return SendResponse(await _service.PayWithIOT(model));
         }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Customer.BusTrip)]
+        public async Task<IActionResult> GetByAdmin([FromQuery] string vehicleId)
+        {
+            return SendResponse(await _service.GetPrice(vehicleId));
+        }
     }
 }
