@@ -202,8 +202,6 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.CustomerTripId).HasDefaultValueSql("(newid())");
 
-                entity.Property(e => e.Coordinates).HasMaxLength(1);
-
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
@@ -514,7 +512,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Order)
                     .WithMany(p => p.OrderDetailOfRentingServices)
                     .HasForeignKey(d => d.OrderId)
-                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_OrderDetailOfRentingService_Order");
 
                 entity.HasOne(d => d.PriceOfRentingServiceNavigation)
