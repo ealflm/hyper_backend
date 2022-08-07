@@ -153,7 +153,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var partnerTransaction = new Transaction()
             {
                 TransactionId = Guid.NewGuid(),
-                Content = $"Partner recieves 90% amount from total price of order",
+                Content = $"Đối tác nhận 90% hóa đơn",
                 OrderId = newOrder.OrderId,
                 CreatedDate = DateTime.Now,
                 Amount = newOrder.TotalPrice * 0.9M,
@@ -167,13 +167,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             // Add amout to admin wallet
             var adminWallet = await _unitOfWork.WalletRepository
                                 .Query()
-                                .Where(x => x.PartnerId == null || x.CustomerId == null)
+                                .Where(x => x.PartnerId == null && x.CustomerId == null)
                                 .FirstOrDefaultAsync();
 
             var adminTransaction = new Transaction()
             {
                 TransactionId = Guid.NewGuid(),
-                Content = $"Hyper system recieves 10% amount from total price of order",
+                Content = $"Hệ thống nhận 10% hóa đơn",
                 OrderId = newOrder.OrderId,
                 CreatedDate = DateTime.Now,
                 Amount = newOrder.TotalPrice * 0.1M,

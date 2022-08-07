@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Implements.Admin;
+using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.Order;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.OrderDetail;
@@ -29,8 +30,10 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 {
     public class BusTripService : BaseService, IBusTripService
     {
-        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private IOrderHelpersService orderheplper;
+        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IOrderHelpersService orderHelpers) : base(unitOfWork, blobServiceClient)
         {
+            orderheplper = orderHelpers;
         }
 
         public async Task<List<List<RouteViewModel>>> FindBusTrip(BusTripSearchModel model)
@@ -391,7 +394,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var partnerTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Partner send 90% amount from total price of order",
+                        Content = $"Đối tác gửi lại 90% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
                         Amount = refundPrice * 0.9M,
@@ -411,7 +414,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var adminTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Hyper system send 10% amount from total price of order",
+                        Content = $"Hệ Thống Gửi lại 10% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
                         Amount = refundPrice * 0.1M,
@@ -510,7 +513,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             priceBusing = await _unitOfWork.PriceOfBusServiceRepository.Query().Where(x => x.BasePriceId.Equals(basePrice.BasePriceOfBusServiceId)).OrderByDescending(x => x.MaxStation).FirstOrDefaultAsync();
             var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe theo chuyến")).FirstOrDefaultAsync();
 
-            OrderHelpersService orderheplper = new OrderHelpersService(_unitOfWork, _blobServiceClient);
+            
             OrderDetailsInfo orderDetails = new OrderDetailsInfo()
             {
                 Content = "Đi xe theo chuyến",
