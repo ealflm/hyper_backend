@@ -27,12 +27,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
         public async Task<DepositViewModel> GetOrderId(DepositSearchModel model)
         {
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Equals("Nap tiền")).FirstOrDefaultAsync();
             var order = new Order()
             {
                 OrderId = Guid.NewGuid(),
                 CreatedDate = DateTime.Now,
                 CustomerId = model.CustomerId,
                 TotalPrice = model.Amount,
+                ServiceTypeId= serviceType.ServiceTypeId,
                 Status = 1
             };
             await _unitOfWork.OrderRepository.Add(order);

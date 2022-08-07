@@ -39,6 +39,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     x.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId.Value)).Name;
                 }
             }
+            foreach(CustomerTripViewModel x in customerTrip)
+            {
+                var vehicle = await _unitOfWork.VehicleRepository.GetById(x.VehicleId);
+                var servicetype = await _unitOfWork.ServiceTypeRepository.GetById(vehicle.ServiceTypeId);
+                x.VehicleName = vehicle.Name;
+                x.LicensePlates = vehicle.LicensePlates;
+                x.ServiceTypeName = servicetype.Name;
+            }
             var purchaseHistory = new PurchaseHistoryViewModel()
             {
                 Orders = orders,

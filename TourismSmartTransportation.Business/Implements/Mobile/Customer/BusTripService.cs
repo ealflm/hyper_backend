@@ -403,6 +403,13 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 refundPrice = order.TotalPrice- refundPrice;
                 if (refundPrice > 0)
                 {
+
+                    order.TotalPrice = order.TotalPrice - refundPrice;
+                    _unitOfWork.OrderRepository.Update(order);
+
+                    oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                    _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
+
                     var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customerId)).FirstOrDefaultAsync();
                     var transaction = new Transaction()
                     {
@@ -430,7 +437,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Đối tác gửi lại 90% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = refundPrice * 0.9M,
+                        Amount = -(refundPrice * 0.9M),
                         Status = 1,
                         WalletId = partnerWallet.WalletId
                     };
@@ -450,7 +457,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Hệ Thống Gửi lại 10% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = refundPrice * 0.1M,
+                        Amount = -(refundPrice * 0.1M),
                         Status = 1,
                         WalletId = adminWallet.WalletId
                     };
@@ -535,62 +542,197 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var vehicleId = new Guid(DecryptString(model.Uid));
             var vehicle = await _unitOfWork.VehicleRepository.GetById(vehicleId);
             var today = DateTime.UtcNow.AddHours(7);
-            var trip = await _unitOfWork.TripRepository.Query().Where(x => x.VehicleId.Equals(vehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek-1) % 7 && today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0).FirstOrDefaultAsync();
-            
 
-            var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
-            var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
-            var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
-            var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
-            priceBusing = await _unitOfWork.PriceOfBusServiceRepository.Query().Where(x => x.BasePriceId.Equals(basePrice.BasePriceOfBusServiceId)).OrderByDescending(x => x.MaxStation).FirstOrDefaultAsync();
+
+            var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
             var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe theo chuyến")).FirstOrDefaultAsync();
+            if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < 60)
+            {
+                var location = oldCustomerTrip.Coordinates.Split(';');
+                decimal startLongitude = decimal.Parse(location[0]);
+                decimal startLatitude = decimal.Parse(location[1]);
+                var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(oldCustomerTrip.RouteId)).ToListAsync();
+                decimal minDisStart = decimal.MaxValue;
+                decimal minDisEnd = decimal.MaxValue;
+                StationRoute startStation = null;
+                StationRoute endStation = null;
+                foreach (StationRoute x in stationRouteList)
+                {
+                    var station = await _unitOfWork.StationRepository.GetById(x.StationId);
+                    decimal disStart = (decimal)Math.Sqrt((double)(Math.Abs(station.Longitude - startLongitude) * Math.Abs(station.Longitude - startLongitude) + Math.Abs(station.Latitude - startLatitude) * Math.Abs(station.Latitude - startLatitude)));
+                    decimal disEnd = (decimal)Math.Sqrt((double)(Math.Abs(station.Longitude - model.Longitude) * Math.Abs(station.Longitude - model.Longitude) + Math.Abs(station.Latitude - model.Latitude) * Math.Abs(station.Latitude - model.Latitude)));
+                    if (disStart < minDisStart)
+                    {
+                        minDisStart = disStart;
+                        startStation = x;
+                    }
+                    if (disEnd < minDisEnd)
+                    {
+                        minDisEnd = disEnd;
+                        endStation = x;
+                    }
+                }
+                int totalStation = Math.Abs(endStation.OrderNumber - startStation.OrderNumber) + 1;
+                decimal distance = Math.Abs(endStation.Distance - startStation.Distance);
+                var routePriceList = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(oldCustomerTrip.RouteId)).ToListAsync();
+                decimal refundPrice = 0;
+                foreach (RoutePriceBusing x in routePriceList)
+                {
+                    var price = await _unitOfWork.PriceOfBusServiceRepository.GetById(x.PriceBusingId);
+                    if (price.Mode.Equals("distance"))
+                    {
+                        if (price.MinDistance <= distance && price.MaxDistance >= distance)
+                        {
+                            refundPrice = price.Price;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (price.MinStation <= totalStation && price.MaxStation >= totalStation)
+                        {
+                            refundPrice = price.Price;
+                        }
+                    }
+                }
+                var order = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId) && x.ServiceTypeId.Equals(serviceType.ServiceTypeId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
+                refundPrice = order.TotalPrice - refundPrice;
+                if (refundPrice > 0)
+                {
 
-            
-            OrderDetailsInfo orderDetails = new OrderDetailsInfo()
-            {
-                Content = "Đi xe theo chuyến",
-                Price = basePrice.Price,
-                Quantity = 1,
-                PriceOfBusServiceId = priceBusing.PriceOfBusServiceId
-            };
-            var orderDetailList = new List<OrderDetailsInfo>();
-            orderDetailList.Add(orderDetails);
-            CreateOrderModel createOrder = new CreateOrderModel()
-            {
-                CustomerId= model.CustomerId,
-                PartnerId= vehicle.PartnerId,
-                ServiceTypeId= serviceType.ServiceTypeId,
-                TotalPrice= basePrice.Price,
-                OrderDetailsInfos= orderDetailList
-            };
-            var respone= await orderheplper.CreateOrder(createOrder);
-            if(respone.StatusCode!= 201)
-            {
+                    order.TotalPrice = order.TotalPrice - refundPrice;
+                    _unitOfWork.OrderRepository.Update(order);
+
+                    oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                    _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
+
+                    var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
+                    var transaction = new Transaction()
+                    {
+                        WalletId = wallet.WalletId,
+                        Amount = refundPrice,
+                        Content = "Hoàn trả tiền dư",
+                        CreatedDate = DateTime.Now,
+                        OrderId = order.OrderId,
+                        Status = 1,
+                        TransactionId = Guid.NewGuid()
+                    };
+                    wallet.AccountBalance += refundPrice;
+                    _unitOfWork.WalletRepository.Update(wallet);
+                    await _unitOfWork.TransactionRepository.Add(transaction);
+
+                    // Add amout to partner wallet
+                    var partnerWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == order.PartnerId)
+                                        .FirstOrDefaultAsync();
+
+                    var partnerTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Đối tác gửi lại 90% tiền thừa",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.Now,
+                        Amount = -(refundPrice * 0.9M),
+                        Status = 1,
+                        WalletId = partnerWallet.WalletId
+                    };
+                    partnerWallet.AccountBalance -= partnerTransaction.Amount;
+                    await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+                    _unitOfWork.WalletRepository.Update(partnerWallet);
+
+                    // Add amout to admin wallet
+                    var adminWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == null || x.CustomerId == null)
+                                        .FirstOrDefaultAsync();
+
+                    var adminTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Hệ Thống Gửi lại 10% tiền thừa",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.Now,
+                        Amount = -(refundPrice * 0.1M),
+                        Status = 1,
+                        WalletId = adminWallet.WalletId
+                    };
+                    adminWallet.AccountBalance -= adminTransaction.Amount;
+                    await _unitOfWork.TransactionRepository.Add(adminTransaction);
+                    _unitOfWork.WalletRepository.Update(adminWallet);
+
+                    oldCustomerTrip.Status = 2;
+                    _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
+                    await _unitOfWork.SaveChangesAsync();
+                }
                 return new()
                 {
-                    StatusCode = 400,
-                    Message = "Thanh toán thất bại"
+                    StatusCode = 204,
+                    Message = "Đã hoàn trả tiền dư"
                 };
             }
-            var customerTrip = new CustomerTrip()
+            else
             {
-                CustomerTripId= Guid.NewGuid(),
-                CreatedDate= DateTime.Now,
-                ModifiedDate= DateTime.Now,
-                CustomerId= model.CustomerId,
-                RouteId= route.RouteId,
-                VehicleId= vehicleId,
-                Distance= route.Distance,
-                Coordinates = model.Longitude + ";" + model.Latitude,
-                Status =1
-            };
-            await _unitOfWork.CustomerTripRepository.Add(customerTrip);
-            await _unitOfWork.SaveChangesAsync();
-            return new()
-            {
-                StatusCode = 201,
-                Message = "Thanh toán thành công"
-            };
+
+
+
+
+                var trip = await _unitOfWork.TripRepository.Query().Where(x => x.VehicleId.Equals(vehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek - 1) % 7 && today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0).FirstOrDefaultAsync();
+
+
+                var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
+                var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
+                var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
+                var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
+                priceBusing = await _unitOfWork.PriceOfBusServiceRepository.Query().Where(x => x.BasePriceId.Equals(basePrice.BasePriceOfBusServiceId)).OrderByDescending(x => x.MaxStation).FirstOrDefaultAsync();
+
+
+                OrderDetailsInfo orderDetails = new OrderDetailsInfo()
+                {
+                    Content = "Đi xe theo chuyến",
+                    Price = basePrice.Price,
+                    Quantity = 1,
+                    PriceOfBusServiceId = priceBusing.PriceOfBusServiceId
+                };
+                var orderDetailList = new List<OrderDetailsInfo>();
+                orderDetailList.Add(orderDetails);
+                CreateOrderModel createOrder = new CreateOrderModel()
+                {
+                    CustomerId = model.CustomerId,
+                    PartnerId = vehicle.PartnerId,
+                    ServiceTypeId = serviceType.ServiceTypeId,
+                    TotalPrice = basePrice.Price,
+                    OrderDetailsInfos = orderDetailList
+                };
+                var respone = await orderheplper.CreateOrder(createOrder);
+                if (respone.StatusCode != 201)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Thanh toán thất bại"
+                    };
+                }
+                var customerTrip = new CustomerTrip()
+                {
+                    CustomerTripId = Guid.NewGuid(),
+                    CreatedDate = DateTime.Now,
+                    ModifiedDate = DateTime.Now,
+                    CustomerId = model.CustomerId,
+                    RouteId = route.RouteId,
+                    VehicleId = vehicleId,
+                    Distance = route.Distance,
+                    Coordinates = model.Longitude + ";" + model.Latitude,
+                    Status = 1
+                };
+                await _unitOfWork.CustomerTripRepository.Add(customerTrip);
+                await _unitOfWork.SaveChangesAsync();
+                return new()
+                {
+                    StatusCode = 201,
+                    Message = "Thanh toán thành công"
+                };
+            }
         }
 
         public static string DecryptString(string cipherText)
