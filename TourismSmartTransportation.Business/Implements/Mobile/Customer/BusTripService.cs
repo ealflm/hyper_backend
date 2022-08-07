@@ -104,7 +104,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 foreach (StationRoute endRoute in endRouteList)
                 {
                     queue.Clear();
-                    queue.Enqueue(new Node(startRoute.RouteId, null));
+                    queue.Enqueue(new Node(startRoute.RouteId, null, Guid.Empty));
                     countAppearRouteList.Clear();
                     countAppearRouteList.Add(startRoute.RouteId, LinkRouteCount);
                     Guid stationLink = Guid.Empty;
@@ -140,7 +140,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                                         if (route.StationId != null)
                                         {
-                                            if (route.StationId.Equals(stationLink))
+                                            if (route.StationId.Equals(curentRoute.StationId))
                                             {
                                                 checkLink = false;
                                             }
@@ -152,7 +152,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                         else
                                         {
                                             var linkStation = await _unitOfWork.LinkStationRepository.GetById(route.LinkStationId.Value);
-                                            if (linkStation.FirstStationId.Equals(stationLink) || linkStation.SecondStationId.Equals(stationLink))
+                                            if (linkStation.FirstStationId.Equals(curentRoute.StationId) || linkStation.SecondStationId.Equals(curentRoute.StationId))
                                             {
                                                 checkLink = false;
                                             }
@@ -169,7 +169,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                         }
                                         if (check && checkLink && curentRoute.Count < routeCount && !routeId.Equals(startRoute.RouteId))
                                         {
-                                            queue.Enqueue(new Node(routeId, curentRoute));
+                                            queue.Enqueue(new Node(routeId, curentRoute, stationLink));
                                             countAppearRouteList[routeId] = ((int)countAppearRouteList[routeId]) - 1;
                                         }
                                     }
@@ -189,7 +189,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     }
                     else
                     {
-                        resultPathList.Add(new Node(startRoute.RouteId, null));
+                        resultPathList.Add(new Node(startRoute.RouteId, null, Guid.Empty));
                     }
                 }
             }
