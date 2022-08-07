@@ -482,7 +482,6 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 priceBusing = await _unitOfWork.PriceOfBusServiceRepository.Query().Where(x => x.BasePriceId.Equals(basePrice.BasePriceOfBusServiceId)).OrderByDescending(x => x.MaxStation).FirstOrDefaultAsync();
 
 
-                OrderHelpersService orderheplper = new OrderHelpersService(_unitOfWork, _blobServiceClient);
                 OrderDetailsInfo orderDetails = new OrderDetailsInfo()
                 {
                     Content = "Đi xe theo chuyến",
