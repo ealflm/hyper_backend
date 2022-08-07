@@ -15,16 +15,23 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
     public class PurchaseHistoryController : BaseController
     {
         private readonly IPurchaseHistoryService _service;
-
-        public PurchaseHistoryController(IPurchaseHistoryService service)
+        private readonly TourismSmartTransportation.Business.Interfaces.Admin.IPurchaseHistoryService _purchase;
+        public PurchaseHistoryController(IPurchaseHistoryService service, TourismSmartTransportation.Business.Interfaces.Admin.IPurchaseHistoryService purchase)
         {
             _service = service;
+            _purchase = purchase;
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPurchaseHistory(Guid id)
         {
             return SendResponse(await _service.GetPurchase(id));
+        }
+
+        [HttpGet("order-detail/{id}")]
+        public async Task<IActionResult> GetOrderDetail(Guid id)
+        {
+            return SendResponse(await _purchase.GetOrderDetail(id));
         }
     }
 }

@@ -135,7 +135,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Content = content,
                 OrderId = newOrder.OrderId,
                 CreatedDate = newOrder.CreatedDate,
-                Amount = newOrder.TotalPrice,
+                Amount = -newOrder.TotalPrice,
                 Status = 1,
                 WalletId = wallet.WalletId
             };

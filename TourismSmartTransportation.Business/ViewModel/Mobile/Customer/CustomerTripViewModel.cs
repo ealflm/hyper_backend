@@ -13,6 +13,9 @@ namespace TourismSmartTransportation.Business.ViewModel.Mobile.Customer
         public DateTime ModifiedDate { get; set; }
         public DateTime? RentDeadline { get; set; }
         public string Coordinates { get; set; }
+        public string ServiceTypeName { get; set; }
+        public string VehicleName { get; set; }
+        public string LicensePlates { get; set; }
         // public decimal? LongitudeOfPickUpPoint { get; set; }
         // public decimal? LatitudeOfPickUpPoint { get; set; }
         // public decimal? LongitudeOfDestination { get; set; }
