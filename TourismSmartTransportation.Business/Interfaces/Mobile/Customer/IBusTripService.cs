@@ -18,6 +18,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Mobile.Customer
         Task<List<List<RouteViewModel>>> FindBusTrip(BusTripSearchModel model);
         Task<Response> PayWithMobileApp(BusPaySearchModel model);
         Task<Response> PayWithIOT(BusPaySearchModel model);
-        Task<BusPriceViewModel> GetPrice(string uid);
+        Task<BusPriceViewModel> GetPrice(string uid, Guid customerId);
     }
 }

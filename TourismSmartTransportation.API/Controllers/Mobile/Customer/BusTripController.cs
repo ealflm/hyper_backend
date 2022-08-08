@@ -44,9 +44,9 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 
         [HttpGet]
         [Route(ApiVer1Url.Customer.BusTrip)]
-        public async Task<IActionResult> GetByAdmin([FromQuery] string vehicleId)
+        public async Task<IActionResult> GetByAdmin([FromQuery] string vehicleId, [FromQuery] Guid customerId)
         {
-            return SendResponse(await _service.GetPrice(vehicleId));
+            return SendResponse(await _service.GetPrice(vehicleId, customerId));
         }
     }
 }
