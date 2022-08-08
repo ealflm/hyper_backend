@@ -191,7 +191,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             if (model.resultCode == 0 || model.resultCode == 9000)
             {
                 transaction.Status = 2;
-                transaction.Content = "Nạp tiền vào ví";
+                transaction.Content = "Nạp tiền vào ví từ MoMo";
                 order.Status = 2;
                 _unitOfWork.TransactionRepository.UpdateWithMultipleKey(transaction);
                 _unitOfWork.OrderRepository.Update(order);
@@ -264,6 +264,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 if (response.StatusCode == System.Net.HttpStatusCode.Created)
                 {
                     transaction.Status = 2;
+                    transaction.Content = "Nạp tiền vào ví từ Paypal";
                     order.Status = 2;
                     _unitOfWork.TransactionRepository.UpdateWithMultipleKey(transaction);
                     _unitOfWork.OrderRepository.Update(order);
