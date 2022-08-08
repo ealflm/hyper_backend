@@ -760,7 +760,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
         }
 
-        public async Task<BusPriceViewModel> GetPrice(string uid)
+        public async Task<BusPriceViewModel> GetPrice(string uid, Guid customerId)
         {
             var vehicleId = new Guid(DecryptString(uid));
             var vehicle = await _unitOfWork.VehicleRepository.GetById(vehicleId);
@@ -769,6 +769,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
 
             var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
+            var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
+            if(oldCustomerTrip != null)
+            {
+                return null;
+            }
             var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
             var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
             var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
