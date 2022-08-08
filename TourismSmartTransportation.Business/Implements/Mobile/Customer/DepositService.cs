@@ -191,6 +191,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             if (model.resultCode == 0 || model.resultCode == 9000)
             {
                 transaction.Status = 2;
+                transaction.Content = "Nạp tiền vào ví";
                 order.Status = 2;
                 _unitOfWork.TransactionRepository.UpdateWithMultipleKey(transaction);
                 _unitOfWork.OrderRepository.Update(order);
