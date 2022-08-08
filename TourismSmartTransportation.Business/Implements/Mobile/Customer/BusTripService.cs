@@ -408,6 +408,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.OrderRepository.Update(order);
 
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                    oldCustomerTrip.Status = 2;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customerId)).FirstOrDefaultAsync();
@@ -604,6 +605,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.OrderRepository.Update(order);
 
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                    oldCustomerTrip.Status = 2;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
