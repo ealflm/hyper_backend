@@ -87,7 +87,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<SearchResultViewModel<ServiceTypeViewModel>> GetAll()
         {
-            var serviceTypeList = await _unitOfWork.ServiceTypeRepository.Query()
+            var serviceTypeList = await _unitOfWork.ServiceTypeRepository.Query().Where(x=>x.Status==1)
                  .Select(x => x.AsServiceTypeViewModel())
                  .ToListAsync();
             SearchResultViewModel<ServiceTypeViewModel> result = null;
