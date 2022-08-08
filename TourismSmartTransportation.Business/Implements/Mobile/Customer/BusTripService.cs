@@ -108,12 +108,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     countAppearRouteList.Clear();
                     countAppearRouteList.Add(startRoute.RouteId, LinkRouteCount);
                     Guid stationLink = Guid.Empty;
-                    bool checkLink = true;
                     if (!endRoute.RouteId.Equals(startRoute.RouteId))
                     {
                         
                         while (queue.Count != 0)
                         {
+                            bool checkLink = true;
                             var curentRoute = queue.Dequeue();
                             if (!curentRoute.Value.Equals(endRoute.RouteId))
                             {
