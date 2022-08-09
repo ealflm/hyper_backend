@@ -48,7 +48,15 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 CreatedDate = DateTime.Now,
                 Status = 1
             };
-            var uid = (await _unitOfWork.TransactionRepository.Query().OrderBy(x => x.Uid).LastOrDefaultAsync()).Uid + 1;
+            int uid = 1;
+            try
+            {
+                var uidTmp = (await _unitOfWork.TransactionRepository.Query().OrderBy(x => x.Uid).LastOrDefaultAsync()).Uid + 1;
+            }
+            catch
+            {
+                uid = 100000000;
+            }
             //await _unitOfWork.SaveChangesAsync();
             //var transactionModel = await _unitOfWork.TransactionRepository.GetById(transaction.TransactionId);
             var id = "";
