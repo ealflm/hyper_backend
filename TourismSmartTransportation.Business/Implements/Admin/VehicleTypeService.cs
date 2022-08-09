@@ -56,16 +56,19 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
             await _unitOfWork.VehicleTypeRepository.Add(entity);
 
-            var newRecord = new PriceOfBookingService()
+            if (entity.Seats <= 7)
             {
-                PriceOfBookingServiceId = Guid.NewGuid(),
-                VehicleTypeId = entity.VehicleTypeId,
-                FixedPrice = 0,
-                FixedDistance = 0,
-                PricePerKilometer = 0,
-                Status = 1
-            };
-            await _unitOfWork.PriceOfBookingServiceRepository.Add(newRecord);
+                var newRecord = new PriceOfBookingService()
+                {
+                    PriceOfBookingServiceId = Guid.NewGuid(),
+                    VehicleTypeId = entity.VehicleTypeId,
+                    FixedPrice = 0,
+                    FixedDistance = 0,
+                    PricePerKilometer = 0,
+                    Status = 1
+                };
+                await _unitOfWork.PriceOfBookingServiceRepository.Add(newRecord);
+            }
 
             await _unitOfWork.SaveChangesAsync();
             return new()
