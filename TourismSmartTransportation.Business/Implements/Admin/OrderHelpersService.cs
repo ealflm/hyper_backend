@@ -139,7 +139,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Status = 1,
                 WalletId = wallet.WalletId
             };
-            wallet.AccountBalance -= transaction.Amount;
+            wallet.AccountBalance -= newOrder.TotalPrice;
             await _unitOfWork.TransactionRepository.Add(transaction);
             _unitOfWork.WalletRepository.Update(wallet);
             await _unitOfWork.OrderRepository.Add(newOrder);
