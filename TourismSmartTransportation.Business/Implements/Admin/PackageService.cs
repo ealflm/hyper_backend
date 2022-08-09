@@ -49,6 +49,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Price = model.Price,
                 PhotoUrl = UploadFile(model.UploadFile, Container.Admin).Result,
                 Status = 1,
+                Duration= model.Duration,
+                PeopleQuanitty= model.PeopleQuanitty
             };
             await _unitOfWork.PackageRepository.Add(entity);
             foreach (CreatePackageItemModel x in model.PackageItems)

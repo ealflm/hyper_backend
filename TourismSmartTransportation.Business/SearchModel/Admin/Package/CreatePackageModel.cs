@@ -19,5 +19,9 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Package
         public List<CreatePackageItemModel> PackageItems { get; set; }
         [Required]
         public string PromotedTitle { get; set; }
+        [Required]
+        public int PeopleQuanitty { get; set; }
+        [Required]
+        public int Duration { get; set; }
     }
 }
