@@ -93,28 +93,28 @@ namespace TourismSmartTransportation.API
 
                     if (flag)
                     {
-                        if (vehicle.Status != 4)
+                        if (vehicle.Status != (int)VehicleStatus.Running)
                         {
                             UpdateVehicleModel updateVehicleModel = new UpdateVehicleModel()
                             {
                                 LicensePlates = vehicle.LicensePlates,
                                 Name = vehicle.Name,
                                 Color = vehicle.Color,
-                                Status = 4
+                                Status = (int)VehicleStatus.Running
                             };
                             await vehicleScopeService.Update(vehicle.Id, updateVehicleModel);
                         }
                     }
                     else
                     {
-                        if (vehicle.Status == 4)
+                        if (vehicle.Status == (int)VehicleStatus.Running)
                         {
                             UpdateVehicleModel updateVehicleModel = new UpdateVehicleModel()
                             {
                                 LicensePlates = vehicle.LicensePlates,
                                 Name = vehicle.Name,
                                 Color = vehicle.Color,
-                                Status = 1
+                                Status = (int)VehicleStatus.Ready
                             };
                             await vehicleScopeService.Update(vehicle.Id, updateVehicleModel);
                         }
@@ -166,10 +166,10 @@ namespace TourismSmartTransportation.API
                     }
                 }
 
-                if (DateTime.Now.CompareTo(customerTripsList[i].RentDeadline.Value.AddMinutes(10)) >= 0)
+                if (DateTime.Now.CompareTo(customerTripsList[i].RentDeadline.Value.AddMinutes(10)) >= 0) // out of limit time than 10 minutes
                 {
                     var customer = await customerScopeService.GetCustomer(customerTripsList[i].CustomerId);
-                    customerTripSearchModel.Status = 2;
+                    customerTripSearchModel.Status = (int)CustomerTripStatus.Overdue;
                     var result = await customerTripScopeService.UpdateStatusCustomerTrip(customerTripsList[i].CustomerTripId, customerTripSearchModel);
                     if (result.StatusCode == 201 && !string.IsNullOrEmpty(customer.RegistrationToken))
                     {
