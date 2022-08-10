@@ -181,7 +181,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             {
                                 resultPathList.Add(curentRoute);
                             }
-                            if (countAppearRouteList[endRoute.RouteId] != null && ((int)countAppearRouteList[endRoute.RouteId]) == 0)
+                            if (countAppearRouteList[endRoute.RouteId] != null && ((int)countAppearRouteList[endRoute.RouteId]) == -1)
                             {
                                 break;
                             }
@@ -249,21 +249,28 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         {
                             var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(path.StationId)).FirstOrDefaultAsync();
                             var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
-                            int step= stationRouteOld.OrderNumber<stationRouteNew.OrderNumber?1:-1;
-                            int j = 0;
-                            for(int i=stationRouteOld.OrderNumber; i!=stationRouteNew.OrderNumber+step; i +=step)
+                            if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
                             {
-                                var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                route.StationList.Add(station.AsStationViewModel());
-                                j++;
+                                int j = 0;
+                                for (int i = stationRouteOld.OrderNumber; i != stationRouteNew.OrderNumber -1; i--)
+                                {
+                                    var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
+                                    route.StationList.Add(station.AsStationViewModel());
+                                    j++;
+                                }
+                                if (j == 1)
+                                {
+                                    check = false;
+                                }
+                                route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
+                                resultPath.Add(route);
+                                currentStation = await _unitOfWork.StationRepository.GetById(path.StationId.Value);
                             }
-                            if (j == 1)
+                            else
                             {
                                 check = false;
+                                break;
                             }
-                            route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
-                            resultPath.Add(route);
-                            currentStation = await _unitOfWork.StationRepository.GetById(path.StationId.Value);
                         }
                         else
                         {
