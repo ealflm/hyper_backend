@@ -14,7 +14,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class OrderHelpersService : BaseService, IOrderHelpersService
     {
-        public readonly string Bus = "Đi xe theo chuyến";
+        public readonly string Bus = "Đi xe buýt";
         public readonly string Booking = "Đặt xe";
         public readonly string Renting = "Thuê xe";
 
