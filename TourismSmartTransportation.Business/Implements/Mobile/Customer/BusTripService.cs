@@ -357,7 +357,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
             var today = DateTime.UtcNow.AddHours(7);
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId.Value) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
-            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe theo chuyến")).FirstOrDefaultAsync();
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe buýt")).FirstOrDefaultAsync();
             if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes-oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes<60)
             {
                 var location = oldCustomerTrip.Coordinates.Split(';');
@@ -499,7 +499,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                 OrderDetailsInfo orderDetails = new OrderDetailsInfo()
                 {
-                    Content = "Đi xe theo chuyến",
+                    Content = "Đi xe buýt",
                     Price = basePrice.Price,
                     Quantity = 1,
                     PriceOfBusServiceId = priceBusing.PriceOfBusServiceId
@@ -553,7 +553,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
 
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
-            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe theo chuyến")).FirstOrDefaultAsync();
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe buýt")).FirstOrDefaultAsync();
             if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < 60)
             {
                 var location = oldCustomerTrip.Coordinates.Split(';');
@@ -698,7 +698,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                 OrderDetailsInfo orderDetails = new OrderDetailsInfo()
                 {
-                    Content = "Đi xe theo chuyến",
+                    Content = "Dịch vụ xe buýt",
                     Price = basePrice.Price,
                     Quantity = 1,
                     PriceOfBusServiceId = priceBusing.PriceOfBusServiceId
