@@ -322,6 +322,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             PackageName = currentPackages[0].Package.Name,
                             PackagePrice = currentPackages[0].Package.Price,
                             PackageExpire = timeEnd,
+                            PackageExpireTimeStamp = ConvertDateTimeToTimestamp(timeEnd),
                             PackagePhotoUrl = currentPackages[0].Package.PhotoUrl,
                             CurrentDistances = numberOfDistances,
                             CurrentCardSwipes = cardSwipes,
