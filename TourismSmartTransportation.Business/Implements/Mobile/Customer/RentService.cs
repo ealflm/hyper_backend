@@ -56,13 +56,13 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         {
             var customerTrip = new CustomerTrip()
             {
-                CustomerTripId= Guid.NewGuid(),
-                CreatedDate= DateTime.Now,
-                ModifiedDate= DateTime.Now,
-                CustomerId= model.CustomerId,
-                VehicleId= model.VehicleId,
-                RentDeadline= model.RentDeadline,
-                Status=1
+                CustomerTripId = Guid.NewGuid(),
+                CreatedDate = DateTime.Now,
+                ModifiedDate = DateTime.Now,
+                CustomerId = model.CustomerId,
+                VehicleId = model.VehicleId,
+                RentDeadline = model.RentDeadline,
+                Status = 1
             };
             var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
             vehicle.Status = 3;
@@ -84,7 +84,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             if (vehicle.Status != 3)
             {
                 var price = await _unitOfWork.PriceOfRentingServiceRepository.GetById(vehicle.PriceRentingId.Value);
-                var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Thuê xe")).FirstOrDefaultAsync();
+                var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME)).FirstOrDefaultAsync();
                 var result = new PriceRentingViewModel()
                 {
                     PriceOfRentingServiceId = price.PriceOfRentingServiceId,
