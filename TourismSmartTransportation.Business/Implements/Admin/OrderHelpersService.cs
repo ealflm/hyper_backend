@@ -14,8 +14,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class OrderHelpersService : BaseService, IOrderHelpersService
     {
-        public OrderHelpersService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private readonly IPackageService _packageService;
+
+        public OrderHelpersService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IPackageService packageService) : base(unitOfWork, blobServiceClient)
         {
+            _packageService = packageService;
         }
 
         /// <summary>
@@ -43,9 +46,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 CreatedDate = DateTime.Now,
                 TotalPrice = order.TotalPrice,
                 PartnerId = order.PartnerId,
-                Status = 1,
+                Status = (int)OrderStatus.WrongStatus,
             };
+
             string content = "";
+            bool isUsingService = true;
+
             foreach (OrderDetailsInfo x in order.OrderDetailsInfos)
             {
                 // Customer buy package
@@ -63,6 +69,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     };
                     await _unitOfWork.OrderDetailOfPackageRepository.Add(orderDetail);
                     content = ServiceTypeDefaultData.PURCHASE_PACKAGE_SERVICE_CONTENT;
+                    newOrder.Status = (int)OrderStatus.Done; // Cập nhật lại trạng thái order đổi với service 'mua gói dịch vụ' 
+                    isUsingService = false;
                 }
                 // Customer using service
                 else
@@ -90,6 +98,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         };
                         await _unitOfWork.OrderDetailOfBusServiceRepository.Add(orderDetail);
                         content = $"Sử dụng {ServiceTypeDefaultData.BUS_SERVICE_CONTENT}";
+                        newOrder.Status = (int)OrderStatus.Paid; // Cập nhật lại trạng thái order đổi với service 'Đi xe buýt' 
                     }
                     else if (serviceType.Name.Contains(ServiceTypeDefaultData.BOOK_SERVICE_NAME))
                     {
@@ -104,6 +113,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         };
                         await _unitOfWork.OrderDetailOfBookingServiceRepository.Add(orderDetail);
                         content = $"Sử dụng {ServiceTypeDefaultData.BOOK_SERVICE_CONTENT}";
+                        newOrder.Status = (int)OrderStatus.Unpaid; // Cập nhật lại trạng thái order đổi với service 'đặt xe' 
                     }
                     else if (serviceType.Name.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME))
                     {
@@ -118,13 +128,51 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         };
                         await _unitOfWork.OrderDetailOfRentingServiceRepository.Add(orderDetail);
                         content = $"Sử dụng {ServiceTypeDefaultData.RENT_SERVICE_CONTENT}";
+                        newOrder.Status = (int)OrderStatus.Paid; // Cập nhật lại trạng thái order đổi với service 'thuê xe' 
                     }
                     else
                     {
                         // more other service type 
                     }
+
+
                 }
             }
+
+
+            dynamic currentPackageIsUsed = null;
+            bool isUsingPackage = false;
+            decimal orderPrice = 0;
+
+            if (isUsingService) // kiểm tra có sử dụng package hay không
+            {
+                currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(newOrder.CustomerId);
+                if (currentPackageIsUsed != null && order.Distance != null)
+                {
+                    var distancesNow = currentPackageIsUsed.CurrentDistances + order.Distance;
+                    var cardSwipesNow = currentPackageIsUsed.CurrentCardSwipes + 1;
+
+                    // Sử dụng package cho trường hợp đi xe buýt
+                    if (newOrder.ServiceTypeId != null &&
+                        newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID) &&
+                        distancesNow <= currentPackageIsUsed.LimitDistances &&
+                        cardSwipesNow <= currentPackageIsUsed.LimitCardSwipes)
+                    {
+                        orderPrice = newOrder.TotalPrice;
+                        newOrder.TotalPrice = 0;
+                        isUsingPackage = true;
+                    }
+                    // Sử dụng package cho trường hợp đặt xe
+                    else if (newOrder.ServiceTypeId != null &&
+                                newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BOOK_SERVICE_ID))
+                    {
+                        // write code using package for booking service
+                    }
+                }
+            }
+
+
+            // Tạo transaction khi customer sử dụng dịch vụ
             var transaction = new Transaction()
             {
                 TransactionId = Guid.NewGuid(),
@@ -135,37 +183,54 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Status = 1,
                 WalletId = wallet.WalletId
             };
+
+            // Cập nhật lại ví của customer
             wallet.AccountBalance -= newOrder.TotalPrice;
             await _unitOfWork.TransactionRepository.Add(transaction);
             _unitOfWork.WalletRepository.Update(wallet);
             await _unitOfWork.OrderRepository.Add(newOrder);
 
-            // Add amout to partner wallet
-            var partnerWallet = await _unitOfWork.WalletRepository
-                                .Query()
-                                .Where(x => x.PartnerId == newOrder.PartnerId)
-                                .FirstOrDefaultAsync();
 
-            var partnerTransaction = new Transaction()
+
+            // Trường hợp sử dụng dịch vụ thì cập nhật ví cho partner
+            if (isUsingService)
             {
-                TransactionId = Guid.NewGuid(),
-                Content = $"Đối tác nhận 90% hóa đơn",
-                OrderId = newOrder.OrderId,
-                CreatedDate = DateTime.Now,
-                Amount = newOrder.TotalPrice * 0.9M,
-                Status = 1,
-                WalletId = partnerWallet.WalletId
-            };
-            partnerWallet.AccountBalance += partnerTransaction.Amount;
-            await _unitOfWork.TransactionRepository.Add(partnerTransaction);
-            _unitOfWork.WalletRepository.Update(partnerWallet);
+                // Lấy ví của partner
+                var partnerWallet = await _unitOfWork.WalletRepository
+                                                .Query()
+                                                .Where(x => x.PartnerId == newOrder.PartnerId)
+                                                .FirstOrDefaultAsync();
 
-            // Add amout to admin wallet
+                // Tạo transaction cho partner nhận tiền từ giao dịch sử dụng dịch vụ của customer
+                var partnerTransaction = new Transaction()
+                {
+                    TransactionId = Guid.NewGuid(),
+                    Content = $"Đối tác nhận 90% hóa đơn",
+                    OrderId = newOrder.OrderId,
+                    CreatedDate = DateTime.Now,
+                    Amount = newOrder.TotalPrice * 0.9M,
+                    Status = 1,
+                    WalletId = partnerWallet.WalletId
+                };
+
+                if (isUsingPackage)
+                {
+                    partnerTransaction.Amount = orderPrice * 0.9M;
+                }
+
+                // Cập nhật lại ví của partner
+                partnerWallet.AccountBalance += partnerTransaction.Amount;
+                await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+                _unitOfWork.WalletRepository.Update(partnerWallet);
+            }
+
+            // Lấy ví của admin
             var adminWallet = await _unitOfWork.WalletRepository
                                 .Query()
                                 .Where(x => x.PartnerId == null && x.CustomerId == null)
                                 .FirstOrDefaultAsync();
 
+            // Tạo transaction cho admin nhận tiền từ giao dịch sử dụng dịch vụ của customer
             var adminTransaction = new Transaction()
             {
                 TransactionId = Guid.NewGuid(),
@@ -176,7 +241,24 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Status = 1,
                 WalletId = adminWallet.WalletId
             };
+
+            // Trường hợp mua gói dịch vụ thì thêm toàn bộ tiền vào ví admin
+            if (!isUsingService)
+            {
+                adminTransaction.Content = "Hệ thống nhận tiền từ hóa đơn mua gói dịch vụ";
+                adminTransaction.Amount = newOrder.TotalPrice;
+            }
+
+            // Cập nhật lại ví của admin
             adminWallet.AccountBalance += adminTransaction.Amount;
+
+            // Cập nhật lại ví trong trường hợp khách hàng có sử dụng dịch vụ
+            if (isUsingPackage)
+            {
+                adminTransaction.Amount = -orderPrice * 0.9M;
+                adminWallet.AccountBalance += adminTransaction.Amount;
+                adminTransaction.Content = "Hệ thống chuyển tiền cho đối tác";
+            }
             await _unitOfWork.TransactionRepository.Add(adminTransaction);
             _unitOfWork.WalletRepository.Update(adminWallet);
 

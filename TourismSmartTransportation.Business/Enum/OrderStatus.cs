@@ -4,4 +4,5 @@ public enum OrderStatus
     Paid = 1, // Đã thanh toán
     Done = 2, // Hoàn thành
     Unpaid = 3, // Chưa thanh toán
+    WrongStatus = 10, // Trạng thái chưa được xử lý, lỗi logic code
 }

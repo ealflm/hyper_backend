@@ -198,6 +198,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IBasePriceOfBusService, BasePriceOfBusServiceManagement>();
             services.AddScoped<TourismSmartTransportation.Business.Interfaces.Mobile.Customer.IPurchaseHistoryService, TourismSmartTransportation.Business.Implements.Mobile.Customer.PurchaseHistoryService>();
             services.AddScoped<ICustomerTripService, CustomerTripService>();
+            services.AddScoped<IBuyPackageService, BuyPackageService>();
 
             //Azure AD
             services.AddScoped(_ =>

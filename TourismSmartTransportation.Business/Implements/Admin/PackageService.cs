@@ -49,8 +49,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Price = model.Price,
                 PhotoUrl = UploadFile(model.UploadFile, Container.Admin).Result,
                 Status = 1,
-                Duration= model.Duration,
-                PeopleQuanitty= model.PeopleQuanitty
+                Duration = model.Duration,
+                PeopleQuanitty = model.PeopleQuanitty
             };
             await _unitOfWork.PackageRepository.Add(entity);
             foreach (CreatePackageItemModel x in model.PackageItems)
@@ -247,6 +247,107 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
                 TotalItems = totalRecord
             };
+        }
+
+        public async Task<CurrentPackageIsUsedModel> GetCurrentPackageIsUsed(Guid customerId)
+        {
+            List<Order> ordersList = await _unitOfWork.OrderRepository
+                                    .Query()
+                                    .Where(order => order.CustomerId == customerId)
+                                    .Where(order => order.ServiceTypeId == Guid.Parse(ServiceTypeDefaultData.PURCHASE_PACKAGE_SERVICE_ID))
+                                    .ToListAsync();
+
+            CurrentPackageIsUsedModel result = null;
+
+            foreach (Order order in ordersList)
+            {
+                var orderDetail = await _unitOfWork.OrderDetailOfPackageRepository
+                                .Query()
+                                .Where(x => x.OrderId == order.OrderId)
+                                .FirstOrDefaultAsync();
+
+                if (orderDetail != null)
+                {
+                    var currentPackages = await _unitOfWork.PackageRepository
+                                    .Query()
+                                    .Where(x => x.PackageId == orderDetail.PackageId)
+                                    .Join(_unitOfWork.PackageItemRepository.Query(),
+                                        p => p.PackageId,
+                                        pi => pi.PackageId,
+                                        (p, pi) => new
+                                        {
+                                            Package = p.AsPackageViewModel(),
+                                            PackageItem = pi.AsPackageItemViewModel()
+                                        }
+                                    )
+                                    .ToListAsync();
+
+                    var timeEnd = order.CreatedDate.AddDays((double)currentPackages[0].Package.Duration);
+                    if (DateTime.Now.CompareTo(timeEnd) < 0) // Gói dịch vụ còn hạn sử dụng
+                    {
+                        var customerTrips = await _unitOfWork.CustomerTripRepository
+                                            .Query()
+                                            .Where(x => x.CustomerId == customerId)
+                                            .Where(x => x.CreatedDate.CompareTo(order.CreatedDate) >= 0 && x.CreatedDate.CompareTo(timeEnd) <= 0)
+                                            .Join(_unitOfWork.VehicleRepository.Query(),
+                                                customerTrip => customerTrip.VehicleId,
+                                                vehicle => vehicle.VehicleId,
+                                                (customerTrip, vehicle) => new { CustomerTrip = customerTrip, Vehicle = vehicle }
+                                            )
+                                            .Join(_unitOfWork.ServiceTypeRepository.Query(),
+                                                _ => _.Vehicle.ServiceTypeId,
+                                                serviceType => serviceType.ServiceTypeId,
+                                                (_, serviceType) => new { CustomerTrip = _.CustomerTrip, Vehicle = _.Vehicle, ServiceType = serviceType }
+                                            )
+                                            .ToListAsync();
+
+                        decimal cardSwipes = 0;
+                        decimal numberOfDistances = 0;
+                        decimal numberOfTrips = 0;
+                        foreach (var customerTripItem in customerTrips)
+                        {
+                            if (customerTripItem.ServiceType.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME) && customerTripItem.CustomerTrip.Distance != null)
+                            {
+                                cardSwipes += 1;
+                                numberOfDistances += customerTripItem.CustomerTrip.Distance.Value;
+                            }
+                            else if (customerTripItem.ServiceType.Name.Contains(ServiceTypeDefaultData.BOOK_SERVICE_NAME))
+                            {
+                                numberOfTrips += 1;
+                            }
+                        }
+                        result = new CurrentPackageIsUsedModel()
+                        {
+                            PackageId = currentPackages[0].Package.Id,
+                            PackageName = currentPackages[0].Package.Name,
+                            PackagePrice = currentPackages[0].Package.Price,
+                            PackageExpire = timeEnd,
+                            PackagePhotoUrl = currentPackages[0].Package.PhotoUrl,
+                            CurrentDistances = numberOfDistances,
+                            CurrentCardSwipes = cardSwipes,
+                            CurrentNumberOfTrips = numberOfTrips
+                        };
+
+                        for (int i = 0; i < currentPackages.Count; i++)
+                        {
+                            if (currentPackages[i].PackageItem.ServiceTypeId == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID))
+                            {
+                                result.LimitCardSwipes = currentPackages[i].PackageItem.Value;
+                                result.LimitDistances = currentPackages[i].PackageItem.Limit;
+                            }
+                            else if (currentPackages[i].PackageItem.ServiceTypeId == Guid.Parse(ServiceTypeDefaultData.BOOK_SERVICE_ID))
+                            {
+                                result.LimitNumberOfTrips = currentPackages[i].PackageItem.Limit;
+                                result.DiscountValueTrip = currentPackages[i].PackageItem.Value;
+                            }
+                        }
+
+                        return result;
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
