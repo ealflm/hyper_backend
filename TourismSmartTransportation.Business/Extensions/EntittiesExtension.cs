@@ -191,7 +191,7 @@ namespace TourismSmartTransportation.Business.Extensions
             {
                 OrderDetailId = item.OrderDetailId,
                 OrderId = item.OrderId,
-                PriceOfRentingServiceId = item.PriceOfRentingService,
+                PriceOfRentingServiceId = item.PriceOfRentingServiceId,
                 Content = item.Content,
                 Price = item.Price,
                 Quantity = item.Quantity,

@@ -10,6 +10,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.PurchaseHistory
     {
         public Guid Id { get; set; }
         public Guid CustomerId { get; set; }
+        public string CustomerName { get; set; }
         public Guid? ServiceTypeId { get; set; }
         public string ServiceTypeName { get; set; }
         public Guid? DiscountId { get; set; }

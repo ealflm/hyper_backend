@@ -120,10 +120,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         var orderDetail = new OrderDetailOfRentingService()
                         {
                             OrderId = newOrder.OrderId,
-                            PriceOfRentingService = x.PriceOfRentingServiceId.Value,
+                            PriceOfRentingServiceId = x.PriceOfRentingServiceId.Value,
                             Price = x.Price,
                             Content = x.Content,
                             Quantity = x.Quantity,
+                            LicensePlates= x.LicensePlates,
+                            ModePrice= x.ModePrice,
                             Status = 1
                         };
                         await _unitOfWork.OrderDetailOfRentingServiceRepository.Add(orderDetail);

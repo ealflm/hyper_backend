@@ -11,5 +11,8 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManageme
         public decimal Price { get; set; }
         public int Quantity { get; set; }
         public string Content { get; set; }
+        //dành cho thuê xe
+        public string LicensePlates { get; set; }
+        public int ModePrice { get; set; }
     }
 }

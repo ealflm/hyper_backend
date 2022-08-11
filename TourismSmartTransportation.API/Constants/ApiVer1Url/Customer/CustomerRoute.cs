@@ -65,6 +65,9 @@ namespace ApiVer1Url
         public const string PayBusTripIOT = BaseApiUrl + "/bus-trip-pay-iot";
 
         // station
-        public const string Station = BaseApiUrl + "/Station";
+        public const string Station = BaseApiUrl + "/station";
+
+        //return vehicle
+        public const string ReturnVehicle = BaseApiUrl + "/return-vehicle";
     }
 }

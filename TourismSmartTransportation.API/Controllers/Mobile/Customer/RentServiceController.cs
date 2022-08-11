@@ -35,7 +35,12 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
         {
             return SendResponse(await _service.CreateCustomerTrip(model));
         }
-
+        [HttpPost]
+        [Route(ApiVer1Url.Customer.ReturnVehicle)]
+        public async Task<IActionResult> ReturnVehicle([FromBody] ReturnVehicleSearchModel model)
+        {
+            return SendResponse(await _service.ReturnVehicle(model));
+        }
 
     }
 }

@@ -512,6 +512,11 @@ namespace TourismSmartTransportation.Data.Context
 
                 entity.Property(e => e.Content).IsRequired();
 
+                entity.Property(e => e.LicensePlates)
+                    .IsRequired()
+                    .HasMaxLength(225)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Price).HasColumnType("decimal(18, 7)");
 
                 entity.HasOne(d => d.Order)
@@ -519,9 +524,9 @@ namespace TourismSmartTransportation.Data.Context
                     .HasForeignKey(d => d.OrderId)
                     .HasConstraintName("FK_OrderDetailOfRentingService_Order");
 
-                entity.HasOne(d => d.PriceOfRentingServiceNavigation)
+                entity.HasOne(d => d.PriceOfRentingService)
                     .WithMany(p => p.OrderDetailOfRentingServices)
-                    .HasForeignKey(d => d.PriceOfRentingService)
+                    .HasForeignKey(d => d.PriceOfRentingServiceId)
                     .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_OrderDetailOfRentingService_PriceOfRentingService");
             });

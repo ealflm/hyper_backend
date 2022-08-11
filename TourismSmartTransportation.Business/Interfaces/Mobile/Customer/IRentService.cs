@@ -13,6 +13,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Mobile.Customer
     {
         Task<PriceRentingViewModel> GetPrice(string id);
         Task<Response> CreateCustomerTrip(CustomerTripSearchModel model);
+        Task<Response> ReturnVehicle(ReturnVehicleSearchModel model);
 
     }
 }

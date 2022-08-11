@@ -479,7 +479,7 @@ Mặt khẩu: {password}
                                         .Where(x => x.OrderId == order.OrderId)
                                         .Select(x => new OrderDetailsInfo()
                                         {
-                                            PriceOfRentingServiceId = x.PriceOfRentingService,
+                                            PriceOfRentingServiceId = x.PriceOfRentingServiceId,
                                             Price = x.Price,
                                             Quantity = x.Quantity,
                                             Content = x.Content

@@ -32,6 +32,13 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         }
 
         [HttpGet]
+        [Route(ApiVer1Url.Admin.Order)]
+        public async Task<IActionResult> GetAllOrder()
+        {
+            return SendResponse(await _service.GetOrder());
+        }
+
+        [HttpGet]
         [Route(ApiVer1Url.Admin.OrderDetail + "/{orderId}")]
         public async Task<IActionResult> GetOrderDetail(Guid orderId)
         {
