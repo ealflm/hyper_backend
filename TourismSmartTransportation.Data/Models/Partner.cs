@@ -11,9 +11,9 @@ namespace TourismSmartTransportation.Data.Models
         {
             Drivers = new HashSet<Driver>();
             Orders = new HashSet<Order>();
+            PartnerRoutes = new HashSet<PartnerRoute>();
             PartnerServiceTypes = new HashSet<PartnerServiceType>();
             RentStations = new HashSet<RentStation>();
-            Routes = new HashSet<Route>();
             Vehicles = new HashSet<Vehicle>();
             Wallets = new HashSet<Wallet>();
         }
@@ -39,9 +39,9 @@ namespace TourismSmartTransportation.Data.Models
 
         public virtual ICollection<Driver> Drivers { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
+        public virtual ICollection<PartnerRoute> PartnerRoutes { get; set; }
         public virtual ICollection<PartnerServiceType> PartnerServiceTypes { get; set; }
         public virtual ICollection<RentStation> RentStations { get; set; }
-        public virtual ICollection<Route> Routes { get; set; }
         public virtual ICollection<Vehicle> Vehicles { get; set; }
         public virtual ICollection<Wallet> Wallets { get; set; }
     }

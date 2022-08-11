@@ -9,9 +9,9 @@ namespace TourismSmartTransportation.Data.Models
     {
         public Route()
         {
-            CustomerTrips = new HashSet<CustomerTrip>();
             LinkRouteFirstRoutes = new HashSet<LinkRoute>();
             LinkRouteSecondRoutes = new HashSet<LinkRoute>();
+            PartnerRoutes = new HashSet<PartnerRoute>();
             RoutePriceBusings = new HashSet<RoutePriceBusing>();
             StationRoutes = new HashSet<StationRoute>();
             Trips = new HashSet<Trip>();
@@ -26,10 +26,9 @@ namespace TourismSmartTransportation.Data.Models
         public DateTime ModifiedDate { get; set; }
         public int Status { get; set; }
 
-        public virtual Partner Partner { get; set; }
-        public virtual ICollection<CustomerTrip> CustomerTrips { get; set; }
         public virtual ICollection<LinkRoute> LinkRouteFirstRoutes { get; set; }
         public virtual ICollection<LinkRoute> LinkRouteSecondRoutes { get; set; }
+        public virtual ICollection<PartnerRoute> PartnerRoutes { get; set; }
         public virtual ICollection<RoutePriceBusing> RoutePriceBusings { get; set; }
         public virtual ICollection<StationRoute> StationRoutes { get; set; }
         public virtual ICollection<Trip> Trips { get; set; }

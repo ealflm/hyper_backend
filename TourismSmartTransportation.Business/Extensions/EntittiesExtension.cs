@@ -474,7 +474,7 @@ namespace TourismSmartTransportation.Business.Extensions
             {
                 CustomerTripId = item.CustomerTripId,
                 CustomerId = item.CustomerId,
-                RouteId = item.RouteId != null ? item.RouteId.Value : null,
+                TripId = item.TripId != null ? item.TripId.Value : null,
                 VehicleId = item.VehicleId,
                 Distance = item.Distance != null ? item.Distance.Value : null,
                 CreatedDate = item.CreatedDate,
