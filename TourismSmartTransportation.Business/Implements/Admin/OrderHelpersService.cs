@@ -14,10 +14,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class OrderHelpersService : BaseService, IOrderHelpersService
     {
-        public readonly string Bus = "Đi xe buýt";
-        public readonly string Booking = "Đặt xe";
-        public readonly string Renting = "Thuê xe";
-
         public OrderHelpersService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
         {
         }
@@ -66,7 +62,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         Status = 1
                     };
                     await _unitOfWork.OrderDetailOfPackageRepository.Add(orderDetail);
-                    content = "Mua gói dịch vụ";
+                    content = ServiceTypeDefaultData.PURCHASE_PACKAGE_SERVICE_CONTENT;
                 }
                 // Customer using service
                 else
@@ -81,7 +77,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         };
                     }
 
-                    if (serviceType.Name.Contains(Bus))
+                    if (serviceType.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME))
                     {
                         var orderDetail = new OrderDetailOfBusService()
                         {
@@ -93,9 +89,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             Status = 1
                         };
                         await _unitOfWork.OrderDetailOfBusServiceRepository.Add(orderDetail);
-                        content = "Sử dụng dịch vụ di chuyển theo chuyến";
+                        content = $"Sử dụng {ServiceTypeDefaultData.BUS_SERVICE_CONTENT}";
                     }
-                    else if (serviceType.Name.Contains(Booking))
+                    else if (serviceType.Name.Contains(ServiceTypeDefaultData.BOOK_SERVICE_NAME))
                     {
                         var orderDetail = new OrderDetailOfBookingService()
                         {
@@ -107,9 +103,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             Status = 1
                         };
                         await _unitOfWork.OrderDetailOfBookingServiceRepository.Add(orderDetail);
-                        content = "Sử dụng dịch vụ đặt xe";
+                        content = $"Sử dụng {ServiceTypeDefaultData.BOOK_SERVICE_CONTENT}";
                     }
-                    else if (serviceType.Name.Contains(Renting))
+                    else if (serviceType.Name.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME))
                     {
                         var orderDetail = new OrderDetailOfRentingService()
                         {
@@ -121,7 +117,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             Status = 1
                         };
                         await _unitOfWork.OrderDetailOfRentingServiceRepository.Add(orderDetail);
-                        content = "Sử dụng dịch vụ thuê xe";
+                        content = $"Sử dụng {ServiceTypeDefaultData.RENT_SERVICE_CONTENT}";
                     }
                     else
                     {

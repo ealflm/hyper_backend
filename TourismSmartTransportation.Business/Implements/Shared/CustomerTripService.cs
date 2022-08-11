@@ -43,7 +43,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                                             ServiceType = serviceType
                                         }
                                     )
-                                    .Where(x => x.ServiceType.Name.Contains("Thuê xe"))
+                                    .Where(x => x.ServiceType.Name.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME))
                                     .Select(x => x.CustomerTrip.AsCustomerTripViewModel())
                                     .ToListAsync();
 

@@ -22,9 +22,6 @@ namespace TourismSmartTransportation.Business.Implements.Partner
     public class DriverManagementService : AccountService, IDriverManagementService
     {
         // private readonly string MESSAGE = "Dang nhap bang SDT da dang ky voi MAT KHAU: ";
-        public readonly string Bus = "Đi xe theo chuyến";
-        public readonly string Booking = "Đặt xe";
-        public readonly string Renting = "Thuê xe";
 
         public DriverManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, Credentials credentials, HttpClient client, ITwilioSettings twilioSettings) : base(unitOfWork, blobServiceClient, credentials, client, twilioSettings)
         {
@@ -213,7 +210,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 var serviceTypeFromVehicle = await _unitOfWork.VehicleRepository.GetById(entity.VehicleId.Value);
                 var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(serviceTypeFromVehicle.ServiceTypeId)).Name;
-                if (!serviceTypeName.Contains(Booking))
+                if (!serviceTypeName.Contains(ServiceTypeDefaultData.BOOK_SERVICE_NAME))
                 {
                     return new()
                     {
@@ -230,7 +227,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 {
                     var serviceTypeFromVehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId.Value);
                     var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(serviceTypeFromVehicle.ServiceTypeId)).Name;
-                    if (!serviceTypeName.Contains(Booking))
+                    if (!serviceTypeName.Contains(ServiceTypeDefaultData.BOOK_SERVICE_NAME))
                     {
                         return new()
                         {

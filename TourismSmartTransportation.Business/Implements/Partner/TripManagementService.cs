@@ -22,9 +22,6 @@ namespace TourismSmartTransportation.Business.Implements.Partner
     public class TripManagementService : BaseService, ITripManagementService
     {
         private readonly IDriverManagementService _driverService;
-        public readonly string Bus = "Đi xe theo chuyến";
-        public readonly string Booking = "Đặt xe";
-        public readonly string Renting = "Thuê xe";
 
         public TripManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient,
                                         IDriverManagementService driverService) : base(unitOfWork, blobServiceClient)
@@ -388,7 +385,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     var serviceType = await _unitOfWork.VehicleRepository.GetById(driversList[i].VehicleId.Value);
                     driversList[i].ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(serviceType.ServiceTypeId)).Name;
 
-                    if (!driversList[i].ServiceTypeName.Contains(Bus))
+                    if (!driversList[i].ServiceTypeName.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME))
                     {
                         driversList.RemoveAt(i);
                     }

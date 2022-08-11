@@ -39,14 +39,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         public async Task<List<List<RouteViewModel>>> FindBusTrip(BusTripSearchModel model)
         {
             var stationList = await _unitOfWork.StationRepository.Query().ToListAsync();
-            Station start= new Station();
-            Station end= new Station();
+            Station start = new Station();
+            Station end = new Station();
             double minDisStart = double.MaxValue;
             double minDisEnd = double.MaxValue;
             HttpClient client = new HttpClient();
-            foreach(Station x in stationList)
+            foreach (Station x in stationList)
             {
-                
+
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Get,
@@ -63,10 +63,10 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         minDisStart = distance;
                         start = x;
                     }
-                    
+
                 }
             }
-            
+
             foreach (Station x in stationList)
             {
 
@@ -97,9 +97,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var endRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.StationId.Equals(end.StationId)).ToListAsync();
             Queue<Node> queue = new Queue<Node>();
             var resultPathList = new List<Node>();
-            foreach(StationRoute startRoute in startRouteList)
+            foreach (StationRoute startRoute in startRouteList)
             {
-                
+
 
                 foreach (StationRoute endRoute in endRouteList)
                 {
@@ -110,7 +110,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     Guid stationLink = Guid.Empty;
                     if (!endRoute.RouteId.Equals(startRoute.RouteId))
                     {
-                        
+
                         while (queue.Count != 0)
                         {
                             bool checkLink = true;
@@ -193,7 +193,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     }
                 }
             }
-            var result =new List<List<RouteViewModel>>();
+            var result = new List<List<RouteViewModel>>();
             var customerStartPoint = new Station()
             {
                 Longitude = model.StartLongitude,
@@ -207,21 +207,21 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             foreach (Node node in resultPathList)
             {
-                var checkSet =new HashSet<Guid>();
+                var checkSet = new HashSet<Guid>();
                 var tmpNode = node;
                 var resultPath = new List<RouteViewModel>();
                 var firstRoute = new RouteViewModel()
                 {
                     StationList = new List<StationViewModel>(),
                     Name = "Đi bộ",
-                    Distance = (decimal) minDisEnd
+                    Distance = (decimal)minDisEnd
                 };
                 firstRoute.StationList.Add(customerEndPoint.AsStationViewModel());
                 firstRoute.StationList.Add(end.AsStationViewModel());
                 resultPath.Add(firstRoute);
                 var currentStation = end;
                 bool check = true;
-                while(tmpNode!=null)
+                while (tmpNode != null)
                 {
                     if (!checkSet.Add(tmpNode.Value))
                     {
@@ -233,7 +233,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         LinkRoute path = null;
                         try
                         {
-                             path = await _unitOfWork.LinkRouteRepository.Query().Where(x => (x.FirstRouteId.Equals(tmpNode.Value) && x.SecondRouteId.Equals(tmpNode.Parent.Value)) || (x.SecondRouteId.Equals(tmpNode.Value) && x.FirstRouteId.Equals(tmpNode.Parent.Value))).FirstOrDefaultAsync();
+                            path = await _unitOfWork.LinkRouteRepository.Query().Where(x => (x.FirstRouteId.Equals(tmpNode.Value) && x.SecondRouteId.Equals(tmpNode.Parent.Value)) || (x.SecondRouteId.Equals(tmpNode.Value) && x.FirstRouteId.Equals(tmpNode.Parent.Value))).FirstOrDefaultAsync();
                         }
                         catch
                         {
@@ -252,7 +252,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
                             {
                                 int j = 0;
-                                for (int i = stationRouteOld.OrderNumber; i != stationRouteNew.OrderNumber -1; i--)
+                                for (int i = stationRouteOld.OrderNumber; i != stationRouteNew.OrderNumber - 1; i--)
                                 {
                                     var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
                                     route.StationList.Add(station.AsStationViewModel());
@@ -282,12 +282,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                 var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
                                 var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
                                 int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
-                                
-                                for (int i = stationRouteOld.OrderNumber+step; i != stationRouteNew.OrderNumber + step; i += step)
+
+                                for (int i = stationRouteOld.OrderNumber + step; i != stationRouteNew.OrderNumber + step; i += step)
                                 {
                                     var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
                                     route.StationList.Add(station.AsStationViewModel());
-                                    
+
                                 }
                                 route.StationList.Add(secondStation.AsStationViewModel());
                                 route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
@@ -308,11 +308,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                 var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(secondStation.StationId)).FirstOrDefaultAsync();
                                 var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
                                 int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
-                               
-                                for (int i = stationRouteOld.OrderNumber+step; i!= stationRouteNew.OrderNumber + step; i += step)
+
+                                for (int i = stationRouteOld.OrderNumber + step; i != stationRouteNew.OrderNumber + step; i += step)
                                 {
                                     var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                    route.StationList.Add(station.AsStationViewModel());            
+                                    route.StationList.Add(station.AsStationViewModel());
                                 }
                                 route.StationList.Add(firstStation.AsStationViewModel());
                                 route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
@@ -353,12 +353,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         public async Task<Response> PayWithIOT(BusPaySearchModel model)
         {
 
-            var customerId = (await _unitOfWork.CardRepository.Query().Where(x=> x.Uid.Equals(model.Uid)).FirstOrDefaultAsync()).CustomerId;
+            var customerId = (await _unitOfWork.CardRepository.Query().Where(x => x.Uid.Equals(model.Uid)).FirstOrDefaultAsync()).CustomerId;
             var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
             var today = DateTime.UtcNow.AddHours(7);
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId.Value) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
-            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe buýt")).FirstOrDefaultAsync();
-            if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes-oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes<60)
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME)).FirstOrDefaultAsync();
+            if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < 60)
             {
                 var location = oldCustomerTrip.Coordinates.Split(';');
                 decimal startLongitude = decimal.Parse(location[0]);
@@ -368,12 +368,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 decimal minDisEnd = decimal.MaxValue;
                 StationRoute startStation = null;
                 StationRoute endStation = null;
-                foreach(StationRoute x in stationRouteList)
+                foreach (StationRoute x in stationRouteList)
                 {
                     var station = await _unitOfWork.StationRepository.GetById(x.StationId);
-                    decimal disStart =(decimal) Math.Sqrt((double)(Math.Abs(station.Longitude - startLongitude) * Math.Abs(station.Longitude - startLongitude) + Math.Abs(station.Latitude - startLatitude)* Math.Abs(station.Latitude - startLatitude)));
-                    decimal disEnd = (decimal)Math.Sqrt((double)(Math.Abs(station.Longitude - model.Longitude) * Math.Abs(station.Longitude - model.Longitude) + Math.Abs(station.Latitude - model.Latitude)* Math.Abs(station.Latitude - model.Latitude)));
-                    if(disStart< minDisStart)
+                    decimal disStart = (decimal)Math.Sqrt((double)(Math.Abs(station.Longitude - startLongitude) * Math.Abs(station.Longitude - startLongitude) + Math.Abs(station.Latitude - startLatitude) * Math.Abs(station.Latitude - startLatitude)));
+                    decimal disEnd = (decimal)Math.Sqrt((double)(Math.Abs(station.Longitude - model.Longitude) * Math.Abs(station.Longitude - model.Longitude) + Math.Abs(station.Latitude - model.Latitude) * Math.Abs(station.Latitude - model.Latitude)));
+                    if (disStart < minDisStart)
                     {
                         minDisStart = disStart;
                         startStation = x;
@@ -388,11 +388,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 decimal distance = Math.Abs(endStation.Distance - startStation.Distance);
                 var routePriceList = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(oldCustomerTrip.RouteId)).ToListAsync();
                 decimal refundPrice = 0;
-                foreach(RoutePriceBusing x in routePriceList)
+                foreach (RoutePriceBusing x in routePriceList)
                 {
                     var price = await _unitOfWork.PriceOfBusServiceRepository.GetById(x.PriceBusingId);
-                    if (price.Mode.Equals("distance")){
-                        if(price.MinDistance<= distance && price.MaxDistance>= distance)
+                    if (price.Mode.Equals("distance"))
+                    {
+                        if (price.MinDistance <= distance && price.MaxDistance >= distance)
                         {
                             refundPrice = price.Price;
                             break;
@@ -400,14 +401,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     }
                     else
                     {
-                        if(price.MinStation <= totalStation && price.MaxStation>= totalStation)
+                        if (price.MinStation <= totalStation && price.MaxStation >= totalStation)
                         {
                             refundPrice = price.Price;
                         }
                     }
                 }
                 var order = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(customerId) && x.ServiceTypeId.Equals(serviceType.ServiceTypeId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
-                refundPrice = order.TotalPrice- refundPrice;
+                refundPrice = order.TotalPrice - refundPrice;
                 if (refundPrice > 0)
                 {
 
@@ -421,13 +422,13 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customerId)).FirstOrDefaultAsync();
                     var transaction = new Transaction()
                     {
-                        WalletId= wallet.WalletId,
-                        Amount= refundPrice,
-                        Content="Hoàn trả tiền dư",
-                        CreatedDate= DateTime.Now,
-                        OrderId= order.OrderId,
-                        Status=1,
-                        TransactionId= Guid.NewGuid()
+                        WalletId = wallet.WalletId,
+                        Amount = refundPrice,
+                        Content = "Hoàn trả tiền dư",
+                        CreatedDate = DateTime.Now,
+                        OrderId = order.OrderId,
+                        Status = 1,
+                        TransactionId = Guid.NewGuid()
                     };
                     wallet.AccountBalance += refundPrice;
                     _unitOfWork.WalletRepository.Update(wallet);
@@ -499,7 +500,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                 OrderDetailsInfo orderDetails = new OrderDetailsInfo()
                 {
-                    Content = "Đi xe buýt",
+                    Content = ServiceTypeDefaultData.BUS_SERVICE_CONTENT,
                     Price = basePrice.Price,
                     Quantity = 1,
                     PriceOfBusServiceId = priceBusing.PriceOfBusServiceId
@@ -553,7 +554,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
 
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
-            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains("Đi xe buýt")).FirstOrDefaultAsync();
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME)).FirstOrDefaultAsync();
             if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < 60)
             {
                 var location = oldCustomerTrip.Coordinates.Split(';');
@@ -698,7 +699,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                 OrderDetailsInfo orderDetails = new OrderDetailsInfo()
                 {
-                    Content = "Dịch vụ xe buýt",
+                    Content = ServiceTypeDefaultData.BUS_SERVICE_CONTENT,
                     Price = basePrice.Price,
                     Quantity = 1,
                     PriceOfBusServiceId = priceBusing.PriceOfBusServiceId
@@ -779,7 +780,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
-            if(oldCustomerTrip != null)
+            if (oldCustomerTrip != null)
             {
                 return null;
             }
@@ -789,10 +790,10 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             var busPrice = new BusPriceViewModel()
             {
-                Name= route.Name,
-                Distance= route.Distance,
-                TotalStation= route.TotalStation,
-                Price= basePrice.Price
+                Name = route.Name,
+                Distance = route.Distance,
+                TotalStation = route.TotalStation,
+                Price = basePrice.Price
             };
             return busPrice;
         }
