@@ -363,7 +363,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 var location = oldCustomerTrip.Coordinates.Split(';');
                 decimal startLongitude = decimal.Parse(location[0]);
                 decimal startLatitude = decimal.Parse(location[1]);
-                var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(oldCustomerTrip.RouteId)).ToListAsync();
+                var tripEntity = await _unitOfWork.TripRepository.Query().Where(x => x.TripId == oldCustomerTrip.TripId).FirstOrDefaultAsync();
+                var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tripEntity.RouteId)).ToListAsync();
                 decimal minDisStart = decimal.MaxValue;
                 decimal minDisEnd = decimal.MaxValue;
                 StationRoute startStation = null;
@@ -386,7 +387,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
                 int totalStation = Math.Abs(endStation.OrderNumber - startStation.OrderNumber) + 1;
                 decimal distance = Math.Abs(endStation.Distance - startStation.Distance);
-                var routePriceList = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(oldCustomerTrip.RouteId)).ToListAsync();
+                var routePriceList = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(tripEntity.RouteId)).ToListAsync();
                 decimal refundPrice = 0;
                 foreach (RoutePriceBusing x in routePriceList)
                 {
@@ -532,7 +533,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     CreatedDate = DateTime.Now,
                     ModifiedDate = DateTime.Now,
                     CustomerId = customerId.Value,
-                    RouteId = route.RouteId,
+                    TripId = trip.TripId,
                     VehicleId = model.VehicleId,
                     Distance = route.Distance,
                     Coordinates = model.Longitude + ";" + model.Latitude,
@@ -562,7 +563,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 var location = oldCustomerTrip.Coordinates.Split(';');
                 decimal startLongitude = decimal.Parse(location[0]);
                 decimal startLatitude = decimal.Parse(location[1]);
-                var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(oldCustomerTrip.RouteId)).ToListAsync();
+                var tripEntity = await _unitOfWork.TripRepository.Query().Where(x => x.TripId == oldCustomerTrip.TripId).FirstOrDefaultAsync();
+                var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tripEntity.RouteId)).ToListAsync();
                 decimal minDisStart = decimal.MaxValue;
                 decimal minDisEnd = decimal.MaxValue;
                 StationRoute startStation = null;
@@ -585,7 +587,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
                 int totalStation = Math.Abs(endStation.OrderNumber - startStation.OrderNumber) + 1;
                 decimal distance = Math.Abs(endStation.Distance - startStation.Distance);
-                var routePriceList = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(oldCustomerTrip.RouteId)).ToListAsync();
+                var routePriceList = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(tripEntity.RouteId)).ToListAsync();
                 decimal refundPrice = 0;
                 foreach (RoutePriceBusing x in routePriceList)
                 {
@@ -733,7 +735,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     CreatedDate = DateTime.Now,
                     ModifiedDate = DateTime.Now,
                     CustomerId = model.CustomerId,
-                    RouteId = route.RouteId,
+                    TripId = trip.TripId,
                     VehicleId = vehicleId,
                     Distance = route.Distance,
                     Coordinates = model.Longitude + ";" + model.Latitude,

@@ -25,6 +25,7 @@ namespace TourismSmartTransportation.Data.Models
         public int Status { get; set; }
         public Guid? PartnerId { get; set; }
 
+        public virtual Customer Customer { get; set; }
         public virtual Discount Discount { get; set; }
         public virtual Partner Partner { get; set; }
         public virtual ServiceType ServiceType { get; set; }
