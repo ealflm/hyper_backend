@@ -413,10 +413,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 {
 
                     order.TotalPrice = order.TotalPrice - refundPrice;
+                    order.Status = (int)OrderStatus.Done;
                     _unitOfWork.OrderRepository.Update(order);
 
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
-                    oldCustomerTrip.Status = 2;
+                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customerId)).FirstOrDefaultAsync();
@@ -457,7 +458,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     // Add amout to admin wallet
                     var adminWallet = await _unitOfWork.WalletRepository
                                         .Query()
-                                        .Where(x => x.PartnerId == null || x.CustomerId == null)
+                                        .Where(x => x.PartnerId == null && x.CustomerId == null)
                                         .FirstOrDefaultAsync();
 
                     var adminTransaction = new Transaction()
@@ -474,7 +475,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     await _unitOfWork.TransactionRepository.Add(adminTransaction);
                     _unitOfWork.WalletRepository.Update(adminWallet);
 
-                    oldCustomerTrip.Status = 2;
+                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
                 }
@@ -513,7 +514,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     PartnerId = vehicle.PartnerId,
                     ServiceTypeId = serviceType.ServiceTypeId,
                     TotalPrice = basePrice.Price,
-                    OrderDetailsInfos = orderDetailList
+                    OrderDetailsInfos = orderDetailList,
+                    Distance = route.Distance
                 };
                 var respone = await orderheplper.CreateOrder(createOrder);
                 if (respone.StatusCode != 201)
@@ -610,10 +612,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 {
 
                     order.TotalPrice = order.TotalPrice - refundPrice;
+                    order.Status = (int)OrderStatus.Done;
                     _unitOfWork.OrderRepository.Update(order);
 
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
-                    oldCustomerTrip.Status = 2;
+                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
@@ -671,7 +674,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     await _unitOfWork.TransactionRepository.Add(adminTransaction);
                     _unitOfWork.WalletRepository.Update(adminWallet);
 
-                    oldCustomerTrip.Status = 2;
+                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
                 }
@@ -712,7 +715,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     PartnerId = vehicle.PartnerId,
                     ServiceTypeId = serviceType.ServiceTypeId,
                     TotalPrice = basePrice.Price,
-                    OrderDetailsInfos = orderDetailList
+                    OrderDetailsInfos = orderDetailList,
+                    Distance = route.Distance
                 };
                 var respone = await orderheplper.CreateOrder(createOrder);
                 if (respone.StatusCode != 201)

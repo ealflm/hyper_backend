@@ -263,5 +263,11 @@ namespace TourismSmartTransportation.Business.Implements
             const string chars = "0123456789";
             return new string(Enumerable.Repeat(chars, lengthOfString).Select(s => s[random.Next(s.Length)]).ToArray());
         }
+
+        public static double ConvertDateTimeToTimestamp(DateTime value)
+        {
+            TimeSpan timeSpan = (value - new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime());
+            return (double)timeSpan.TotalSeconds; // seconds 
+        }
     }
 }

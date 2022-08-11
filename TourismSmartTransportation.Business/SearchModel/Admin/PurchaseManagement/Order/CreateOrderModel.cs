@@ -12,5 +12,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManageme
         public Guid? PartnerId { get; set; }
         public List<OrderDetailsInfo> OrderDetailsInfos { get; set; }
         public decimal TotalPrice { get; set; }
+        public decimal? Distance { get; set; } // thuộc tính khoảng cách để check trạng thái gói dịch vụ còn đủ điều kiển sử dụng hay không
     }
 }
