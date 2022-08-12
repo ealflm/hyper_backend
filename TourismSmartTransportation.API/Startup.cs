@@ -25,6 +25,7 @@ using System.Text.RegularExpressions;
 using TourismSmartTransportation.API.Utilities.Swagger;
 using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.CommonModel;
+using TourismSmartTransportation.Business.Hubs;
 using TourismSmartTransportation.Business.Implements;
 using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Implements.Company;
@@ -254,6 +255,9 @@ namespace TourismSmartTransportation.API
                 )
             );
             services.AddScoped<IFirebaseCloudMsgService, FirebaseCloudMsgService>();
+
+            // Azure SignalR
+            // services.AddSignalR().AddAzureSignalR(Configuration["SignalR:ConnectionString"]);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -304,6 +308,8 @@ namespace TourismSmartTransportation.API
                     endpoints.MapControllers().WithMetadata(new AllowAnonymousAttribute());
                 else
                     endpoints.MapControllers();
+
+                // endpoints.MapHub<NotificationHub>("/notification");
             });
         }
     }
