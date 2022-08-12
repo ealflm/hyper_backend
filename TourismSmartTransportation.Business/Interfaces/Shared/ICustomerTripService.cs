@@ -10,6 +10,10 @@ namespace TourismSmartTransportation.Business.Interfaces.Shared
     public interface ICustomerTripService
     {
         Task<List<CustomerTripViewModel>> GetCustomerTripsListForRentingService(CustomerTripSearchModel model);
+        Task<List<CustomerTripViewModel>> GetCustomerTrips();
+        Task<List<CustomerTripViewModel>> GetCustomerTrips(Guid partnerId);
         Task<Response> UpdateStatusCustomerTrip(Guid id, CustomerTripSearchModel model);
+
+        Task<Response> ReturnVehicle(Guid customerTripId);
     }
 }
