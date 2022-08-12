@@ -57,7 +57,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     order.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value)).Name;
                 }
                 var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
-                order.CustomerName = customer.FirstName + " " + customer.LastName; 
+                order.CustomerName = customer.FirstName + " " + customer.LastName;
             }
             SearchResultViewModel<OrderViewModel> result = null;
             result = new SearchResultViewModel<OrderViewModel>()
@@ -166,7 +166,31 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
             var transationsList = await _unitOfWork.TransactionRepository.Query()
                 .Where(x => x.OrderId == orderId)
-                .Select(x => x.AsTransactionViewModel())
+                .Join(_unitOfWork.OrderRepository.Query(),
+                    transaction => transaction.OrderId,
+                    order => order.OrderId,
+                    (transaction, order) => new { transaction, order }
+                )
+                .Join(_unitOfWork.CustomerRepository.Query(),
+                    trans_ord => trans_ord.order.CustomerId,
+                    customer => customer.CustomerId,
+                    (trans_ord, customer) => new { trans_ord, customer }
+                )
+                .Join(_unitOfWork.PartnerRepository.Query(),
+                    trans_ord_cus => trans_ord_cus.trans_ord.order.PartnerId,
+                    partner => partner.PartnerId,
+                    (trans_ord_cus, partner) => new TransactionViewModel()
+                    {
+                        OrderId = trans_ord_cus.trans_ord.order.OrderId,
+                        Amount = trans_ord_cus.trans_ord.transaction.Amount,
+                        CreatedDate = trans_ord_cus.trans_ord.transaction.CreatedDate,
+                        Content = trans_ord_cus.trans_ord.transaction.Content,
+                        Status = trans_ord_cus.trans_ord.transaction.Status,
+                        CustomerName = trans_ord_cus.customer.LastName + " " + trans_ord_cus.customer.FirstName,
+                        CompanyName = partner.CompanyName
+                    }
+                )
+                // .Select(x => x.AsTransactionViewModel())
                 .ToListAsync();
             SearchResultViewModel<TransactionViewModel> result = null;
             result = new SearchResultViewModel<TransactionViewModel>()
