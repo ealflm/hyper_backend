@@ -12,6 +12,8 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Package
         public string Description { get; set; }
         public decimal? Price { get; set; }
         public string PromotedTitle { get; set; }
+        public int? PeopleQuantity { get; set; }
+        public int? Duration { get; set; }
         public List<UpdatePackageItemModel> PackageItems { get; set; }
         public int? Status { get; set; }
     }
