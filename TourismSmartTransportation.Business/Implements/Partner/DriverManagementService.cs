@@ -161,7 +161,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             return driversList;
         }
 
-        public async Task<Response> Update(Guid id, UpdateDriverModel model, bool isSaveAsync = true)
+        public async Task<Response> Update(Guid id, UpdateDriverModel model, bool isAssignDriverForTrip = false, bool isSaveAsync = true)
         {
             var entity = await _unitOfWork.DriverRepository.GetById(id);
             if (entity == null)
@@ -210,14 +210,34 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             {
                 var serviceTypeFromVehicle = await _unitOfWork.VehicleRepository.GetById(entity.VehicleId.Value);
                 var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(serviceTypeFromVehicle.ServiceTypeId)).Name;
-                if (!serviceTypeName.Contains(ServiceTypeDefaultData.BOOK_SERVICE_NAME))
+                if (serviceTypeName.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME) ||
+                    (serviceTypeName.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME) && isAssignDriverForTrip == false)
+                )
                 {
                     return new()
                     {
                         StatusCode = 400,
-                        Message = "Cập nhật xe không hợp lệ. Chỉ có thể cập nhật xe với dịch vụ đặt xe!"
+                        Message = "Không thể cập nhật tài xế cho dịch vụ thuê xe và đi xe buýt!"
                     };
                 }
+
+                if (model.VehicleId != null)
+                {
+                    var serviceTypeFromModelVehicle = await _unitOfWork.VehicleRepository.GetById(entity.VehicleId.Value);
+                    var serviceTypeNameFromModelVehicle = (await _unitOfWork.ServiceTypeRepository.GetById(serviceTypeFromVehicle.ServiceTypeId)).Name;
+
+                    if (serviceTypeName.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME) ||
+                            (serviceTypeName.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME) && isAssignDriverForTrip == false)
+                        )
+                    {
+                        return new()
+                        {
+                            StatusCode = 400,
+                            Message = "Không thể cập nhật tài xế cho dịch vụ thuê xe và đi xe buýt!"
+                        };
+                    }
+                }
+
                 entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);
 
             }
@@ -227,12 +247,14 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 {
                     var serviceTypeFromVehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId.Value);
                     var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(serviceTypeFromVehicle.ServiceTypeId)).Name;
-                    if (!serviceTypeName.Contains(ServiceTypeDefaultData.BOOK_SERVICE_NAME))
+                    if (serviceTypeName.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME) ||
+                        (serviceTypeName.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME) && isAssignDriverForTrip == false)
+                    )
                     {
                         return new()
                         {
                             StatusCode = 400,
-                            Message = "Cập nhật xe không hợp lệ. Chỉ có thể cập nhật xe với dịch vụ đặt xe!"
+                            Message = "Không thể cập nhật tài xế cho dịch vụ thuê xe và đi xe buýt!"
                         };
                     }
                     entity.VehicleId = UpdateTypeOfNotNullAbleObject<Guid>(entity.VehicleId, model.VehicleId);

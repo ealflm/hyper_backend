@@ -98,7 +98,21 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             await _unitOfWork.TripRepository.Add(newTrip);
 
             UpdateDriverModel updateDriver = new UpdateDriverModel() { VehicleId = newTrip.VehicleId };
-            await _driverService.Update(newTrip.DriverId, updateDriver, false);
+            var driverResponse = await _driverService.Update(
+                                                            id: newTrip.DriverId,
+                                                            model: updateDriver,
+                                                            isAssignDriverForTrip: true,
+                                                            isSaveAsync: false
+                                                        );
+            if (driverResponse.StatusCode != 201)
+            {
+                return new()
+                {
+                    StatusCode = 500,
+                    Message = "Tạo tuyến thất bại. Thêm tài xế cho tuyến không thành công!"
+                };
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             return new()
