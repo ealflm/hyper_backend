@@ -10,12 +10,12 @@ namespace TourismSmartTransportation.Business.Validation
 
             if (value != null && !string.IsNullOrWhiteSpace(value.ToString()))
             {
-                if (Regex.IsMatch(value.ToString(), @"^0\.[0-9]{1}$|^[0-1]$"))
+                if (Regex.IsMatch(value.ToString(), @"^0\.[0-9]{1,2}$|^[0-1]$"))
                 {
                     return ValidationResult.Success;
                 }
 
-                return new ValidationResult("Giá trị khuyến mãi chỉ nằm trong đoạn [0-1]");
+                return new ValidationResult("Giá trị khuyến mãi chỉ nằm trong đoạn [0-1] và tối đa 2 chữ số sau dấu chấm thập phân");
             }
 
             return ValidationResult.Success;
