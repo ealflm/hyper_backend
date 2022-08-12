@@ -113,6 +113,9 @@ namespace TourismSmartTransportation.Business.Implements.Shared
             {
                 customerTrip.Status = (int)CustomerTripStatus.Done;
                 _unitOfWork.CustomerTripRepository.Update(customerTrip);
+                var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
+                vehicle.Status = (int)VehicleStatus.Ready;
+                _unitOfWork.VehicleRepository.Update(vehicle);
                 await _unitOfWork.SaveChangesAsync();
             }
             else
@@ -213,6 +216,8 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 }
 
                 _unitOfWork.WalletRepository.Update(wallet);
+                vehicle.Status = (int)VehicleStatus.Ready;
+                _unitOfWork.VehicleRepository.Update(vehicle);
                 await _unitOfWork.SaveChangesAsync();
 
 
