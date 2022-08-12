@@ -177,5 +177,30 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
             return result;
         }
+
+        public async Task<SearchResultViewModel<OrderViewModel>> GetOrderByPartnerId(Guid partnerId)
+        {
+            var orders = await _unitOfWork.OrderRepository.Query()
+                .Where(x => x.PartnerId.Equals(partnerId))
+                .Select(x => x.AsOrderViewModel())
+                .ToListAsync();
+            foreach (var order in orders)
+            {
+                if (order.ServiceTypeId != null)
+                {
+                    order.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value)).Name;
+                }
+                var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
+                order.CustomerName = customer.FirstName + " " + customer.LastName;
+            }
+            SearchResultViewModel<OrderViewModel> result = null;
+            result = new SearchResultViewModel<OrderViewModel>()
+            {
+                Items = orders,
+                PageSize = 1,
+                TotalItems = orders.Count
+            };
+            return result;
+        }
     }
 }

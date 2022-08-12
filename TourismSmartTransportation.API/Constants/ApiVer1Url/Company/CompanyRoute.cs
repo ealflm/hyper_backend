@@ -47,5 +47,12 @@ namespace ApiVer1Url
 
         // customer trip
         public const string CustomerTrip = BaseApiUrl + "/customer-trip";
+
+        // order
+        public const string Order = BaseApiUrl + "/order";
+        // order detail
+        public const string OrderDetail = BaseApiUrl + "/order-detail";
+        // transaction
+        public const string Transaction = BaseApiUrl + "/transaction";
     }
 }
