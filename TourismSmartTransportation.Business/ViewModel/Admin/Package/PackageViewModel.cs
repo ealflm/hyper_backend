@@ -8,7 +8,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.Package
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public int PeopleQuanitty { get; set; }
+        public int PeopleQuantity { get; set; }
         public int Duration { get; set; }
         public string PhotoUrl { get; set; }
         public string Description { get; set; }

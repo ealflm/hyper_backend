@@ -238,7 +238,7 @@ namespace TourismSmartTransportation.Business.Extensions
             {
                 Id = item.PackageId,
                 Name = item.Name,
-                PeopleQuanitty = item.PeopleQuanitty,
+                PeopleQuantity = item.PeopleQuantity,
                 Duration = item.Duration,
                 Description = item.Description,
                 PhotoUrl = item.PhotoUrl,

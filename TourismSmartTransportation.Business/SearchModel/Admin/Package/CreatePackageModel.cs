@@ -20,7 +20,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Package
         [Required]
         public string PromotedTitle { get; set; }
         [Required]
-        public int PeopleQuanitty { get; set; }
+        public int PeopleQuantity { get; set; }
         [Required]
         public int Duration { get; set; }
     }

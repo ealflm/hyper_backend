@@ -50,7 +50,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 PhotoUrl = UploadFile(model.UploadFile, Container.Admin).Result,
                 Status = 1,
                 Duration = model.Duration,
-                PeopleQuanitty = model.PeopleQuanitty
+                PeopleQuantity = model.PeopleQuantity
             };
             await _unitOfWork.PackageRepository.Add(entity);
             foreach (CreatePackageItemModel x in model.PackageItems)
@@ -165,6 +165,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             package.PhotoUrl += await UploadFile(model.UploadFile, Container.Admin);
             package.Price = UpdateTypeOfNotNullAbleObject<decimal>(package.Price, model.Price);
             package.Status = UpdateTypeOfNotNullAbleObject<int>(package.Status, model.Status);
+            package.Duration = UpdateTypeOfNotNullAbleObject<int>(package.Duration, model.Duration);
+            package.PeopleQuantity = UpdateTypeOfNotNullAbleObject<int>(package.PeopleQuantity, model.PeopleQuantity);
             package.PackageItems = await _unitOfWork.PackageItemRepository
                                 .Query()
                                 .Where(x => x.PackageId == package.PackageId)
