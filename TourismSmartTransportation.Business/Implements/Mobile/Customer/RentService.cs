@@ -134,122 +134,20 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 return new()
                 {
                     StatusCode = 400,
-                    Message = "Trả phương tiện thất bại"
+                    Message = "Yêu cầu trả phương tiện thất bại"
                 };
             }
-            if(customerTrip.Status == (int)CustomerTripStatus.Overdue)
+            if (customerTrip.Status == (int)CustomerTripStatus.Renting)
             {
-                customerTrip.Status = (int)CustomerTripStatus.Done;
+                customerTrip.Status = (int)CustomerTripStatus.Requesting;
+                customerTrip.ReturnVehicleStationId = new Guid(DecryptString(model.RentStationId));
                 _unitOfWork.CustomerTripRepository.Update(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
             }
-            else
-            {
-                var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
-                var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Equals("Thuê xe")).FirstOrDefaultAsync();
-                var orderRentList = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(customerTrip.CustomerId) && x.PartnerId.Equals(vehicle.PartnerId) && x.ServiceTypeId.Equals(serviceType.ServiceTypeId)).OrderByDescending(x => x.CreatedDate).ToListAsync();
-                List<OrderDetailOfRentingService> orderDetailList = new List<OrderDetailOfRentingService>();
-                Order oldOrder = null;
-                foreach (Order order in orderRentList)
-                {
-                    orderDetailList = await _unitOfWork.OrderDetailOfRentingServiceRepository.Query().Where(x => x.OrderId.Equals(order.OrderId) && x.LicensePlates.Equals(vehicle.LicensePlates)).ToListAsync();
-                    if (orderDetailList.Count != 0)
-                    {
-                        oldOrder = order;
-                        break;
-                    }
-                }
-                decimal returnPrice = orderDetailList[0].PriceOfRentingServiceId != null ? orderDetailList[1].Price : orderDetailList[0].Price;
-                decimal bonusPrice = oldOrder.TotalPrice- returnPrice;
-                bonusPrice = bonusPrice * 0.1M;
-                var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customerTrip.CustomerId)).FirstOrDefaultAsync();
-
-                // Tạo transaction khi customer sử dụng dịch vụ
-                var transaction = new Transaction()
-                {
-                    TransactionId = Guid.NewGuid(),
-                    Content = "Hoàn phí thu hồi phương tiện",
-                    OrderId = oldOrder.OrderId,
-                    CreatedDate = DateTime.Now,
-                    Amount = returnPrice,
-                    Status = 1,
-                    WalletId = wallet.WalletId
-                };
-
-                // Cập nhật lại ví của customer
-                wallet.AccountBalance += returnPrice;
-                await _unitOfWork.TransactionRepository.Add(transaction);
-                    // Lấy ví của partner
-                var partnerWallet = await _unitOfWork.WalletRepository
-                                          .Query()
-                                          .Where(x => x.PartnerId == oldOrder.PartnerId)
-                                          .FirstOrDefaultAsync();
-
-                    // Tạo transaction cho partner nhận tiền từ giao dịch sử dụng dịch vụ của customer
-                    var partnerTransaction = new Transaction()
-                    {
-                        TransactionId = Guid.NewGuid(),
-                        Content = $"Đối tác trả lại 90% phí thu hồi phương tiện",
-                        OrderId = oldOrder.OrderId,
-                        CreatedDate = DateTime.Now,
-                        Amount = -(returnPrice * 0.9M),
-                        Status = 1,
-                        WalletId = partnerWallet.WalletId
-                    };
-                    // Cập nhật lại ví của partner
-                    partnerWallet.AccountBalance -= returnPrice* 0.9M;
-                    await _unitOfWork.TransactionRepository.Add(partnerTransaction);
-                    _unitOfWork.WalletRepository.Update(partnerWallet);
-
-                // Lấy ví của admin
-                var adminWallet = await _unitOfWork.WalletRepository
-                                    .Query()
-                                    .Where(x => x.PartnerId == null && x.CustomerId == null)
-                                    .FirstOrDefaultAsync();
-
-                // Tạo transaction cho admin nhận tiền từ giao dịch sử dụng dịch vụ của customer
-                var adminTransaction = new Transaction()
-                {
-                    TransactionId = Guid.NewGuid(),
-                    Content = $"Hệ thống trả lại 10% phí thu hồi phương tiện",
-                    OrderId = oldOrder.OrderId,
-                    CreatedDate = DateTime.Now,
-                    Amount =-( returnPrice * 0.1M),
-                    Status = 1,
-                    WalletId = adminWallet.WalletId
-                };
-
-                adminWallet.AccountBalance -= returnPrice * 0.1M;
-                await _unitOfWork.TransactionRepository.Add(adminTransaction);
-                _unitOfWork.WalletRepository.Update(adminWallet);
-
-                Guid rentStationId = new Guid(DecryptString(model.RentStationId));
-                if (vehicle.RentStationId.Equals(rentStationId))
-                {
-                    var bonusTransaction = new Transaction()
-                    {
-                        TransactionId = Guid.NewGuid(),
-                        Content = "Thưởng thêm phí hoàn trả phương tiện đúng trạm 10% hóa đơn thuê phương tiện không tín phí thu hồi",
-                        OrderId = oldOrder.OrderId,
-                        CreatedDate = DateTime.Now,
-                        Amount = bonusPrice,
-                        Status = 1,
-                        WalletId = wallet.WalletId
-                    };
-                    wallet.AccountBalance += bonusPrice;
-                    await _unitOfWork.TransactionRepository.Add(bonusTransaction);
-                }
-
-                _unitOfWork.WalletRepository.Update(wallet);
-                await _unitOfWork.SaveChangesAsync();
-
-
-            }
-
             return new()
             {
                 StatusCode = 200,
-                Message = "Trả phương tiện thành công"
+                Message = "Yêu cầu trả phương tiện thành công"
             };
         }
     }

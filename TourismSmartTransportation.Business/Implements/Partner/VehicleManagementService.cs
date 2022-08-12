@@ -114,6 +114,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         }
 
+
+
         public async Task<List<VehicleViewModel>> Search(VehicleSearchModel model)
         {
             var entity = await _unitOfWork.VehicleRepository.Query()

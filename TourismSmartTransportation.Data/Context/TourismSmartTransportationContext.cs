@@ -828,7 +828,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Route)
                     .WithMany(p => p.RoutePriceBusings)
                     .HasForeignKey(d => d.RouteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_RoutePriceBusing_Route");
             });
 
@@ -881,7 +880,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Route)
                     .WithMany(p => p.StationRoutes)
                     .HasForeignKey(d => d.RouteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_StationRoute_Route");
 
                 entity.HasOne(d => d.Station)
@@ -946,7 +944,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Route)
                     .WithMany(p => p.Trips)
                     .HasForeignKey(d => d.RouteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Trip_Route");
 
                 entity.HasOne(d => d.Vehicle)
