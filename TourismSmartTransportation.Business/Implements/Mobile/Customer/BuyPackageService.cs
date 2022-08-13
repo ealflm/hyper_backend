@@ -78,17 +78,13 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var respone = await _orderHelpers.CreateOrder(createOrder);
             if (respone.StatusCode != 201)
             {
-                return new()
-                {
-                    StatusCode = 400,
-                    Message = "Thanh toán thất bại"
-                };
+                return respone;
             }
 
             return new()
             {
                 StatusCode = 201,
-                Message = "Thanh toán thành công"
+                Message = "Mua gói dịch vụ thành công"
             };
         }
     }

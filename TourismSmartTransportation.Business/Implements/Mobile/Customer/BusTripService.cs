@@ -648,18 +648,18 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Đối tác gửi lại 90% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.9M),
+                        Amount = -(refundPrice * 0.9M), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = partnerWallet.WalletId
                     };
-                    partnerWallet.AccountBalance -= partnerTransaction.Amount;
+                    partnerWallet.AccountBalance = partnerWallet.AccountBalance - (-partnerTransaction.Amount); // trừ tiền từ transaction
                     await _unitOfWork.TransactionRepository.Add(partnerTransaction);
                     _unitOfWork.WalletRepository.Update(partnerWallet);
 
                     // Add amout to admin wallet
                     var adminWallet = await _unitOfWork.WalletRepository
                                         .Query()
-                                        .Where(x => x.PartnerId == null || x.CustomerId == null)
+                                        .Where(x => x.PartnerId == null && x.CustomerId == null)
                                         .FirstOrDefaultAsync();
 
                     var adminTransaction = new Transaction()
@@ -668,11 +668,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Hệ Thống Gửi lại 10% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.1M),
+                        Amount = -(refundPrice * 0.1M), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = adminWallet.WalletId
                     };
-                    adminWallet.AccountBalance -= adminTransaction.Amount;
+                    adminWallet.AccountBalance = adminWallet.AccountBalance - (-adminTransaction.Amount); // trừ tiền từ transaction
                     await _unitOfWork.TransactionRepository.Add(adminTransaction);
                     _unitOfWork.WalletRepository.Update(adminWallet);
 
@@ -680,6 +680,83 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
                 }
+                // trường hợp order có total price = 0 là xài gói dịch vụ, 
+                // tránh trường hợp order có total price != 0 và refundPrice < 0
+                else if (order.TotalPrice == 0)
+                {
+                    // cập nhật lại trạng thái của order -> hoàn thành
+                    order.Status = (int)OrderStatus.Done;
+                    _unitOfWork.OrderRepository.Update(order);
+
+                    // tạo giao dịch khi xuống trạm và sử dụng gói dịch vụ để thanh toán
+                    var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
+                    var transaction = new Transaction()
+                    {
+                        WalletId = wallet.WalletId,
+                        Amount = 0,
+                        Content = "Xuống trạm, sử dụng gói dịch vụ để thanh toán",
+                        CreatedDate = DateTime.Now,
+                        OrderId = order.OrderId,
+                        Status = 1,
+                        TransactionId = Guid.NewGuid()
+                    };
+                    await _unitOfWork.TransactionRepository.Add(transaction);
+
+                    // Lấy full giá của trip
+                    var route = await _unitOfWork.RouteRepository.GetById(tripEntity.RouteId);
+                    var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
+                    var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
+                    var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
+                    var priceAfterRefunding = basePrice.Price - (-refundPrice); // tính tiền dựa trên khoảng cách mà khách hàng đi được
+
+                    // Cập nhật ví lại cho partner
+                    var partnerWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == order.PartnerId)
+                                        .FirstOrDefaultAsync();
+
+                    var partnerTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Đối tác gửi tiền hoa hồng lại cho hệ thống",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.Now,
+                        Amount = -priceAfterRefunding * 0.1M, // xét dấu âm cho giao dịch trừ tiền
+                        Status = 1,
+                        WalletId = partnerWallet.WalletId
+                    };
+                    partnerWallet.AccountBalance = partnerWallet.AccountBalance - (-partnerTransaction.Amount); // trừ tiền từ transaction
+                    await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+                    _unitOfWork.WalletRepository.Update(partnerWallet);
+
+                    // Cập nhật ví lại cho Admin
+                    var adminWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == null && x.CustomerId == null)
+                                        .FirstOrDefaultAsync();
+
+                    var adminTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Hệ thống nhận tiền hoa hồng từ đối tác",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.Now,
+                        Amount = priceAfterRefunding * 0.1M,
+                        Status = 1,
+                        WalletId = adminWallet.WalletId
+                    };
+                    adminWallet.AccountBalance += adminTransaction.Amount;
+                    await _unitOfWork.TransactionRepository.Add(adminTransaction);
+                    _unitOfWork.WalletRepository.Update(adminWallet);
+
+                    // cập nhật thêm vị trí xuống trạm và trạng thái -> hoàn thành của customer trip
+                    oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
+
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
                 return new()
                 {
                     StatusCode = 204,
