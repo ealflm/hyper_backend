@@ -39,7 +39,11 @@ namespace TourismSmartTransportation.Business.Implements.Vehicle
                 ModifiedDate = (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds
             };
             await _vehicles.InsertOneAsync(vehicleView);
-            UpdateVehicleModel model = new UpdateVehicleModel() { IsRunning = 1 };
+            UpdateVehicleModel model = new UpdateVehicleModel()
+            {
+                Status = (int)VehicleStatus.Running,
+                IsRunning = 1
+            };
             await _vehicleManagementService.Update(Guid.Parse(vehicleView.VehicleId), model); // Temp basic solution to update. 
             return new()
             {
