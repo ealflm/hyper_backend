@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +10,7 @@ using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.SearchModel.Partner.Route;
 using TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement;
 using TourismSmartTransportation.Business.SearchModel.Shared;
+using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
 
 namespace TourismSmartTransportation.API
 {
@@ -31,37 +31,35 @@ namespace TourismSmartTransportation.API
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    _logger.LogInformation("From HyperBackgroundService: ExecuteAsync");
+                    _logger.LogInformation("Start HyperBackgroundService: ExecuteAsync");
 
                     // Inject service
                     var vehicleScopeService = scope.ServiceProvider.GetRequiredService<IVehicleManagementService>();
                     var vehicleTrackingScopeService = scope.ServiceProvider.GetRequiredService<IVehicleCollectionService>();
                     var vehicleTripScopeService = scope.ServiceProvider.GetRequiredService<ITripManagementService>();
-                    var firebaseCloudMsgScopeService = scope.ServiceProvider.GetRequiredService<IFirebaseCloudMsgService>();
-                    var customerScopeService = scope.ServiceProvider.GetRequiredService<ICustomerManagementService>();
-                    var customerTripScopeService = scope.ServiceProvider.GetRequiredService<ICustomerTripService>();
 
                     // Processing
-                    VehicleProcess(vehicleScopeService, vehicleTrackingScopeService, vehicleTripScopeService);
-                    // RentingServiceNotificationProcess(firebaseCloudMsgScopeService, customerScopeService, customerTripScopeService);
+                    await VehicleProcess(vehicleScopeService, vehicleTrackingScopeService, vehicleTripScopeService);
 
                     // Interval in specific time
                     await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
                 }
 
             }
+            _logger.LogInformation("End HyperBackgroundService: ExecuteAsync");
         }
 
-        public static string UnixTimeStampToDateTime(double unixTimeStamp)
+        public string UnixTimeStampToDateTime(double unixTimeStamp)
         {
             DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dateTime.ToString("HH:mm");
         }
 
-        public async static void VehicleProcess(IVehicleManagementService vehicleScopeService, IVehicleCollectionService vehicleTrackingScopeService,
+        public async Task VehicleProcess(IVehicleManagementService vehicleScopeService, IVehicleCollectionService vehicleTrackingScopeService,
                                             ITripManagementService vehicleTripScopeService)
         {
+            _logger.LogInformation("Start VehicleProcess");
             // Get all vehicle from database
             VehicleSearchModel model = new VehicleSearchModel();
             var vehiclesList = await vehicleScopeService.Search(model);
@@ -122,62 +120,7 @@ namespace TourismSmartTransportation.API
 
                 }
             }
-        }
-
-        public async static void RentingServiceNotificationProcess(IFirebaseCloudMsgService firebaseService,
-                                                                    ICustomerManagementService customerScopeService,
-                                                                    ICustomerTripService customerTripScopeService)
-        {
-            string title = "Dịch vụ thuê xe Hyper thông báo";
-            var customerTripSearchModel = new CustomerTripSearchModel();
-            var customerTripsList = await customerTripScopeService.GetCustomerTripsListForRentingService(customerTripSearchModel);
-            for (int i = 0; i < customerTripsList.Count; i++)
-            {
-                DateTime approval30MinsTimeOver = customerTripsList[i].RentDeadline.Value.Subtract(TimeSpan.FromMinutes(30));
-                DateTime approval15MinsTimeOver = customerTripsList[i].RentDeadline.Value.Subtract(TimeSpan.FromMinutes(15));
-                DateTime approval5MinsTimeOver = customerTripsList[i].RentDeadline.Value.Subtract(TimeSpan.FromMinutes(5));
-
-
-                // Thông báo tới khách thời gian thuê xe sắp hết trước 30p, 15p và 5p
-                if (
-                        (
-                            (
-                                DateTime.Now.CompareTo(approval30MinsTimeOver.AddMinutes(1)) <= 0 &&
-                                DateTime.Now.CompareTo(approval30MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
-                            )
-                            ||
-                            (
-                                DateTime.Now.CompareTo(approval15MinsTimeOver.AddMinutes(1)) <= 0 &&
-                                DateTime.Now.CompareTo(approval15MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
-                            )
-                            ||
-                            (
-                                DateTime.Now.CompareTo(approval5MinsTimeOver.AddMinutes(1)) <= 0 &&
-                                DateTime.Now.CompareTo(approval5MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
-                            )
-                        )
-                    )
-                {
-                    var customer = await customerScopeService.GetCustomer(customerTripsList[i].CustomerId);
-                    if (!string.IsNullOrEmpty(customer.RegistrationToken))
-                    {
-                        string message = $"Thời gian thuê xe của quý khách sẽ hết hạn lúc {customerTripsList[i].RentDeadline}. Quý khách vui lòng trả xe đúng giờ để không bị phát sinh chi phí!";
-                        await firebaseService.SendNotificationForRentingService(customer.RegistrationToken, title, message);
-                    }
-                }
-
-                if (DateTime.Now.CompareTo(customerTripsList[i].RentDeadline.Value.AddMinutes(10)) >= 0) // out of limit time than 10 minutes
-                {
-                    var customer = await customerScopeService.GetCustomer(customerTripsList[i].CustomerId);
-                    customerTripSearchModel.Status = (int)CustomerTripStatus.Overdue;
-                    var result = await customerTripScopeService.UpdateStatusCustomerTrip(customerTripsList[i].CustomerTripId, customerTripSearchModel);
-                    if (result.StatusCode == 201 && !string.IsNullOrEmpty(customer.RegistrationToken))
-                    {
-                        string message = $"Thời gian thuê xe của quý khác đã quá hạn.";
-                        await firebaseService.SendNotificationForRentingService(customer.RegistrationToken, title, message);
-                    }
-                }
-            }
+            _logger.LogInformation("End VehicleProcess");
         }
     }
 }
