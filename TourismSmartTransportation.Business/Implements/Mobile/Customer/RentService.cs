@@ -60,11 +60,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
                 CustomerId = model.CustomerId,
-                VehicleId = model.VehicleId,
+                VehicleId = new Guid(DecryptString(model.VehicleId)),
                 RentDeadline = model.RentDeadline,
                 Status = (int) CustomerTripStatus.Renting
             };
-            var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(new Guid(DecryptString(model.VehicleId)));
             vehicle.Status = (int) VehicleStatus.Renting;
             _unitOfWork.VehicleRepository.Update(vehicle);
             await _unitOfWork.CustomerTripRepository.Add(customerTrip);
