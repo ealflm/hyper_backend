@@ -9,6 +9,7 @@ using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Partner;
 using TourismSmartTransportation.Business.SearchModel.Partner.DriverManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.Route;
+using TourismSmartTransportation.Business.SearchModel.Partner.TripManagement;
 using TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Partner.DriverManagement;
@@ -93,6 +94,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 DayOfWeek = model.DayOfWeek.Value,
                 TimeStart = model.TimeStart,
                 TimeEnd = model.TimeEnd,
+                Week= model.Week,
                 Status = 1
             };
             await _unitOfWork.TripRepository.Add(newTrip);
@@ -173,6 +175,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                                     .Where(x => model.VehicleId == null || model.VehicleId.Value == x.VehicleId)
                                     .Where(x => model.Status == null || model.Status.Value == x.Status)
                                     .Where(x => model.TripName == null || x.TripName.Contains(model.TripName))
+                                    .Where(x=> model.Week== null || x.Week.Equals(model.Week))
                                     .Join(_unitOfWork.RouteRepository.Query(),
                                         trip => trip.RouteId,
                                         route => route.RouteId,
@@ -482,6 +485,28 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             return new()
             {
                 StatusCode = 0, // No Error
+            };
+        }
+
+        public async Task<Response> CopyTrip(CopyTripModel model)
+        {
+            var trips = await _unitOfWork.TripRepository.Query().Where(x => x.Week.Equals(model.FromWeek)).ToListAsync();
+            foreach(Trip trip in trips)
+            {
+                var driver = await _unitOfWork.DriverRepository.GetById(trip.DriverId);
+                if (driver.PartnerId.Equals(model.PartnerId))
+                {
+                    trip.TripId = Guid.NewGuid();
+                    trip.Week = model.ToWeek;
+                    await _unitOfWork.TripRepository.Add(trip);
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 200,
+                Message = "Sao chép thành công"
             };
         }
     }
