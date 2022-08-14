@@ -235,18 +235,7 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Discount");
 
-                entity.HasIndex(e => e.Code, "UQ__Discount__A25C5AA7360B9637")
-                    .IsUnique();
-
-                entity.HasIndex(e => e.Code, "UQ__Discount__A25C5AA78A2DA294")
-                    .IsUnique();
-
                 entity.Property(e => e.DiscountId).HasDefaultValueSql("(newid())");
-
-                entity.Property(e => e.Code)
-                    .IsRequired()
-                    .HasMaxLength(10)
-                    .IsUnicode(false);
 
                 entity.Property(e => e.Description).IsRequired();
 
@@ -263,6 +252,7 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.ServiceType)
                     .WithMany(p => p.Discounts)
                     .HasForeignKey(d => d.ServiceTypeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Discount_ServiceType");
             });
 
@@ -944,10 +934,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.Property(e => e.TripName)
                     .IsRequired()
                     .HasMaxLength(255);
-
-                entity.Property(e => e.Week)
-                    .HasMaxLength(255)
-                    .IsUnicode(false);
 
                 entity.HasOne(d => d.Driver)
                     .WithMany(p => p.Trips)

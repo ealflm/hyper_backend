@@ -17,6 +17,5 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.Route
         public virtual string TimeStart { get; set; }
 
         public virtual string TimeEnd { get; set; }
-        public virtual string Week { get; set; }
     }
 }
