@@ -275,5 +275,43 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Message = "Lỗi từ hệ thống khi gửi mã giảm giá cho khách hàng"
             };
         }
+
+        public async Task<Response> CheckAvaliableDiscount(string discountCode)
+        {
+            var discount = await _unitOfWork.DiscountRepository
+                            .Query()
+                            .Where(x => x.Code == discountCode)
+                            .FirstOrDefaultAsync();
+
+            if (discount == null)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Mã giảm giá không đúng!"
+                };
+            }
+
+            switch (discount.Status)
+            {
+                case (int)DiscountStatus.Disabled:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá này đã bị vô hiệu hóa!" };
+
+                case (int)DiscountStatus.BeUsed:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá này đã được sử dụng!" };
+
+                case (int)DiscountStatus.Expire:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá đã hết hạn sử dụng!" };
+
+                default: break;
+            }
+
+            return new()
+            {
+                StatusCode = 200,
+                Data = discount,
+                Message = "Mã giảm giá hợp lệ!"
+            };
+        }
     }
 }

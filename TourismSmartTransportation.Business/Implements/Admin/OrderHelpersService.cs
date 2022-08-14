@@ -142,6 +142,26 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
 
 
+            // Xử lý mã giảm giá cho hóa đơn
+            if (newOrder.DiscountId != null)
+            {
+                var discount = await _unitOfWork.DiscountRepository.GetById(newOrder.DiscountId.Value);
+                if (discount.ServiceTypeId != null) // kiểm tra mã giảm giá này sử dụng cho dịch vào cụ thể nào hay cho tất cả dịch vụ
+                {
+                    if (discount.ServiceTypeId.Value != newOrder.ServiceTypeId)
+                    {
+                        var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(discount.ServiceTypeId.Value)).Name;
+                        return new()
+                        {
+                            StatusCode = 400,
+                            Message = $"Mã giảm giá này chỉ sử dụng cho dịch vụ {serviceTypeName}"
+                        };
+                    }
+                }
+                newOrder.TotalPrice -= newOrder.TotalPrice * discount.Value; // trừ tiền giảm giá
+            }
+
+
             dynamic currentPackageIsUsed = null;
             bool isUsingPackage = false;
             decimal orderPrice = 0;
