@@ -25,7 +25,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
         public async Task<List<NotificationCollection>> GetNotificationsByCustomer(string customerId)
         {
             return await _notificationService.Find(x => x.CustomerId == customerId)
-                    .SortByDescending(x => x.CreatedDateTimeStamp)
+                    .SortByDescending(x => x.Id)
                     .ToListAsync();
         }
 
@@ -34,7 +34,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
             NotificationCollection model = new NotificationCollection()
             {
                 CustomerId = noti.CustomerId,
-                CustomerName = noti.CustomerLastName + " " + noti.CustomerFirstName,
+                CustomerName = noti.CustomerFirstName + " " + noti.CustomerLastName,
                 Title = noti.Title,
                 Message = noti.Message,
                 CreatedDateTimeStamp = (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds,
