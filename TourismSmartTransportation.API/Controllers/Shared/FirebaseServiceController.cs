@@ -7,7 +7,6 @@ using TourismSmartTransportation.Business.SearchModel.Shared;
 namespace TourismSmartTransportation.API.Controllers.Shared
 {
     [ApiController]
-    [Authorize]
     public class FirebaseServiceController : BaseController
     {
         private readonly IFirebaseCloudMsgService _firebaseService;
