@@ -13,7 +13,7 @@ namespace TourismSmartTransportation.Data.Models
         }
 
         public Guid DiscountId { get; set; }
-        public Guid ServiceTypeId { get; set; }
+        public Guid? ServiceTypeId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime TimeStart { get; set; }
@@ -21,6 +21,7 @@ namespace TourismSmartTransportation.Data.Models
         public string PhotoUrl { get; set; }
         public decimal Value { get; set; }
         public int Status { get; set; }
+        public string Code { get; set; }
 
         public virtual ServiceType ServiceType { get; set; }
         public virtual ICollection<Order> Orders { get; set; }

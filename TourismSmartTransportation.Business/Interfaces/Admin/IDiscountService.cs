@@ -14,5 +14,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
         Task<Response> UpdateDiscount(Guid id, UpdateDiscountModel model);
         Task<Response> DeleteDiscount(Guid id);
         Task<SearchResultViewModel<DiscountViewModel>> SearchDiscount(DiscountSearchModel model);
+        Task<Response> SendDiscountToCustomer(SendDiscountToCustomer model);
     }
 }

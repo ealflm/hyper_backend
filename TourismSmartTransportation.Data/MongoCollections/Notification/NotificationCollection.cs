@@ -15,6 +15,7 @@ namespace TourismSmartTransportation.Data.MongoCollections.Notification
         public string CustomerName { get; set; }
         public string Title { get; set; }
         public string Message { get; set; }
+        public string Type { get; set; }
         public Int32 CreatedDateTimeStamp { get; set; }
         public Int32 ModifiedDateTimeStamp { get; set; }
     }

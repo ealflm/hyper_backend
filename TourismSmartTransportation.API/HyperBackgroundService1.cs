@@ -98,7 +98,7 @@ namespace TourismSmartTransportation.API
                             CustomerLastName = customer.LastName,
                             Title = title,
                             Message = message,
-                            Type = "Thông báo"
+                            Type = "Renting"
                         };
                         await notificationScopeService.SaveNotification(noti);
                     }

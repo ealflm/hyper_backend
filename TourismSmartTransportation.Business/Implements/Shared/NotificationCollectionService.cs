@@ -22,11 +22,19 @@ namespace TourismSmartTransportation.Business.Implements.Shared
             _notificationService = mongo.GetNotificationsCollection;
         }
 
-        public async Task<List<NotificationCollection>> GetNotificationsByCustomer(string customerId)
+        public async Task<List<NotificationCollection>> GetNotificationsByCustomer(string customerId, string type)
         {
-            return await _notificationService.Find(x => x.CustomerId == customerId)
+            if (string.IsNullOrEmpty(type))
+            {
+                return await _notificationService.Find(x => x.CustomerId == customerId)
+                                    .SortByDescending(x => x.Id)
+                                    .ToListAsync();
+            }
+
+            return await _notificationService.Find(x => x.CustomerId == customerId && x.Type == type)
                     .SortByDescending(x => x.Id)
                     .ToListAsync();
+
         }
 
         public async Task<Response> SaveNotification(SaveNotificationModel noti)
@@ -37,6 +45,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 CustomerName = noti.CustomerFirstName + " " + noti.CustomerLastName,
                 Title = noti.Title,
                 Message = noti.Message,
+                Type = noti.Type,
                 CreatedDateTimeStamp = (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds,
                 ModifiedDateTimeStamp = (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds
             };
