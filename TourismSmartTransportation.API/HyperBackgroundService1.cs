@@ -65,23 +65,22 @@ namespace TourismSmartTransportation.API
                 DateTime approval15MinsTimeOver = customerTripsList[i].RentDeadline.Value.Subtract(TimeSpan.FromMinutes(15));
                 DateTime approval5MinsTimeOver = customerTripsList[i].RentDeadline.Value.Subtract(TimeSpan.FromMinutes(5));
 
-
                 // Thông báo tới khách thời gian thuê xe sắp hết trước 30p, 15p và 5p
                 if (
                         (
                             (
-                                DateTime.Now.CompareTo(approval30MinsTimeOver.AddMinutes(1)) <= 0 &&
-                                DateTime.Now.CompareTo(approval30MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
+                                DateTime.UtcNow.CompareTo(approval30MinsTimeOver.AddMinutes(1)) <= 0 &&
+                                DateTime.UtcNow.CompareTo(approval30MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
                             )
                             ||
                             (
-                                DateTime.Now.CompareTo(approval15MinsTimeOver.AddMinutes(1)) <= 0 &&
-                                DateTime.Now.CompareTo(approval15MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
+                                DateTime.UtcNow.CompareTo(approval15MinsTimeOver.AddMinutes(1)) <= 0 &&
+                                DateTime.UtcNow.CompareTo(approval15MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
                             )
                             ||
                             (
-                                DateTime.Now.CompareTo(approval5MinsTimeOver.AddMinutes(1)) <= 0 &&
-                                DateTime.Now.CompareTo(approval5MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
+                                DateTime.UtcNow.CompareTo(approval5MinsTimeOver.AddMinutes(1)) <= 0 &&
+                                DateTime.UtcNow.CompareTo(approval5MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
                             )
                         )
                     )
@@ -104,7 +103,7 @@ namespace TourismSmartTransportation.API
                     }
                 }
 
-                if (DateTime.Now.CompareTo(customerTripsList[i].RentDeadline.Value.AddMinutes(10)) >= 0) // out of limit time than 10 minutes
+                if (DateTime.UtcNow.CompareTo(customerTripsList[i].RentDeadline.Value.AddMinutes(10)) >= 0) // out of limit time than 10 minutes
                 {
                     var customer = await customerScopeService.GetCustomer(customerTripsList[i].CustomerId);
                     customerTripSearchModel.Status = (int)CustomerTripStatus.Overdue;
