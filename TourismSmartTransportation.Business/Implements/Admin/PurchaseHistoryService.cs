@@ -174,24 +174,46 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 .Join(_unitOfWork.CustomerRepository.Query(),
                     trans_ord => trans_ord.order.CustomerId,
                     customer => customer.CustomerId,
-                    (trans_ord, customer) => new { trans_ord, customer }
-                )
-                .Join(_unitOfWork.PartnerRepository.Query(),
-                    trans_ord_cus => trans_ord_cus.trans_ord.order.PartnerId,
-                    partner => partner.PartnerId,
-                    (trans_ord_cus, partner) => new TransactionViewModel()
+                    (trans_ord, customer) => new TransactionViewModel()
                     {
-                        OrderId = trans_ord_cus.trans_ord.order.OrderId,
-                        Amount = trans_ord_cus.trans_ord.transaction.Amount,
-                        CreatedDate = trans_ord_cus.trans_ord.transaction.CreatedDate,
-                        Content = trans_ord_cus.trans_ord.transaction.Content,
-                        Status = trans_ord_cus.trans_ord.transaction.Status,
-                        CustomerName = trans_ord_cus.customer.LastName + " " + trans_ord_cus.customer.FirstName,
-                        CompanyName = partner.CompanyName
+                        OrderId = trans_ord.order.OrderId,
+                        Amount = trans_ord.transaction.Amount,
+                        CreatedDate = trans_ord.transaction.CreatedDate,
+                        Content = trans_ord.transaction.Content,
+                        Status = trans_ord.transaction.Status,
+                        CustomerName = customer.LastName + " " + customer.FirstName,
+                        PartnerId = trans_ord.order.PartnerId
                     }
                 )
                 // .Select(x => x.AsTransactionViewModel())
                 .ToListAsync();
+
+            var pairs = new List<Tuple<Guid, string>>();
+            foreach (var item in transationsList)
+            {
+                if (pairs.Count == 0 && item.PartnerId != null)
+                {
+                    var partner = await _unitOfWork.PartnerRepository.GetById(item.PartnerId.Value);
+                    item.CompanyName = partner.CompanyName;
+                    pairs.Add(Tuple.Create(partner.PartnerId, partner.CompanyName));
+                    continue;
+                }
+
+                if (item.PartnerId != null)
+                {
+                    foreach (var p in pairs)
+                    {
+                        if (p.Item1 == item.PartnerId.Value)
+                        {
+                            item.CompanyName = p.Item2;
+                            break;
+                        }
+                    }
+                    var partner = await _unitOfWork.PartnerRepository.GetById(item.PartnerId.Value);
+                    item.CompanyName = partner.CompanyName;
+                    pairs.Add(Tuple.Create(partner.PartnerId, partner.CompanyName));
+                }
+            }
             SearchResultViewModel<TransactionViewModel> result = null;
             result = new SearchResultViewModel<TransactionViewModel>()
             {
