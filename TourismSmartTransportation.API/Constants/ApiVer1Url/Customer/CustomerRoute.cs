@@ -72,5 +72,8 @@ namespace ApiVer1Url
 
         // notification
         public const string Notification = BaseApiUrl + "/notification";
+
+        // discount
+        public const string Discount = BaseApiUrl + "/discount";
     }
 }
