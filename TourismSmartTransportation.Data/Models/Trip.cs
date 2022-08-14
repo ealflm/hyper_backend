@@ -17,6 +17,7 @@ namespace TourismSmartTransportation.Data.Models
         public Guid VehicleId { get; set; }
         public Guid RouteId { get; set; }
         public string TripName { get; set; }
+        public string Week { get; set; }
         public int DayOfWeek { get; set; }
         public string TimeStart { get; set; }
         public string TimeEnd { get; set; }

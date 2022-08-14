@@ -25,5 +25,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Partner.Route
 
         [Required]
         public override string TimeEnd { get; set; }
+        [Required]
+        public override string Week { get; set; }
     }
 }
