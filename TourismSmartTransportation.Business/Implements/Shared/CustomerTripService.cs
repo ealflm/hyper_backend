@@ -26,10 +26,12 @@ namespace TourismSmartTransportation.Business.Implements.Shared
             foreach(CustomerTripViewModel x in customerTrips)
             {
                 var vehicle = await _unitOfWork.VehicleRepository.GetById(x.VehicleId);
+                var customer = await _unitOfWork.CustomerRepository.GetById(x.CustomerId);
                 var serviceType = await _unitOfWork.ServiceTypeRepository.GetById(vehicle.ServiceTypeId);
                 x.VehicleName = vehicle.Name;
                 x.LicensePlates = vehicle.LicensePlates;
                 x.ServiceTypeName = serviceType.Name;
+                x.CustomerName = customer.FirstName + " " + customer.LastName;
             }
             return customerTrips;
         }
@@ -40,10 +42,12 @@ namespace TourismSmartTransportation.Business.Implements.Shared
             foreach (CustomerTripViewModel x in customerTrips)
             {
                 var vehicle = await _unitOfWork.VehicleRepository.GetById(x.VehicleId);
+                var customer = await _unitOfWork.CustomerRepository.GetById(x.CustomerId);
                 var serviceType = await _unitOfWork.ServiceTypeRepository.GetById(vehicle.ServiceTypeId);
                 x.VehicleName = vehicle.Name;
                 x.LicensePlates = vehicle.LicensePlates;
                 x.ServiceTypeName = serviceType.Name;
+                x.CustomerName = customer.FirstName + " " + customer.LastName;
                 if (!vehicle.PartnerId.Equals(partnerId))
                 {
                     customerTrips.Remove(x);
