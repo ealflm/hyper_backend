@@ -56,7 +56,7 @@ namespace TourismSmartTransportation.API
                                                                     INotificationCollectionService notificationScopeService)
         {
             _logger.LogInformation("Start RentingServiceNotificationProcess");
-            string title = "Dịch vụ thuê xe Hyper thông báo";
+            string title = "Dịch vụ thuê xe";
             var customerTripSearchModel = new CustomerTripSearchModel();
             var customerTripsList = await customerTripScopeService.GetCustomerTripsListForRentingService(customerTripSearchModel);
             for (int i = 0; i < customerTripsList.Count; i++)
@@ -65,22 +65,23 @@ namespace TourismSmartTransportation.API
                 DateTime approval15MinsTimeOver = customerTripsList[i].RentDeadline.Value.Subtract(TimeSpan.FromMinutes(15));
                 DateTime approval5MinsTimeOver = customerTripsList[i].RentDeadline.Value.Subtract(TimeSpan.FromMinutes(5));
 
+
                 // Thông báo tới khách thời gian thuê xe sắp hết trước 30p, 15p và 5p
                 if (
                         (
                             (
-                                DateTime.UtcNow.CompareTo(approval30MinsTimeOver.AddMinutes(1)) <= 0 &&
-                                DateTime.UtcNow.CompareTo(approval30MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
+                                DateTime.UtcNow.CompareTo(approval30MinsTimeOver.AddSeconds(35)) <= 0 &&
+                                DateTime.UtcNow.CompareTo(approval30MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0
                             )
                             ||
                             (
-                                DateTime.UtcNow.CompareTo(approval15MinsTimeOver.AddMinutes(1)) <= 0 &&
-                                DateTime.UtcNow.CompareTo(approval15MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
+                                DateTime.UtcNow.CompareTo(approval15MinsTimeOver.AddSeconds(35)) <= 0 &&
+                                DateTime.UtcNow.CompareTo(approval15MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0
                             )
                             ||
                             (
-                                DateTime.UtcNow.CompareTo(approval5MinsTimeOver.AddMinutes(1)) <= 0 &&
-                                DateTime.UtcNow.CompareTo(approval5MinsTimeOver.Subtract(TimeSpan.FromMinutes(1))) >= 0
+                                DateTime.UtcNow.CompareTo(approval5MinsTimeOver.AddSeconds(1)) <= 0 &&
+                                DateTime.UtcNow.CompareTo(approval5MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0
                             )
                         )
                     )
@@ -88,7 +89,7 @@ namespace TourismSmartTransportation.API
                     var customer = await customerScopeService.GetCustomer(customerTripsList[i].CustomerId);
                     if (!string.IsNullOrEmpty(customer.RegistrationToken))
                     {
-                        string message = $"Thời gian thuê xe của quý khách sẽ hết hạn lúc {customerTripsList[i].RentDeadline}. Quý khách vui lòng trả xe đúng giờ để không bị phát sinh chi phí!";
+                        string message = $"Thời gian thuê xe của quý khách sẽ hết hạn lúc {customerTripsList[i].RentDeadline?.ToString("HH:mm - dd/MM/yyyy")}. Quý khách vui lòng trả xe đúng giờ để không bị phát sinh chi phí!";
                         await firebaseService.SendNotificationForRentingService(customer.RegistrationToken, title, message);
                         SaveNotificationModel noti = new SaveNotificationModel()
                         {
@@ -110,7 +111,7 @@ namespace TourismSmartTransportation.API
                     var result = await customerTripScopeService.UpdateStatusCustomerTrip(customerTripsList[i].CustomerTripId, customerTripSearchModel);
                     if (result.StatusCode == 201 && !string.IsNullOrEmpty(customer.RegistrationToken))
                     {
-                        string message = $"Thời gian thuê xe của quý khác đã quá hạn.";
+                        string message = $"Thời gian thuê xe của quý khác đã quá hạn 10 phút.";
                         await firebaseService.SendNotificationForRentingService(customer.RegistrationToken, title, message);
                     }
                 }
