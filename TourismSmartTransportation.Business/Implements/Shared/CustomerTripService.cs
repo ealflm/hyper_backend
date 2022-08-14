@@ -23,7 +23,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
         public async Task<List<CustomerTripViewModel>> GetCustomerTrips()
         {
             var customerTrips = await _unitOfWork.CustomerTripRepository.Query().OrderByDescending(x => x.CreatedDate).Select(x => x.AsCustomerTripViewModel()).ToListAsync();
-            foreach(CustomerTripViewModel x in customerTrips)
+            foreach (CustomerTripViewModel x in customerTrips)
             {
                 var vehicle = await _unitOfWork.VehicleRepository.GetById(x.VehicleId);
                 var customer = await _unitOfWork.CustomerRepository.GetById(x.CustomerId);
@@ -53,14 +53,14 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                     customerTrips.Remove(x);
                 }
             }
-            return customerTrips; 
+            return customerTrips;
         }
 
         public async Task<List<CustomerTripViewModel>> GetCustomerTripsListForRentingService(CustomerTripSearchModel model)
         {
             var customerTripsList = await _unitOfWork.CustomerTripRepository
                                     .Query()
-                                    .Where(x => x.Status == 1)
+                                    .Where(x => x.Status == (int)CustomerTripStatus.Renting)
                                     .Join(_unitOfWork.VehicleRepository.Query(),
                                         customerTrip => customerTrip.VehicleId,
                                         vehicle => vehicle.VehicleId,
