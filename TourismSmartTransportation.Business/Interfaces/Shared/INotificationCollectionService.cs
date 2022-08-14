@@ -8,7 +8,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Shared
 {
     public interface INotificationCollectionService
     {
-        Task<List<NotificationCollection>> GetNotificationsByCustomer(string customerId);
+        Task<List<NotificationCollection>> GetNotificationsByCustomer(string customerId, string type);
         Task<Response> SaveNotification(SaveNotificationModel noti);
     }
 }

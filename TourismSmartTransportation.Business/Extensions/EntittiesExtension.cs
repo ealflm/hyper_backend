@@ -42,7 +42,8 @@ namespace TourismSmartTransportation.Business.Extensions
                 TimeEnd = item.TimeEnd,
                 PhotoUrl = item.PhotoUrl,
                 Value = item.Value,
-                Status = item.Status
+                Status = item.Status,
+                Code = item.Code
             };
         }
 

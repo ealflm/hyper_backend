@@ -245,10 +245,14 @@ namespace TourismSmartTransportation.Business.Implements
         /// </summary>
         /// <param name="length"></param>
         /// <returns></returns>
-        public static string GeneratePasswordAuto(int lengthOfString)
+        public static string GenerateTextAuto(int lengthOfString, bool specialText = true)
         {
             var random = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+            string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+            if (!specialText)
+            {
+                chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            }
             return new string(Enumerable.Repeat(chars, lengthOfString).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 

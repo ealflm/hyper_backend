@@ -8,7 +8,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
     public class CreateDiscountModel : FileViewModel
     {
         [Required]
-        public Guid ServiceTypeId { get; set; }
+        public Guid? ServiceTypeId { get; set; }
 
         [Required]
         public string Title { get; set; }

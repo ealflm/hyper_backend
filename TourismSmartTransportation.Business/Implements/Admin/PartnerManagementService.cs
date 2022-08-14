@@ -63,7 +63,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     ++i;
                 }
             }
-            string password = GeneratePasswordAuto(6);
+            string password = GenerateTextAuto(6);
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             var partner = new TourismSmartTransportation.Data.Models.Partner()
             {
