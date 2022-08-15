@@ -19,5 +19,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Partner
         Task<Response> Delete(Guid id);
         Task<List<VehicleViewModel>> GetVehicleListDropdownOptions(VehicleDropdownOptionsModel model);
         Task<SearchResultViewModel<DriverHistoryViewModel>> GetDriverHistory(DriverTripHistorySearchModel model);
+        Task<Response> UpdateDriverStatus(string driverId, int status);
     }
 }

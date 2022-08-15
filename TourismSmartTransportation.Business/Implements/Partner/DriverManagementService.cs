@@ -55,7 +55,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 VehicleId = model.VehicleId != null ? model.VehicleId.Value : null,
                 Password = passwordHash,
                 Salt = passwordSalt,
-                Status = 1
+                Status = (int)DriverStatus.Active
             };
 
             await _unitOfWork.DriverRepository.Add(driver);
@@ -766,6 +766,27 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 TotalItems = totalRecord
             };
             return result;
+        }
+
+        public async Task<Response> UpdateDriverStatus(string driverId, int status)
+        {
+            var driver = await _unitOfWork.DriverRepository.GetById(Guid.Parse(driverId));
+            if (driver == null)
+            {
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Tài xế không tồn tại"
+                };
+            }
+            driver.Status = status;
+            _unitOfWork.DriverRepository.Update(driver);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Cập nhật trạng thái mới thành công!"
+            };
         }
 
 
