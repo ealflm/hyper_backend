@@ -21,5 +21,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Partner
         Task<TripViewModel> GetTripById(Guid id);
         Task<List<VehicleViewModel>> GetVehicleListDropdownOptions(VehicleDropdownOptionsTripModel model);
         Task<List<DriverViewModel>> GetDriverListDropdownOptions(DriverDropdownOptionsTripModel model);
+        Task<Response> CopyTrip(CopyTripModel model);
     }
 }

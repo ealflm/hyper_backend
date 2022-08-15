@@ -65,31 +65,30 @@ namespace TourismSmartTransportation.API
                 DateTime approval15MinsTimeOver = customerTripsList[i].RentDeadline.Value.Subtract(TimeSpan.FromMinutes(15));
                 DateTime approval5MinsTimeOver = customerTripsList[i].RentDeadline.Value.Subtract(TimeSpan.FromMinutes(5));
 
+                decimal timeOverdue = 0;
+                if (DateTime.UtcNow.CompareTo(approval30MinsTimeOver.AddSeconds(35)) <= 0 &&
+                                DateTime.UtcNow.CompareTo(approval30MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0)
+                {
+                    timeOverdue = 30;
+                }
+                else if (DateTime.UtcNow.CompareTo(approval15MinsTimeOver.AddSeconds(35)) <= 0 &&
+                                DateTime.UtcNow.CompareTo(approval15MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0)
+                {
+                    timeOverdue = 15;
+                }
+                else if (DateTime.UtcNow.CompareTo(approval5MinsTimeOver.AddSeconds(1)) <= 0 &&
+                                DateTime.UtcNow.CompareTo(approval5MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0)
+                {
+                    timeOverdue = 5;
+                }
 
                 // Thông báo tới khách thời gian thuê xe sắp hết trước 30p, 15p và 5p
-                if (
-                        (
-                            (
-                                DateTime.UtcNow.CompareTo(approval30MinsTimeOver.AddSeconds(35)) <= 0 &&
-                                DateTime.UtcNow.CompareTo(approval30MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0
-                            )
-                            ||
-                            (
-                                DateTime.UtcNow.CompareTo(approval15MinsTimeOver.AddSeconds(35)) <= 0 &&
-                                DateTime.UtcNow.CompareTo(approval15MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0
-                            )
-                            ||
-                            (
-                                DateTime.UtcNow.CompareTo(approval5MinsTimeOver.AddSeconds(1)) <= 0 &&
-                                DateTime.UtcNow.CompareTo(approval5MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0
-                            )
-                        )
-                    )
+                if (timeOverdue != 0)
                 {
                     var customer = await customerScopeService.GetCustomer(customerTripsList[i].CustomerId);
                     if (!string.IsNullOrEmpty(customer.RegistrationToken))
                     {
-                        string message = $"Thời gian thuê xe của quý khách sẽ hết hạn lúc {customerTripsList[i].RentDeadline?.ToString("HH:mm - dd/MM/yyyy")}. Quý khách vui lòng trả xe đúng giờ để không bị phát sinh chi phí!";
+                        string message = $"Thời gian thuê xe của quý khách sẽ hết hạn sau {timeOverdue} phút. Quý khách vui lòng trả xe đúng giờ để không bị phát sinh chi phí!";
                         await firebaseService.SendNotificationForRentingService(customer.RegistrationToken, title, message);
                         SaveNotificationModel noti = new SaveNotificationModel()
                         {
@@ -98,11 +97,52 @@ namespace TourismSmartTransportation.API
                             CustomerLastName = customer.LastName,
                             Title = title,
                             Message = message,
-                            Type = "Renting"
+                            Type = "Renting",
+                            Status = (int)NotificationStatus.Active
                         };
                         await notificationScopeService.SaveNotification(noti);
                     }
                 }
+
+
+                // Thông báo tới khách thời gian thuê xe sắp hết trước 30p, 15p và 5p
+                // if (
+                //         (
+                //             (
+                //                 DateTime.UtcNow.CompareTo(approval30MinsTimeOver.AddSeconds(35)) <= 0 &&
+                //                 DateTime.UtcNow.CompareTo(approval30MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0
+                //             )
+                //             ||
+                //             (
+                //                 DateTime.UtcNow.CompareTo(approval15MinsTimeOver.AddSeconds(35)) <= 0 &&
+                //                 DateTime.UtcNow.CompareTo(approval15MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0
+                //             )
+                //             ||
+                //             (
+                //                 DateTime.UtcNow.CompareTo(approval5MinsTimeOver.AddSeconds(1)) <= 0 &&
+                //                 DateTime.UtcNow.CompareTo(approval5MinsTimeOver.Subtract(TimeSpan.FromSeconds(35))) >= 0
+                //             )
+                //         )
+                //     )
+                // {
+                //     var customer = await customerScopeService.GetCustomer(customerTripsList[i].CustomerId);
+                //     if (!string.IsNullOrEmpty(customer.RegistrationToken))
+                //     {
+                //         string message = $"Thời gian thuê xe của quý khách sẽ hết hạn lúc {customerTripsList[i].RentDeadline?.ToString("HH:mm - dd/MM/yyyy")}. Quý khách vui lòng trả xe đúng giờ để không bị phát sinh chi phí!";
+                //         await firebaseService.SendNotificationForRentingService(customer.RegistrationToken, title, message);
+                //         SaveNotificationModel noti = new SaveNotificationModel()
+                //         {
+                //             CustomerId = customer.Id.ToString(),
+                //             CustomerFirstName = customer.FirstName,
+                //             CustomerLastName = customer.LastName,
+                //             Title = title,
+                //             Message = message,
+                //             Type = "Renting",
+                //             Status = (int)NotificationStatus.Active
+                //         };
+                //         await notificationScopeService.SaveNotification(noti);
+                //     }
+                // }
 
                 if (DateTime.UtcNow.CompareTo(customerTripsList[i].RentDeadline.Value.AddMinutes(10)) >= 0) // out of limit time than 10 minutes
                 {
@@ -113,6 +153,17 @@ namespace TourismSmartTransportation.API
                     {
                         string message = $"Thời gian thuê xe của quý khác đã quá hạn 10 phút.";
                         await firebaseService.SendNotificationForRentingService(customer.RegistrationToken, title, message);
+                        SaveNotificationModel noti = new SaveNotificationModel()
+                        {
+                            CustomerId = customer.Id.ToString(),
+                            CustomerFirstName = customer.FirstName,
+                            CustomerLastName = customer.LastName,
+                            Title = title,
+                            Message = message,
+                            Type = "Renting",
+                            Status = (int)NotificationStatus.Active
+                        };
+                        await notificationScopeService.SaveNotification(noti);
                     }
                 }
             }

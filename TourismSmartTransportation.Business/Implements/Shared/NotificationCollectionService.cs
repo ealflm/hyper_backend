@@ -22,6 +22,50 @@ namespace TourismSmartTransportation.Business.Implements.Shared
             _notificationService = mongo.GetNotificationsCollection;
         }
 
+        public async Task<Response> DisableNotificationStatus(string customerId, string type)
+        {
+            if (string.IsNullOrEmpty(type))
+            {
+                var notisList1 = await _notificationService.Find(x => x.CustomerId == customerId).ToListAsync();
+                foreach (var notiItem in notisList1)
+                {
+                    if (notiItem.Status == (int)NotificationStatus.BeNotUsed)
+                    {
+                        continue;
+                    }
+
+                    var filter = Builders<NotificationCollection>.Filter.Eq("_id", notiItem.Id);
+                    var update = Builders<NotificationCollection>.Update.Set("Status", (int)NotificationStatus.Disabled);
+                    _notificationService.UpdateOne(filter, update);
+                }
+
+                return new()
+                {
+                    StatusCode = 201,
+                    Message = "Thông báo đã bị vô hiệu hóa"
+                };
+            }
+
+            var notisList2 = await _notificationService.Find(x => x.CustomerId == customerId && x.Type == type).ToListAsync();
+            foreach (var notiItem in notisList2)
+            {
+                if (notiItem.Status == (int)NotificationStatus.BeNotUsed)
+                {
+                    continue;
+                }
+
+                var filter = Builders<NotificationCollection>.Filter.Eq("_id", notiItem.Id);
+                var update = Builders<NotificationCollection>.Update.Set("Status", (int)NotificationStatus.Disabled);
+                _notificationService.UpdateOne(filter, update);
+            }
+
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Thông báo đã bị vô hiệu hóa"
+            };
+        }
+
         public async Task<List<NotificationCollection>> GetNotificationsByCustomer(string customerId, string type)
         {
             if (string.IsNullOrEmpty(type))

@@ -18,5 +18,6 @@ namespace TourismSmartTransportation.Data.MongoCollections.Notification
         public string Type { get; set; }
         public Int32 CreatedDateTimeStamp { get; set; }
         public Int32 ModifiedDateTimeStamp { get; set; }
+        public Int32 Status { get; set; }
     }
 }

@@ -39,6 +39,14 @@ namespace TourismSmartTransportation.API.Controllers.Partner
             return SendResponse(await _service.GetTripById(id));
         }
 
+
+        [HttpPost]
+        [Route(ApiVer1Url.Partner.Trip + "/copy-trip")]
+        public async Task<IActionResult> CopyTrip([FromBody] CopyTripModel model)
+        {
+            return SendResponse(await _service.CopyTrip(model));
+        }
+
         [HttpPost]
         [Route(ApiVer1Url.Partner.Trip)]
         public async Task<IActionResult> CreateTrip([FromBody] CreateTripModel model)
