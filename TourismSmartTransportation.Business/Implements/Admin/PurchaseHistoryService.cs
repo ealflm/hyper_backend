@@ -57,7 +57,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     order.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value)).Name;
                 }
                 var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
-                order.CustomerName = customer.FirstName + " " + customer.LastName; 
+                order.CustomerName = customer.FirstName + " " + customer.LastName;
             }
             SearchResultViewModel<OrderViewModel> result = null;
             result = new SearchResultViewModel<OrderViewModel>()
@@ -166,14 +166,85 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
             var transationsList = await _unitOfWork.TransactionRepository.Query()
                 .Where(x => x.OrderId == orderId)
-                .Select(x => x.AsTransactionViewModel())
+                .Join(_unitOfWork.OrderRepository.Query(),
+                    transaction => transaction.OrderId,
+                    order => order.OrderId,
+                    (transaction, order) => new { transaction, order }
+                )
+                .Join(_unitOfWork.CustomerRepository.Query(),
+                    trans_ord => trans_ord.order.CustomerId,
+                    customer => customer.CustomerId,
+                    (trans_ord, customer) => new TransactionViewModel()
+                    {
+                        OrderId = trans_ord.order.OrderId,
+                        Amount = trans_ord.transaction.Amount,
+                        CreatedDate = trans_ord.transaction.CreatedDate,
+                        Content = trans_ord.transaction.Content,
+                        Status = trans_ord.transaction.Status,
+                        CustomerName = customer.LastName + " " + customer.FirstName,
+                        PartnerId = trans_ord.order.PartnerId
+                    }
+                )
+                // .Select(x => x.AsTransactionViewModel())
                 .ToListAsync();
+
+            var pairs = new List<Tuple<Guid, string>>();
+            foreach (var item in transationsList)
+            {
+                if (pairs.Count == 0 && item.PartnerId != null)
+                {
+                    var partner = await _unitOfWork.PartnerRepository.GetById(item.PartnerId.Value);
+                    item.CompanyName = partner.CompanyName;
+                    pairs.Add(Tuple.Create(partner.PartnerId, partner.CompanyName));
+                    continue;
+                }
+
+                if (item.PartnerId != null)
+                {
+                    foreach (var p in pairs)
+                    {
+                        if (p.Item1 == item.PartnerId.Value)
+                        {
+                            item.CompanyName = p.Item2;
+                            break;
+                        }
+                    }
+                    var partner = await _unitOfWork.PartnerRepository.GetById(item.PartnerId.Value);
+                    item.CompanyName = partner.CompanyName;
+                    pairs.Add(Tuple.Create(partner.PartnerId, partner.CompanyName));
+                }
+            }
             SearchResultViewModel<TransactionViewModel> result = null;
             result = new SearchResultViewModel<TransactionViewModel>()
             {
                 Items = transationsList,
                 PageSize = 1,
                 TotalItems = transationsList.Count
+            };
+            return result;
+        }
+
+        public async Task<SearchResultViewModel<OrderViewModel>> GetOrderByPartnerId(Guid partnerId)
+        {
+            var orders = await _unitOfWork.OrderRepository.Query()
+                .Where(x => x.PartnerId.Equals(partnerId))
+                .Select(x => x.AsOrderViewModel())
+                .ToListAsync();
+            foreach (var order in orders)
+            {
+                if (order.ServiceTypeId != null)
+                {
+                    order.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value)).Name;
+                }
+                var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
+                order.CustomerName = customer.FirstName + " " + customer.LastName;
+            }
+            SearchResultViewModel<OrderViewModel> result = null;
+            result = new SearchResultViewModel<OrderViewModel>()
+            {
+                Items = orders,
+                PageSize = 1,
+                TotalItems = orders.Count
             };
             return result;
         }

@@ -69,5 +69,11 @@ namespace ApiVer1Url
 
         //return vehicle
         public const string ReturnVehicle = BaseApiUrl + "/return-vehicle";
+
+        // notification
+        public const string Notification = BaseApiUrl + "/notification";
+
+        // discount
+        public const string Discount = BaseApiUrl + "/discount";
     }
 }

@@ -34,7 +34,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 return new()
                 {
                     StatusCode = 400,
-                    Message = "Yêu cầu không hợp lệ!"
+                    Message = "Số tiền trong ví không đủ!"
                 };
             }
             var newOrder = new Order()
@@ -124,8 +124,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             Price = x.Price,
                             Content = x.Content,
                             Quantity = x.Quantity,
-                            LicensePlates= x.LicensePlates,
-                            ModePrice= x.ModePrice,
+                            LicensePlates = x.LicensePlates,
+                            ModePrice = x.ModePrice,
                             Status = 1
                         };
                         await _unitOfWork.OrderDetailOfRentingServiceRepository.Add(orderDetail);
@@ -139,6 +139,26 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
 
                 }
+            }
+
+
+            // Xử lý mã giảm giá cho hóa đơn
+            if (newOrder.DiscountId != null)
+            {
+                var discount = await _unitOfWork.DiscountRepository.GetById(newOrder.DiscountId.Value);
+                if (discount.ServiceTypeId != null) // kiểm tra mã giảm giá này sử dụng cho dịch vào cụ thể nào hay cho tất cả dịch vụ
+                {
+                    if (discount.ServiceTypeId.Value != newOrder.ServiceTypeId)
+                    {
+                        var serviceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(discount.ServiceTypeId.Value)).Name;
+                        return new()
+                        {
+                            StatusCode = 400,
+                            Message = $"Mã giảm giá này chỉ sử dụng cho dịch vụ {serviceTypeName}"
+                        };
+                    }
+                }
+                newOrder.TotalPrice -= newOrder.TotalPrice * discount.Value; // trừ tiền giảm giá
             }
 
 
@@ -217,7 +237,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
                 if (isUsingPackage)
                 {
-                    partnerTransaction.Amount = orderPrice * 0.9M;
+                    // nhận toàn bộ tiền trip từ khách hàng trước và sẽ đưa phần trăm lại cho admin sau khi mà customer hoàn thành trip
+                    partnerTransaction.Amount = orderPrice;
                 }
 
                 // Cập nhật lại ví của partner
@@ -257,7 +278,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             // Cập nhật lại ví trong trường hợp khách hàng có sử dụng dịch vụ
             if (isUsingPackage)
             {
-                adminTransaction.Amount = -orderPrice * 0.9M;
+                // chuyển toàn bộ tiền của trip cho đối tác trước và nhận refund price từ đối tác lại sau khi customer hoàn thành trip
+                adminTransaction.Amount = -orderPrice;
                 adminWallet.AccountBalance += adminTransaction.Amount;
                 adminTransaction.Content = "Hệ thống chuyển tiền cho đối tác";
             }

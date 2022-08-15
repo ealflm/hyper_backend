@@ -235,7 +235,18 @@ namespace TourismSmartTransportation.Data.Context
             {
                 entity.ToTable("Discount");
 
+                entity.HasIndex(e => e.Code, "UQ__Discount__A25C5AA7360B9637")
+                    .IsUnique();
+
+                entity.HasIndex(e => e.Code, "UQ__Discount__A25C5AA78A2DA294")
+                    .IsUnique();
+
                 entity.Property(e => e.DiscountId).HasDefaultValueSql("(newid())");
+
+                entity.Property(e => e.Code)
+                    .IsRequired()
+                    .HasMaxLength(10)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Description).IsRequired();
 
@@ -252,7 +263,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.ServiceType)
                     .WithMany(p => p.Discounts)
                     .HasForeignKey(d => d.ServiceTypeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Discount_ServiceType");
             });
 
@@ -828,7 +838,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Route)
                     .WithMany(p => p.RoutePriceBusings)
                     .HasForeignKey(d => d.RouteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_RoutePriceBusing_Route");
             });
 
@@ -881,7 +890,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Route)
                     .WithMany(p => p.StationRoutes)
                     .HasForeignKey(d => d.RouteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_StationRoute_Route");
 
                 entity.HasOne(d => d.Station)
@@ -946,7 +954,6 @@ namespace TourismSmartTransportation.Data.Context
                 entity.HasOne(d => d.Route)
                     .WithMany(p => p.Trips)
                     .HasForeignKey(d => d.RouteId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Trip_Route");
 
                 entity.HasOne(d => d.Vehicle)

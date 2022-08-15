@@ -38,15 +38,17 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
         public async Task<List<List<RouteViewModel>>> FindBusTrip(BusTripSearchModel model)
         {
+            var result = new List<List<RouteViewModel>>();
             var stationList = await _unitOfWork.StationRepository.Query().ToListAsync();
-            Station start = new Station();
-            Station end = new Station();
+            List<Station> startList = new List<Station>();
+            List<Station> endList = new List<Station>();
             double minDisStart = double.MaxValue;
             double minDisEnd = double.MaxValue;
+            List<double> disStart = new List<double>();
+            List<double> disEnd = new List<double>();
             HttpClient client = new HttpClient();
             foreach (Station x in stationList)
             {
-
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Get,
@@ -59,13 +61,23 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var jmessage = JObject.Parse(body);
                     var distance = double.Parse(jmessage["routes"][0]["distance"].ToString());
                     if (distance < minDisStart)
-                    {
+                    {      
                         minDisStart = distance;
-                        start = x;
                     }
-
+                    disStart.Add(distance);
                 }
             }
+            int index = 0;
+            foreach(Station x in stationList)
+            {
+                
+                if(disStart[index]- minDisStart <= 300)
+                {
+                    startList.Add(x);
+                }
+                index++;
+            }
+
 
             foreach (Station x in stationList)
             {
@@ -84,268 +96,288 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     if (distance < minDisEnd)
                     {
                         minDisEnd = distance;
-                        end = x;
                     }
-
+                    disEnd.Add(distance);
                 }
             }
+
+            index = 0;
+            foreach (Station x in stationList)
+            {
+
+                if (disEnd[index] - minDisEnd <= 300)
+                {
+                    endList.Add(x);
+                }
+                index++;
+            }
+
 
             int LinkRouteCount = await _unitOfWork.LinkRouteRepository.Query().CountAsync();
             int routeCount = await _unitOfWork.RouteRepository.Query().CountAsync();
-            Hashtable countAppearRouteList = new Hashtable();
-            var startRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.StationId.Equals(start.StationId)).ToListAsync();
-            var endRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.StationId.Equals(end.StationId)).ToListAsync();
-            Queue<Node> queue = new Queue<Node>();
-            var resultPathList = new List<Node>();
-            foreach (StationRoute startRoute in startRouteList)
+            foreach(Station start in startList)
             {
-
-
-                foreach (StationRoute endRoute in endRouteList)
+                foreach (Station end in endList)
                 {
-                    queue.Clear();
-                    queue.Enqueue(new Node(startRoute.RouteId, null, Guid.Empty));
-                    countAppearRouteList.Clear();
-                    countAppearRouteList.Add(startRoute.RouteId, LinkRouteCount);
-                    Guid stationLink = Guid.Empty;
-                    if (!endRoute.RouteId.Equals(startRoute.RouteId))
+
+
+
+                    Hashtable countAppearRouteList = new Hashtable();
+                    var startRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.StationId.Equals(start.StationId)).ToListAsync();
+                    var endRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.StationId.Equals(end.StationId)).ToListAsync();
+
+                    Queue<Node> queue = new Queue<Node>();
+                    var resultPathList = new List<Node>();
+                    foreach (StationRoute startRoute in startRouteList)
                     {
 
-                        while (queue.Count != 0)
-                        {
-                            bool checkLink = true;
-                            var curentRoute = queue.Dequeue();
-                            if (!curentRoute.Value.Equals(endRoute.RouteId))
-                            {
-                                var linkRouteList = await _unitOfWork.LinkRouteRepository.Query().Where(x => x.FirstRouteId.Equals(curentRoute.Value) || x.SecondRouteId.Equals(curentRoute.Value)).ToListAsync();
-                                foreach (LinkRoute route in linkRouteList)
-                                {
-                                    var routeId = route.FirstRouteId;
-                                    if (routeId.Equals(curentRoute.Value))
-                                    {
-                                        routeId = route.SecondRouteId;
-                                    }
-                                    bool check = false;
-                                    try
-                                    {
-                                        countAppearRouteList.Add(routeId, LinkRouteCount);
-                                        check = true;
-                                    }
-                                    catch
-                                    {
-                                        check = ((int)countAppearRouteList[routeId]) > 0;
-                                    }
-                                    finally
-                                    {
 
-                                        if (route.StationId != null)
+                        foreach (StationRoute endRoute in endRouteList)
+                        {
+                            queue.Clear();
+                            queue.Enqueue(new Node(startRoute.RouteId, null, Guid.Empty));
+                            countAppearRouteList.Clear();
+                            countAppearRouteList.Add(startRoute.RouteId, LinkRouteCount);
+                            Guid stationLink = Guid.Empty;
+                            if (!endRoute.RouteId.Equals(startRoute.RouteId))
+                            {
+
+                                while (queue.Count != 0)
+                                {
+                                    bool checkLink = true;
+                                    var curentRoute = queue.Dequeue();
+                                    if (!curentRoute.Value.Equals(endRoute.RouteId))
+                                    {
+                                        var linkRouteList = await _unitOfWork.LinkRouteRepository.Query().Where(x => x.FirstRouteId.Equals(curentRoute.Value) || x.SecondRouteId.Equals(curentRoute.Value)).ToListAsync();
+                                        foreach (LinkRoute route in linkRouteList)
                                         {
-                                            if (route.StationId.Equals(curentRoute.StationId))
+                                            var routeId = route.FirstRouteId;
+                                            if (routeId.Equals(curentRoute.Value))
                                             {
-                                                checkLink = false;
+                                                routeId = route.SecondRouteId;
                                             }
-                                            else
+                                            bool check = false;
+                                            try
                                             {
-                                                stationLink = route.StationId.Value;
+                                                countAppearRouteList.Add(routeId, LinkRouteCount);
+                                                check = true;
                                             }
-                                        }
-                                        else
-                                        {
-                                            var linkStation = await _unitOfWork.LinkStationRepository.GetById(route.LinkStationId.Value);
-                                            if (linkStation.FirstStationId.Equals(curentRoute.StationId) || linkStation.SecondStationId.Equals(curentRoute.StationId))
+                                            catch
                                             {
-                                                checkLink = false;
+                                                check = ((int)countAppearRouteList[routeId]) > 0;
                                             }
-                                            else
+                                            finally
                                             {
-                                                stationLink = linkStation.FirstStationId;
-                                                var stationRoute = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(routeId) && x.StationId.Equals(linkStation.FirstStationId)).FirstOrDefaultAsync();
-                                                if (stationRoute == null)
+
+                                                if (route.StationId != null)
                                                 {
-                                                    stationLink = linkStation.SecondStationId;
+                                                    if (route.StationId.Equals(curentRoute.StationId))
+                                                    {
+                                                        checkLink = false;
+                                                    }
+                                                    else
+                                                    {
+                                                        stationLink = route.StationId.Value;
+                                                    }
                                                 }
+                                                else
+                                                {
+                                                    var linkStation = await _unitOfWork.LinkStationRepository.GetById(route.LinkStationId.Value);
+                                                    if (linkStation.FirstStationId.Equals(curentRoute.StationId) || linkStation.SecondStationId.Equals(curentRoute.StationId))
+                                                    {
+                                                        checkLink = false;
+                                                    }
+                                                    else
+                                                    {
+                                                        stationLink = linkStation.FirstStationId;
+                                                        var stationRoute = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(routeId) && x.StationId.Equals(linkStation.FirstStationId)).FirstOrDefaultAsync();
+                                                        if (stationRoute == null)
+                                                        {
+                                                            stationLink = linkStation.SecondStationId;
+                                                        }
 
+                                                    }
+                                                }
+                                                if (check && checkLink && curentRoute.Count < routeCount && !routeId.Equals(startRoute.RouteId))
+                                                {
+                                                    queue.Enqueue(new Node(routeId, curentRoute, stationLink));
+                                                    countAppearRouteList[routeId] = ((int)countAppearRouteList[routeId]) - 1;
+                                                }
                                             }
-                                        }
-                                        if (check && checkLink && curentRoute.Count < routeCount && !routeId.Equals(startRoute.RouteId))
-                                        {
-                                            queue.Enqueue(new Node(routeId, curentRoute, stationLink));
-                                            countAppearRouteList[routeId] = ((int)countAppearRouteList[routeId]) - 1;
+
+
                                         }
                                     }
-
-
+                                    else
+                                    {
+                                        resultPathList.Add(curentRoute);
+                                    }
+                                    if (countAppearRouteList[endRoute.RouteId] != null && ((int)countAppearRouteList[endRoute.RouteId]) == -1)
+                                    {
+                                        break;
+                                    }
                                 }
                             }
                             else
                             {
-                                resultPathList.Add(curentRoute);
-                            }
-                            if (countAppearRouteList[endRoute.RouteId] != null && ((int)countAppearRouteList[endRoute.RouteId]) == -1)
-                            {
-                                break;
+                                resultPathList.Add(new Node(startRoute.RouteId, null, Guid.Empty));
                             }
                         }
                     }
-                    else
-                    {
-                        resultPathList.Add(new Node(startRoute.RouteId, null, Guid.Empty));
-                    }
-                }
-            }
-            var result = new List<List<RouteViewModel>>();
-            var customerStartPoint = new Station()
-            {
-                Longitude = model.StartLongitude,
-                Latitude = model.StartLatitude
-            };
-            var customerEndPoint = new Station()
-            {
-                Longitude = model.EndLongitude,
-                Latitude = model.EndLatitude
-            };
 
-            foreach (Node node in resultPathList)
-            {
-                var checkSet = new HashSet<Guid>();
-                var tmpNode = node;
-                var resultPath = new List<RouteViewModel>();
-                var firstRoute = new RouteViewModel()
-                {
-                    StationList = new List<StationViewModel>(),
-                    Name = "Đi bộ",
-                    Distance = (decimal)minDisEnd
-                };
-                firstRoute.StationList.Add(customerEndPoint.AsStationViewModel());
-                firstRoute.StationList.Add(end.AsStationViewModel());
-                resultPath.Add(firstRoute);
-                var currentStation = end;
-                bool check = true;
-                while (tmpNode != null)
-                {
-                    if (!checkSet.Add(tmpNode.Value))
+                    var customerStartPoint = new Station()
                     {
-                        check = false;
-                        break;
-                    }
-                    else
+                        Longitude = model.StartLongitude,
+                        Latitude = model.StartLatitude
+                    };
+                    var customerEndPoint = new Station()
                     {
-                        LinkRoute path = null;
-                        try
+                        Longitude = model.EndLongitude,
+                        Latitude = model.EndLatitude
+                    };
+
+                    foreach (Node node in resultPathList)
+                    {
+                        var checkSet = new HashSet<Guid>();
+                        var tmpNode = node;
+                        var resultPath = new List<RouteViewModel>();
+                        var firstRoute = new RouteViewModel()
                         {
-                            path = await _unitOfWork.LinkRouteRepository.Query().Where(x => (x.FirstRouteId.Equals(tmpNode.Value) && x.SecondRouteId.Equals(tmpNode.Parent.Value)) || (x.SecondRouteId.Equals(tmpNode.Value) && x.FirstRouteId.Equals(tmpNode.Parent.Value))).FirstOrDefaultAsync();
-                        }
-                        catch
+                            StationList = new List<StationViewModel>(),
+                            Name = "Đi bộ",
+                            Distance = (decimal)minDisEnd
+                        };
+                        firstRoute.StationList.Add(customerEndPoint.AsStationViewModel());
+                        firstRoute.StationList.Add(end.AsStationViewModel());
+                        resultPath.Add(firstRoute);
+                        var currentStation = end;
+                        bool check = true;
+                        while (tmpNode != null)
                         {
-                            path = new LinkRoute()
-                            {
-                                StationId = start.StationId
-                            };
-                        }
-                        var stationListOfRoute = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value)).OrderBy(x => x.OrderNumber).ToListAsync();
-                        var route = (await _unitOfWork.RouteRepository.GetById(tmpNode.Value)).AsRouteViewModel();
-                        route.StationList = new List<StationViewModel>();
-                        if (path.LinkStationId == null)
-                        {
-                            var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(path.StationId)).FirstOrDefaultAsync();
-                            var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
-                            if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
-                            {
-                                int j = 0;
-                                for (int i = stationRouteOld.OrderNumber; i != stationRouteNew.OrderNumber - 1; i--)
-                                {
-                                    var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                    route.StationList.Add(station.AsStationViewModel());
-                                    j++;
-                                }
-                                if (j == 1)
-                                {
-                                    check = false;
-                                }
-                                route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
-                                resultPath.Add(route);
-                                currentStation = await _unitOfWork.StationRepository.GetById(path.StationId.Value);
-                            }
-                            else
+                            if (!checkSet.Add(tmpNode.Value))
                             {
                                 check = false;
                                 break;
                             }
-                        }
-                        else
-                        {
-                            var linkStation = await _unitOfWork.LinkStationRepository.GetById(path.LinkStationId.Value);
-                            var firstStation = await _unitOfWork.StationRepository.GetById(linkStation.FirstStationId);
-                            var secondStation = await _unitOfWork.StationRepository.GetById(linkStation.SecondStationId);
-                            if (tmpNode.Value.Equals(linkStation.FirstStationId))
-                            {
-                                var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
-                                var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
-                                int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
-
-                                for (int i = stationRouteOld.OrderNumber + step; i != stationRouteNew.OrderNumber + step; i += step)
-                                {
-                                    var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                    route.StationList.Add(station.AsStationViewModel());
-
-                                }
-                                route.StationList.Add(secondStation.AsStationViewModel());
-                                route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
-                                resultPath.Add(route);
-                                var midRoute = new RouteViewModel()
-                                {
-                                    StationList = new List<StationViewModel>(),
-                                    Name = "Đi bộ",
-                                    Distance = linkStation.Distance
-                                };
-                                midRoute.StationList.Add(firstStation.AsStationViewModel());
-                                midRoute.StationList.Add(secondStation.AsStationViewModel());
-                                resultPath.Add(midRoute);
-                                currentStation = secondStation;
-                            }
                             else
                             {
-                                var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(secondStation.StationId)).FirstOrDefaultAsync();
-                                var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
-                                int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
-
-                                for (int i = stationRouteOld.OrderNumber + step; i != stationRouteNew.OrderNumber + step; i += step)
+                                LinkRoute path = null;
+                                try
                                 {
-                                    var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                    route.StationList.Add(station.AsStationViewModel());
+                                    path = await _unitOfWork.LinkRouteRepository.Query().Where(x => (x.FirstRouteId.Equals(tmpNode.Value) && x.SecondRouteId.Equals(tmpNode.Parent.Value)) || (x.SecondRouteId.Equals(tmpNode.Value) && x.FirstRouteId.Equals(tmpNode.Parent.Value))).FirstOrDefaultAsync();
                                 }
-                                route.StationList.Add(firstStation.AsStationViewModel());
-                                route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
-                                resultPath.Add(route);
-                                var midRoute = new RouteViewModel()
+                                catch
                                 {
-                                    StationList = new List<StationViewModel>(),
-                                    Name = "Đi bộ",
-                                    Distance = linkStation.Distance
-                                };
-                                midRoute.StationList.Add(secondStation.AsStationViewModel());
-                                midRoute.StationList.Add(firstStation.AsStationViewModel());
-                                resultPath.Add(midRoute);
-                                currentStation = firstStation;
+                                    path = new LinkRoute()
+                                    {
+                                        StationId = start.StationId
+                                    };
+                                }
+                                var stationListOfRoute = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value)).OrderBy(x => x.OrderNumber).ToListAsync();
+                                var route = (await _unitOfWork.RouteRepository.GetById(tmpNode.Value)).AsRouteViewModel();
+                                route.StationList = new List<StationViewModel>();
+                                if (path.LinkStationId == null)
+                                {
+                                    var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(path.StationId)).FirstOrDefaultAsync();
+                                    var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
+                                    if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
+                                    {
+                                        int j = 0;
+                                        for (int i = stationRouteOld.OrderNumber; i != stationRouteNew.OrderNumber - 1; i--)
+                                        {
+                                            var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
+                                            route.StationList.Add(station.AsStationViewModel());
+                                            j++;
+                                        }
+                                        if (j == 1)
+                                        {
+                                            check = false;
+                                        }
+                                        route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
+                                        resultPath.Add(route);
+                                        currentStation = await _unitOfWork.StationRepository.GetById(path.StationId.Value);
+                                    }
+                                    else
+                                    {
+                                        check = false;
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    var linkStation = await _unitOfWork.LinkStationRepository.GetById(path.LinkStationId.Value);
+                                    var firstStation = await _unitOfWork.StationRepository.GetById(linkStation.FirstStationId);
+                                    var secondStation = await _unitOfWork.StationRepository.GetById(linkStation.SecondStationId);
+                                    if (tmpNode.Value.Equals(linkStation.FirstStationId))
+                                    {
+                                        var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
+                                        var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
+                                        int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
+
+                                        for (int i = stationRouteOld.OrderNumber + step; i != stationRouteNew.OrderNumber + step; i += step)
+                                        {
+                                            var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
+                                            route.StationList.Add(station.AsStationViewModel());
+
+                                        }
+                                        route.StationList.Add(secondStation.AsStationViewModel());
+                                        route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
+                                        resultPath.Add(route);
+                                        var midRoute = new RouteViewModel()
+                                        {
+                                            StationList = new List<StationViewModel>(),
+                                            Name = "Đi bộ",
+                                            Distance = linkStation.Distance
+                                        };
+                                        midRoute.StationList.Add(firstStation.AsStationViewModel());
+                                        midRoute.StationList.Add(secondStation.AsStationViewModel());
+                                        resultPath.Add(midRoute);
+                                        currentStation = secondStation;
+                                    }
+                                    else
+                                    {
+                                        var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(secondStation.StationId)).FirstOrDefaultAsync();
+                                        var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
+                                        int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
+
+                                        for (int i = stationRouteOld.OrderNumber + step; i != stationRouteNew.OrderNumber + step; i += step)
+                                        {
+                                            var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
+                                            route.StationList.Add(station.AsStationViewModel());
+                                        }
+                                        route.StationList.Add(firstStation.AsStationViewModel());
+                                        route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
+                                        resultPath.Add(route);
+                                        var midRoute = new RouteViewModel()
+                                        {
+                                            StationList = new List<StationViewModel>(),
+                                            Name = "Đi bộ",
+                                            Distance = linkStation.Distance
+                                        };
+                                        midRoute.StationList.Add(secondStation.AsStationViewModel());
+                                        midRoute.StationList.Add(firstStation.AsStationViewModel());
+                                        resultPath.Add(midRoute);
+                                        currentStation = firstStation;
+                                    }
+                                }
+                                tmpNode = tmpNode.Parent;
                             }
                         }
-                        tmpNode = tmpNode.Parent;
+                        if (check)
+                        {
+                            var lastRoute = new RouteViewModel()
+                            {
+                                StationList = new List<StationViewModel>(),
+                                Name = "Đi bộ",
+                                Distance = (decimal)minDisStart
+                            };
+                            lastRoute.StationList.Add(currentStation.AsStationViewModel());
+                            lastRoute.StationList.Add(customerStartPoint.AsStationViewModel());
+                            resultPath.Add(lastRoute);
+                            result.Add(resultPath);
+                        }
                     }
-                }
-                if (check)
-                {
-                    var lastRoute = new RouteViewModel()
-                    {
-                        StationList = new List<StationViewModel>(),
-                        Name = "Đi bộ",
-                        Distance = (decimal)minDisStart
-                    };
-                    lastRoute.StationList.Add(currentStation.AsStationViewModel());
-                    lastRoute.StationList.Add(customerStartPoint.AsStationViewModel());
-                    resultPath.Add(lastRoute);
-                    result.Add(resultPath);
-                }
-            }
+                }}
 
             return result;
         }
@@ -648,18 +680,18 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Đối tác gửi lại 90% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.9M),
+                        Amount = -(refundPrice * 0.9M), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = partnerWallet.WalletId
                     };
-                    partnerWallet.AccountBalance -= partnerTransaction.Amount;
+                    partnerWallet.AccountBalance = partnerWallet.AccountBalance - (-partnerTransaction.Amount); // trừ tiền từ transaction
                     await _unitOfWork.TransactionRepository.Add(partnerTransaction);
                     _unitOfWork.WalletRepository.Update(partnerWallet);
 
                     // Add amout to admin wallet
                     var adminWallet = await _unitOfWork.WalletRepository
                                         .Query()
-                                        .Where(x => x.PartnerId == null || x.CustomerId == null)
+                                        .Where(x => x.PartnerId == null && x.CustomerId == null)
                                         .FirstOrDefaultAsync();
 
                     var adminTransaction = new Transaction()
@@ -668,11 +700,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Hệ Thống Gửi lại 10% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.1M),
+                        Amount = -(refundPrice * 0.1M), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = adminWallet.WalletId
                     };
-                    adminWallet.AccountBalance -= adminTransaction.Amount;
+                    adminWallet.AccountBalance = adminWallet.AccountBalance - (-adminTransaction.Amount); // trừ tiền từ transaction
                     await _unitOfWork.TransactionRepository.Add(adminTransaction);
                     _unitOfWork.WalletRepository.Update(adminWallet);
 
@@ -680,6 +712,83 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
                 }
+                // trường hợp order có total price = 0 là xài gói dịch vụ, 
+                // tránh trường hợp order có total price != 0 và refundPrice < 0
+                else if (order.TotalPrice == 0)
+                {
+                    // cập nhật lại trạng thái của order -> hoàn thành
+                    order.Status = (int)OrderStatus.Done;
+                    _unitOfWork.OrderRepository.Update(order);
+
+                    // tạo giao dịch khi xuống trạm và sử dụng gói dịch vụ để thanh toán
+                    var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
+                    var transaction = new Transaction()
+                    {
+                        WalletId = wallet.WalletId,
+                        Amount = 0,
+                        Content = "Xuống trạm, sử dụng gói dịch vụ để thanh toán",
+                        CreatedDate = DateTime.Now,
+                        OrderId = order.OrderId,
+                        Status = 1,
+                        TransactionId = Guid.NewGuid()
+                    };
+                    await _unitOfWork.TransactionRepository.Add(transaction);
+
+                    // Lấy full giá của trip
+                    var route = await _unitOfWork.RouteRepository.GetById(tripEntity.RouteId);
+                    var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
+                    var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
+                    var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
+                    var priceAfterRefunding = basePrice.Price - (-refundPrice); // tính tiền dựa trên khoảng cách mà khách hàng đi được
+
+                    // Cập nhật ví lại cho partner
+                    var partnerWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == order.PartnerId)
+                                        .FirstOrDefaultAsync();
+
+                    var partnerTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Đối tác gửi tiền hoa hồng lại cho hệ thống",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.Now,
+                        Amount = -priceAfterRefunding * 0.1M, // xét dấu âm cho giao dịch trừ tiền
+                        Status = 1,
+                        WalletId = partnerWallet.WalletId
+                    };
+                    partnerWallet.AccountBalance = partnerWallet.AccountBalance - (-partnerTransaction.Amount); // trừ tiền từ transaction
+                    await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+                    _unitOfWork.WalletRepository.Update(partnerWallet);
+
+                    // Cập nhật ví lại cho Admin
+                    var adminWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == null && x.CustomerId == null)
+                                        .FirstOrDefaultAsync();
+
+                    var adminTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Hệ thống nhận tiền hoa hồng từ đối tác",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.Now,
+                        Amount = priceAfterRefunding * 0.1M,
+                        Status = 1,
+                        WalletId = adminWallet.WalletId
+                    };
+                    adminWallet.AccountBalance += adminTransaction.Amount;
+                    await _unitOfWork.TransactionRepository.Add(adminTransaction);
+                    _unitOfWork.WalletRepository.Update(adminWallet);
+
+                    // cập nhật thêm vị trí xuống trạm và trạng thái -> hoàn thành của customer trip
+                    oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
+
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
                 return new()
                 {
                     StatusCode = 204,

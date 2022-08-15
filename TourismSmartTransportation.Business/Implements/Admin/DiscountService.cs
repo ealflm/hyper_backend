@@ -12,26 +12,48 @@ using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 using TourismSmartTransportation.Business.Extensions;
 using Azure.Storage.Blobs;
+using TourismSmartTransportation.Business.Interfaces.Shared;
+using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class DiscountService : BaseService, IDiscountService
     {
-        public DiscountService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private readonly IFirebaseCloudMsgService _firebaseService;
+        private readonly INotificationCollectionService _notiService;
+        public DiscountService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient,
+                                IFirebaseCloudMsgService firebaseService, INotificationCollectionService notiService) : base(unitOfWork, blobServiceClient)
         {
+            _firebaseService = firebaseService;
+            _notiService = notiService;
         }
 
         public async Task<Response> CreateDiscount(CreateDiscountModel model)
         {
-            var serviceType = await _unitOfWork.ServiceTypeRepository.GetById(model.ServiceTypeId);
-            if (serviceType == null)
+            // var serviceType = await _unitOfWork.ServiceTypeRepository.GetById(model.ServiceTypeId);
+            // if (serviceType == null)
+            // {
+            //     return new()
+            //     {
+            //         StatusCode = 400,
+            //         Message = "Loại dịch vụ không tồn tại!"
+            //     };
+            // }
+
+            string discountCode = GenerateTextAuto(lengthOfString: 8, specialText: false);
+            while (true)
             {
-                return new()
+                var isExist = await _unitOfWork.DiscountRepository
+                            .Query()
+                            .AnyAsync(x => x.Code == discountCode);
+
+                if (!isExist)
                 {
-                    StatusCode = 400,
-                    Message = "Loại dịch vụ không tồn tại!"
-                };
+                    break;
+                }
+                discountCode = GenerateTextAuto(lengthOfString: 8, specialText: false);
             }
+
 
             var entity = new Discount()
             {
@@ -43,8 +65,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 TimeEnd = model.TimeEnd,
                 PhotoUrl = await UploadFile(model.UploadFile, Container.Admin),
                 Value = model.Value,
-                Status = 1
+                Status = (int)DiscountStatus.UnSent,
+                Code = discountCode
             };
+
             await _unitOfWork.DiscountRepository.Add(entity);
             await _unitOfWork.SaveChangesAsync();
 
@@ -63,18 +87,18 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 return new()
                 {
                     StatusCode = 404,
-                    Message = "Không tìm thấy!"
+                    Message = "Không tìm thấy mã giảm giá này!"
                 };
             }
 
-            entity.Status = 0;
+            entity.Status = (int)DiscountStatus.Disabled;
             _unitOfWork.DiscountRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
 
             return new()
             {
                 StatusCode = 201,
-                Message = "Cập nhật trạng thái thành công!"
+                Message = "Mã giảm giá đã bị vô hiệu hóa"
             };
 
         }
@@ -145,7 +169,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 return new()
                 {
                     StatusCode = 404,
-                    Message = "Không tìm thấy"
+                    Message = "Không tìm thấy mã giảm giá này!"
                 };
             }
             DateTime timeEnd = model.TimeEnd != null ? model.TimeEnd.Value : entity.TimeEnd;
@@ -183,8 +207,125 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             return new()
             {
                 StatusCode = 201,
-                Message = "Cập nhật thành công!"
+                Message = "Cập nhật mã giảm giá thành công!"
             };
+        }
+
+        public async Task<Response> SendDiscountToCustomer(SendDiscountToCustomer model)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId);
+            if (customer == null)
+            {
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Không tìm thấy khách hàng!"
+                };
+            }
+
+            var discount = await _unitOfWork.DiscountRepository.GetById(model.DiscountId);
+            if (discount == null)
+            {
+                return new()
+                {
+                    StatusCode = 404,
+                    Message = "Mã giảm giá không hợp lệ!"
+                };
+            }
+
+            switch (discount.Status)
+            {
+                case (int)DiscountStatus.Disabled:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá đã bị vô hiệu hóa!" };
+
+                case (int)DiscountStatus.BeSent:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá đã được gửi cho một khách hàng khác!" };
+
+                case (int)DiscountStatus.BeUsed:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá đã được sử dụng!" };
+
+                case (int)DiscountStatus.Expire:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá đã hết hạn sử dụng!" };
+
+                default: break;
+            }
+
+            if (discount.Status == (int)DiscountStatus.UnSent)
+            {
+                SaveNotificationModel notiModel = new SaveNotificationModel()
+                {
+                    CustomerId = customer.CustomerId.ToString(),
+                    CustomerFirstName = customer.FirstName,
+                    CustomerLastName = customer.LastName,
+                    Title = "Mã giảm giá từ hệ thông",
+                    Type = "Discount",
+                    Message = $"Bạn vừa nhận được mã giảm giá {discount.Code}. Hãy áp dụng khi thanh toán hóa đơn."
+                };
+                await _notiService.SaveNotification(notiModel);
+                return new()
+                {
+                    StatusCode = 201,
+                    Message = "Gửi mã giảm giá cho khách hàng thành công!"
+                };
+            }
+
+            return new()
+            {
+                StatusCode = 500,
+                Message = "Lỗi từ hệ thống khi gửi mã giảm giá cho khách hàng"
+            };
+        }
+
+        public async Task<Response> CheckAvaliableDiscount(string discountCode)
+        {
+            var discount = await _unitOfWork.DiscountRepository
+                            .Query()
+                            .Where(x => x.Code == discountCode)
+                            .FirstOrDefaultAsync();
+
+            if (discount == null)
+            {
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Mã giảm giá không đúng!"
+                };
+            }
+
+            switch (discount.Status)
+            {
+                case (int)DiscountStatus.Disabled:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá này đã bị vô hiệu hóa!" };
+
+                case (int)DiscountStatus.BeUsed:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá này đã được sử dụng!" };
+
+                case (int)DiscountStatus.Expire:
+                    return new() { StatusCode = 400, Message = "Mã giảm giá đã hết hạn sử dụng!" };
+
+                default: break;
+            }
+
+            return new()
+            {
+                StatusCode = 200,
+                Data = discount,
+                Message = "Mã giảm giá hợp lệ!"
+            };
+        }
+
+        public async Task<List<Discount>> GetDiscountsWithStatusCondition()
+        {
+            return await _unitOfWork.DiscountRepository
+                    .Query()
+                    .Where(x => x.Status != (int)DiscountStatus.Disabled && x.Status != (int)DiscountStatus.Expire)
+                    .ToListAsync();
+        }
+
+        public async Task UpdateDiscountStatus(Discount discount)
+        {
+            _unitOfWork.DiscountRepository.Update(discount);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

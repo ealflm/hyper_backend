@@ -60,6 +60,7 @@ namespace TourismSmartTransportation.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHostedService<HyperBackgroundService>();
+            services.AddHostedService<HyperBackgroundService1>();
 
             services.AddDbContext<tourismsmarttransportationContext>(
                options => options.UseSqlServer(Configuration.GetConnectionString("TourismSmartTransportation")));
@@ -200,6 +201,7 @@ namespace TourismSmartTransportation.API
             services.AddScoped<TourismSmartTransportation.Business.Interfaces.Mobile.Customer.IPurchaseHistoryService, TourismSmartTransportation.Business.Implements.Mobile.Customer.PurchaseHistoryService>();
             services.AddScoped<ICustomerTripService, CustomerTripService>();
             services.AddScoped<IBuyPackageService, BuyPackageService>();
+            services.AddScoped<INotificationCollectionService, NotificationCollectionService>();
 
             //Azure AD
             services.AddScoped(_ =>

@@ -135,7 +135,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 string partnerCode = "MOMODJMX20220717";
                 string accessKey = "WehkypIRwPP14mHb";
                 string serectkey = "3fq8h4CqAAPZcTTb3nCDpFKwEkQDsZzz";
-                string orderInfo = "test";
+                string orderInfo = "Hyper";
                 string redirectUrl = "hyper://customer.app?uid=" + uid + "&create-date=" + new DateTimeOffset(transaction.CreatedDate).ToUnixTimeSeconds();
                 string ipnUrl = "https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit-momo"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
                 string orderId = DateTime.Now.Ticks.ToString();
@@ -164,7 +164,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 JObject message = new JObject
                 {
                     { "partnerCode", partnerCode },
-                    { "partnerName", "Test" },
+                    { "partnerName", "Hyper" },
                     { "storeId", "MomoTestStore" },
                     { "requestId", requestId },
                     { "amount", amount },

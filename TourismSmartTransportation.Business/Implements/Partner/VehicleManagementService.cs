@@ -56,7 +56,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 Name = model.Name,
                 LicensePlates = model.LicensePlates,
                 Color = model.Color,
-                Status = 1
+                Status = (int)VehicleStatus.Ready
             };
             await _unitOfWork.VehicleRepository.Add(vehicle);
 
@@ -87,7 +87,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 return result;
             }
 
-            entity.Status = 0;
+            entity.Status = (int)VehicleStatus.Disabled;
             _unitOfWork.VehicleRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
             return new()
@@ -113,6 +113,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             return model;
 
         }
+
+
 
         public async Task<List<VehicleViewModel>> Search(VehicleSearchModel model)
         {

@@ -6,5 +6,6 @@ public enum CustomerTripStatus
     PickedUp = 3, // Đã đón khách -> booking service
     Renting = 4, // Đang thuê -> renting service
     Overdue = 5, // Thời gian thuê quá hạn -> renting service
-    Done = 6 // Customer trip hoàn thành -> all service
+    Done = 6, // Customer trip hoàn thành -> all service
+    Requesting=7 // Yêu cầu trả xe
 }

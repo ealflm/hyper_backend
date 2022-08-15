@@ -90,5 +90,8 @@ namespace ApiVer1Url
 
         // wallet
         public const string Wallet = BaseApiUrl + "/wallet";
+
+        // customer trip
+        public const string CustomerTrip = BaseApiUrl + "/customer-trip";
     }
 }

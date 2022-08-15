@@ -1,4 +1,5 @@
 using MongoDB.Driver;
+using TourismSmartTransportation.Data.MongoCollections.Notification;
 using TourismSmartTransportation.Data.MongoCollections.Vehicle;
 
 namespace TourismSmartTransportation.Data.MongoDBContext
@@ -34,6 +35,11 @@ namespace TourismSmartTransportation.Data.MongoDBContext
         public IMongoCollection<VehicleCollection> GetVehiclesCollection
         {
             get { return _database.GetCollection<VehicleCollection>("Vehicles"); }
+        }
+
+        public IMongoCollection<NotificationCollection> GetNotificationsCollection
+        {
+            get { return _database.GetCollection<NotificationCollection>("Notifications"); }
         }
     }
 }

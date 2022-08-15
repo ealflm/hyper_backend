@@ -13,7 +13,7 @@ namespace TourismSmartTransportation.Business.SearchModel.Mobile.Customer
         public Guid CustomerId { get; set; }
         public Guid? RouteId { get; set; }
         [Required]
-        public Guid VehicleId { get; set; }
+        public string VehicleId { get; set; }
         public decimal? Distance { get; set; }
         public DateTime? RentDeadline { get; set; }
         public string Coordinates { get; set; }
