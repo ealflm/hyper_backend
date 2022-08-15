@@ -313,5 +313,19 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Message = "Mã giảm giá hợp lệ!"
             };
         }
+
+        public async Task<List<Discount>> GetDiscountsWithStatusCondition()
+        {
+            return await _unitOfWork.DiscountRepository
+                    .Query()
+                    .Where(x => x.Status != (int)DiscountStatus.Disabled && x.Status != (int)DiscountStatus.Expire)
+                    .ToListAsync();
+        }
+
+        public async Task UpdateDiscountStatus(Discount discount)
+        {
+            _unitOfWork.DiscountRepository.Update(discount);
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 }
