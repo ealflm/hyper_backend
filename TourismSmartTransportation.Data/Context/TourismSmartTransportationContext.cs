@@ -945,6 +945,10 @@ namespace TourismSmartTransportation.Data.Context
                     .IsRequired()
                     .HasMaxLength(255);
 
+                entity.Property(e => e.Week)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
+
                 entity.HasOne(d => d.Driver)
                     .WithMany(p => p.Trips)
                     .HasForeignKey(d => d.DriverId)
