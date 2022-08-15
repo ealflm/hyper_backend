@@ -10,5 +10,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Shared
     {
         Task<List<NotificationCollection>> GetNotificationsByCustomer(string customerId, string type);
         Task<Response> SaveNotification(SaveNotificationModel noti);
+        Task<Response> DisableNotificationStatus(string customerId, string type);
     }
 }
