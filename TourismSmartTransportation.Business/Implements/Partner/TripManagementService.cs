@@ -491,24 +491,36 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         public async Task<Response> CopyTrip(CopyTripModel model)
         {
-            var trips = await _unitOfWork.TripRepository.Query().Where(x => x.Week.Equals(model.FromWeek)).ToListAsync();
-            foreach (Trip trip in trips)
+            var checkTrip = await _unitOfWork.TripRepository.Query().Where(x => x.Week.Equals(model.ToWeek)).FirstOrDefaultAsync();
+            if (checkTrip != null)
             {
-                var driver = await _unitOfWork.DriverRepository.GetById(trip.DriverId);
-                if (driver.PartnerId.Equals(model.PartnerId))
+                var trips = await _unitOfWork.TripRepository.Query().Where(x => x.Week.Equals(model.FromWeek)).ToListAsync();
+                foreach (Trip trip in trips)
                 {
-                    trip.TripId = Guid.NewGuid();
-                    trip.Week = model.ToWeek;
-                    await _unitOfWork.TripRepository.Add(trip);
+                    var driver = await _unitOfWork.DriverRepository.GetById(trip.DriverId);
+                    if (driver.PartnerId.Equals(model.PartnerId))
+                    {
+                        trip.TripId = Guid.NewGuid();
+                        trip.Week = model.ToWeek;
+                        await _unitOfWork.TripRepository.Add(trip);
+                    }
                 }
-            }
 
-            await _unitOfWork.SaveChangesAsync();
-            return new()
+                await _unitOfWork.SaveChangesAsync();
+                return new()
+                {
+                    StatusCode = 200,
+                    Message = "Sao chép thành công"
+                };
+            }
+            else
             {
-                StatusCode = 200,
-                Message = "Sao chép thành công"
-            };
+                return new()
+                {
+                    StatusCode = 400,
+                    Message = "Sao chép thất bại"
+                };
+            }
         }
     }
 }
