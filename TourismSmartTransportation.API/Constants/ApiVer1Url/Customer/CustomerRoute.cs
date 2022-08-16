@@ -75,5 +75,8 @@ namespace ApiVer1Url
 
         // discount
         public const string Discount = BaseApiUrl + "/discount";
+
+        // booking
+        public const string Booking = BaseApiUrl + "/booking";
     }
 }
