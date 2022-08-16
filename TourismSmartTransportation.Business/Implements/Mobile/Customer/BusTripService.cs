@@ -61,17 +61,17 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var jmessage = JObject.Parse(body);
                     var distance = double.Parse(jmessage["routes"][0]["distance"].ToString());
                     if (distance < minDisStart)
-                    {      
+                    {
                         minDisStart = distance;
                     }
                     disStart.Add(distance);
                 }
             }
             int index = 0;
-            foreach(Station x in stationList)
+            foreach (Station x in stationList)
             {
-                
-                if(disStart[index]- minDisStart <= 300)
+
+                if (disStart[index] - minDisStart <= 300)
                 {
                     startList.Add(x);
                 }
@@ -115,7 +115,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             int LinkRouteCount = await _unitOfWork.LinkRouteRepository.Query().CountAsync();
             int routeCount = await _unitOfWork.RouteRepository.Query().CountAsync();
-            foreach(Station start in startList)
+            foreach (Station start in startList)
             {
                 foreach (Station end in endList)
                 {
@@ -377,7 +377,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             result.Add(resultPath);
                         }
                     }
-                }}
+                }
+            }
 
             return result;
         }

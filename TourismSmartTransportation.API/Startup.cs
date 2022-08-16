@@ -330,7 +330,7 @@ namespace TourismSmartTransportation.API
                 else
                     endpoints.MapControllers();
 
-                endpoints.MapHub<NotificationHub>("/notification");
+                endpoints.MapHub<NotificationHub>("/hub");
             });
         }
     }
