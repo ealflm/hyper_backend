@@ -175,6 +175,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                                     .Where(x => model.Status == null || model.Status.Value == x.Status)
                                     .Where(x => model.TripName == null || x.TripName.Contains(model.TripName))
                                     .Where(x => model.Week == null || x.Week.Equals(model.Week))
+                                     .Where(x => model.RouteId == null || x.RouteId.Equals(model.RouteId.Value))
+                                     .Where(x => model.DayOfWeek == null || x.DayOfWeek==model.DayOfWeek.Value)
                                     .Join(_unitOfWork.RouteRepository.Query(),
                                         trip => trip.RouteId,
                                         route => route.RouteId,
