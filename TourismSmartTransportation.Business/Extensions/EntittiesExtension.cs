@@ -489,5 +489,18 @@ namespace TourismSmartTransportation.Business.Extensions
                 // LatitudeOfDestination = item.LatitudeOfDestination != null ? item.LatitudeOfDestination.Value : null,
             };
         }
+
+
+        public static PriceBookingViewModel AsPriceBookingViewModel(this PriceOfBookingService item)
+        {
+            return new()
+            {
+                PriceOfBookingServiceId = item.PriceOfBookingServiceId,
+                FixedDistance = item.FixedDistance,
+                FixedPrice= item.FixedPrice,
+                PricePerKilometer= item.PricePerKilometer,
+                VehicleTypeId= item.VehicleTypeId
+            };
+        }
     }
 }
