@@ -492,7 +492,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
         public async Task<Response> CopyTrip(CopyTripModel model)
         {
             var checkTrip = await _unitOfWork.TripRepository.Query().Where(x => x.Week.Equals(model.ToWeek)).FirstOrDefaultAsync();
-            if (checkTrip != null)
+            if (checkTrip == null)
             {
                 var trips = await _unitOfWork.TripRepository.Query().Where(x => x.Week.Equals(model.FromWeek)).ToListAsync();
                 foreach (Trip trip in trips)
