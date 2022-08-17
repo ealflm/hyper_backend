@@ -308,56 +308,70 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                     var linkStation = await _unitOfWork.LinkStationRepository.GetById(path.LinkStationId.Value);
                                     var firstStation = await _unitOfWork.StationRepository.GetById(linkStation.FirstStationId);
                                     var secondStation = await _unitOfWork.StationRepository.GetById(linkStation.SecondStationId);
-                                    if (tmpNode.Value.Equals(linkStation.FirstStationId))
+                                    var checkFirstStation= await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
+                                    if (checkFirstStation!=null)
                                     {
                                         var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
                                         var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
-                                        int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
-
-                                        for (int i = stationRouteOld.OrderNumber + step; i != stationRouteNew.OrderNumber + step; i += step)
+                                        if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
                                         {
-                                            var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                            route.StationList.Add(station.AsStationViewModel());
+                                            for (int i = stationRouteOld.OrderNumber -1; i != stationRouteNew.OrderNumber - 1; i--)
+                                            {
+                                                var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
+                                                route.StationList.Add(station.AsStationViewModel());
 
+                                            }
+                                            route.StationList.Add(secondStation.AsStationViewModel());
+                                            route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
+                                            resultPath.Add(route);
+                                            var midRoute = new RouteViewModel()
+                                            {
+                                                StationList = new List<StationViewModel>(),
+                                                Name = "Đi bộ",
+                                                Distance = linkStation.Distance
+                                            };
+                                            midRoute.StationList.Add(firstStation.AsStationViewModel());
+                                            midRoute.StationList.Add(secondStation.AsStationViewModel());
+                                            resultPath.Add(midRoute);
+                                            currentStation = secondStation;
                                         }
-                                        route.StationList.Add(secondStation.AsStationViewModel());
-                                        route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
-                                        resultPath.Add(route);
-                                        var midRoute = new RouteViewModel()
+                                        else
                                         {
-                                            StationList = new List<StationViewModel>(),
-                                            Name = "Đi bộ",
-                                            Distance = linkStation.Distance
-                                        };
-                                        midRoute.StationList.Add(firstStation.AsStationViewModel());
-                                        midRoute.StationList.Add(secondStation.AsStationViewModel());
-                                        resultPath.Add(midRoute);
-                                        currentStation = secondStation;
+                                            check = false;
+                                            break;
+                                        }
                                     }
                                     else
                                     {
                                         var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(secondStation.StationId)).FirstOrDefaultAsync();
                                         var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
-                                        int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
-
-                                        for (int i = stationRouteOld.OrderNumber + step; i != stationRouteNew.OrderNumber + step; i += step)
+                                      //  int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
+                                        if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
                                         {
-                                            var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                            route.StationList.Add(station.AsStationViewModel());
+                                            for (int i = stationRouteOld.OrderNumber - 1; i != stationRouteNew.OrderNumber -1; i --)
+                                            {
+                                                var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
+                                                route.StationList.Add(station.AsStationViewModel());
+                                            }
+                                            route.StationList.Add(firstStation.AsStationViewModel());
+                                            route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
+                                            resultPath.Add(route);
+                                            var midRoute = new RouteViewModel()
+                                            {
+                                                StationList = new List<StationViewModel>(),
+                                                Name = "Đi bộ",
+                                                Distance = linkStation.Distance
+                                            };
+                                            midRoute.StationList.Add(secondStation.AsStationViewModel());
+                                            midRoute.StationList.Add(firstStation.AsStationViewModel());
+                                            resultPath.Add(midRoute);
+                                            currentStation = firstStation;
                                         }
-                                        route.StationList.Add(firstStation.AsStationViewModel());
-                                        route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
-                                        resultPath.Add(route);
-                                        var midRoute = new RouteViewModel()
+                                        else
                                         {
-                                            StationList = new List<StationViewModel>(),
-                                            Name = "Đi bộ",
-                                            Distance = linkStation.Distance
-                                        };
-                                        midRoute.StationList.Add(secondStation.AsStationViewModel());
-                                        midRoute.StationList.Add(firstStation.AsStationViewModel());
-                                        resultPath.Add(midRoute);
-                                        currentStation = firstStation;
+                                            check = false;
+                                            break;
+                                        }
                                     }
                                 }
                                 tmpNode = tmpNode.Parent;
