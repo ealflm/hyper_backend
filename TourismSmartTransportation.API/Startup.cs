@@ -278,7 +278,8 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IFirebaseCloudMsgService, FirebaseCloudMsgService>();
 
             // Azure SignalR
-            services.AddSignalR().AddAzureSignalR(Configuration["SignalR:ConnectionString"]);
+            // services.AddSignalR().AddAzureSignalR(Configuration["SignalR:ConnectionString"]);
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -299,7 +300,7 @@ namespace TourismSmartTransportation.API
                 c.RoutePrefix = "";
             });
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseRouting();
 
@@ -330,6 +331,11 @@ namespace TourismSmartTransportation.API
                 else
                     endpoints.MapControllers();
 
+                // endpoints.MapHub<NotificationHub>("/hub");
+            });
+
+            app.UseEndpoints(endpoints =>
+            {
                 endpoints.MapHub<NotificationHub>("/hub");
             });
         }

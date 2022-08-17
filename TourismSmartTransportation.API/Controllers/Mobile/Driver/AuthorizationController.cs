@@ -45,7 +45,7 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Driver
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> CheckPhoneNumber(string phoneNumber)
         {
-            return SendResponse(await _authorizationService.CheckExistedPhoneNumber(phoneNumber));
+            return SendResponse(await _authorizationService.CheckExistedPhoneNumber(phoneNumber, global::User.Driver));
         }
 
         [HttpPost]

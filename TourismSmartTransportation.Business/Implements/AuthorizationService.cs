@@ -143,7 +143,7 @@ namespace TourismSmartTransportation.Business.Implements
 
             if (user != null && VerifyPassword(password, user.Password, user.Salt))
             {
-                if (user.Status == 1)
+                if (user.Status != 0)
                 {
                     foreach (var x in result.GetType().GetProperties())
                     {
@@ -346,9 +346,18 @@ namespace TourismSmartTransportation.Business.Implements
             };
         }
 
-        public async Task<Response> CheckExistedPhoneNumber(string phoneNumber)
+        public async Task<Response> CheckExistedPhoneNumber(string phoneNumber, User role = User.Customer)
         {
-            var existedPhone = await _unitOfWork.CustomerRepository.Query().AnyAsync(x => x.Phone == phoneNumber);
+            dynamic existedPhone = false;
+            if (role == User.Customer)
+            {
+                existedPhone = await _unitOfWork.CustomerRepository.Query().AnyAsync(x => x.Phone == phoneNumber);
+            }
+            else if (role == User.Driver)
+            {
+                existedPhone = await _unitOfWork.DriverRepository.Query().AnyAsync(x => x.Phone == phoneNumber);
+            }
+
             if (existedPhone)
             {
                 return new()

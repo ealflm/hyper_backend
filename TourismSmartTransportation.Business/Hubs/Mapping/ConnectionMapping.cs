@@ -39,6 +39,17 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
             }
         }
 
+        public int GetConnectionsCount(T key)
+        {
+            HashSet<string> connections;
+            if (_connections.TryGetValue(key, out connections))
+            {
+                return connections.Count;
+            }
+
+            return 0;
+        }
+
         public IEnumerable<string> GetConnections(T key)
         {
             HashSet<string> connections;
