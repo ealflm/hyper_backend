@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
@@ -125,6 +126,7 @@ namespace TourismSmartTransportation.Business.Hubs
 
         public List<object> GetDriversListMatching(StartLocationBookingModel model)
         {
+            _logger.LogInformation("------------ GetDriversListMatching ------------");
             List<object> list = null;
             foreach (var item in _dataMapping.GetDrivers(DriverStatus.On).GetItems())
             {
@@ -148,7 +150,7 @@ namespace TourismSmartTransportation.Business.Hubs
                     });
                 }
             }
-
+            _logger.LogInformation($"------------ GetDriversListMatching::::: {list.Count} ------------");
             return list;
         }
 
@@ -248,25 +250,36 @@ namespace TourismSmartTransportation.Business.Hubs
             }
         }
 
-        public async Task<bool> OpenDriver(LocationModel model)
+        public async Task<bool> OpenDriver(string json)
         {
+            _logger.LogInformation("------------ Begin OpenDriver Hub Function -----------");
+
+            LocationModel model = Newtonsoft.Json.JsonConvert.DeserializeObject<LocationModel>(json);
             var id = Context.ConnectionId;
             var dataHubModel = _dataMapping.GetValue(model.Id, User.Driver);
-            dataHubModel.Longitude = model.Longitude;
-            dataHubModel.Latitude = model.Latitude;
-            dataHubModel.Status = (int)DriverStatus.On;
-            _dataMapping.Add(model.Id, dataHubModel, User.Driver);
+            if (dataHubModel != null)
+            {
+                dataHubModel.Longitude = model.Longitude;
+                dataHubModel.Latitude = model.Latitude;
+                dataHubModel.Status = (int)DriverStatus.On;
+                _dataMapping.Add(model.Id, dataHubModel, User.Driver);
+            }
+
             var driverResponse = await _driverService.UpdateDriverStatus(model.Id, (int)DriverStatus.On);
             if (driverResponse.StatusCode != 201)
             {
                 return false;
             }
+
+            _logger.LogInformation("------------ End OpenDriver Hub Function -----------");
+
             return true;
         }
 
         public async Task<bool> CloseDriver(string driverId)
         {
-            // var id = Context.ConnectionId;
+            _logger.LogInformation("------------ Begin CloseDriver Hub Function -----------");
+
             _dataMapping.Remove(driverId, User.Driver);
             var driverResponse = await _driverService.UpdateDriverStatus(driverId, (int)DriverStatus.Off);
             if (driverResponse.StatusCode != 201)
@@ -298,10 +311,12 @@ namespace TourismSmartTransportation.Business.Hubs
         // ------------- Overrivde method --------------
         public override Task OnConnectedAsync()
         {
+            _logger.LogInformation("------------------ Begin OnConnectedAsync Hub Function --------------------");
             // load vehicle có dịch vụ là đặt xe
             if (VehiclesList.Count == 0)
             {
                 Task.WhenAll(LoadVehiclesList());
+                _logger.LogInformation("---------------- Load Vehicles List Hub Function Success --------------");
             }
 
             // Xác định id người dùng
@@ -309,15 +324,17 @@ namespace TourismSmartTransportation.Business.Hubs
             dynamic id = Context.User.Claims.Where(x => x.Type == "CustomerId").Select(x => x.Value).FirstOrDefault();
             if (id == null)
             {
+                _logger.LogInformation("------------ Driver Role --------------");
                 id = Context.User.Claims.Where(x => x.Type == "DriverId").Select(x => x.Value).FirstOrDefault();
                 isCustomerRole = false;
             }
-            _logger.LogInformation($"OnConnectedAsync Context.User.Claim: {id} - {Context.ConnectionId}");
+            _logger.LogInformation($"--------------- OnConnectedAsync Context.User.Claim: {id} - {Context.ConnectionId} -------------");
 
             _connections.Add(id, Context.ConnectionId); // lưu id người dùng và id máy người dùng (connectionId)
 
             if (isCustomerRole)
             {
+                _logger.LogInformation("----------------- isCustomerRole --------------");
                 DataHubModel customerHubViewModel = new DataHubModel();
                 foreach (var claim in Context.User.Claims.ToList())
                 {
@@ -365,6 +382,7 @@ namespace TourismSmartTransportation.Business.Hubs
             }
             else
             {
+                _logger.LogInformation("----------------- Is Driver Role --------------");
                 DataHubModel driverHubViewModel = new DataHubModel();
                 foreach (var claim in Context.User.Claims.ToList())
                 {
@@ -410,11 +428,13 @@ namespace TourismSmartTransportation.Business.Hubs
                 }
 
                 // Chỉ thêm những tài xế đang có xe chạy dịch vụ đặt xe
-                var driver = _unitOfWork.DriverRepository.GetById(Guid.Parse(driverHubViewModel.Id)).Result;
-                if (driver.VehicleId != null && VehiclesList.ContainsKey(driver.VehicleId.Value.ToString()))
-                {
-                    _dataMapping.Add(driverHubViewModel.Id, driverHubViewModel, User.Driver);
-                }
+                // var driver = _unitOfWork.DriverRepository.GetById(Guid.Parse(driverHubViewModel.Id)).Result;
+                // if (driver.VehicleId != null && VehiclesList.ContainsKey(driver.VehicleId.Value.ToString()))
+                // {
+                //     _dataMapping.Add(driverHubViewModel.Id, driverHubViewModel, User.Driver);
+                // }
+
+                _logger.LogInformation("------------------ Begin OnConnectedAsync Hub Function --------------------");
             }
 
             return base.OnConnectedAsync();
@@ -422,6 +442,7 @@ namespace TourismSmartTransportation.Business.Hubs
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
+            _logger.LogInformation("------------------------Begin OnDisconnectedAsync--------------------------");
             dynamic id = Context.User.Claims.Where(x => x.Type == "CustomerId").Select(x => x.Value).FirstOrDefault();
             if (id == null)
             {

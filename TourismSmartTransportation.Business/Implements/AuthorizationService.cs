@@ -16,6 +16,7 @@ using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
+using TourismSmartTransportation.Business.ViewModel.Mobile.Driver.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Partner.Authorization;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
@@ -61,7 +62,7 @@ namespace TourismSmartTransportation.Business.Implements
                         }
                     case 3:
                         {
-                            model = await LoginEmailPassword<AdminViewModel>(loginModel.UserName, loginModel.Password, new AdminViewModel(), loginType);
+                            model = await LoginEmailPassword<DriverViewModel>(loginModel.UserName, loginModel.Password, new DriverViewModel(), loginType);
                             break;
                         }
                 }
@@ -89,7 +90,7 @@ namespace TourismSmartTransportation.Business.Implements
                         }
                     case 3:
                         {
-                            result = GetToken((AdminViewModel)model.Data, 3);
+                            result = GetToken((DriverViewModel)model.Data, 3);
                             break;
                         }
                 }
