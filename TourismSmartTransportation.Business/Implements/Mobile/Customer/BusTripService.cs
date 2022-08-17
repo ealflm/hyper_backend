@@ -315,7 +315,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                         var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
                                         if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
                                         {
-                                            for (int i = stationRouteOld.OrderNumber -1; i != stationRouteNew.OrderNumber - 1; i--)
+                                            for (int i = stationRouteOld.OrderNumber ; i != stationRouteNew.OrderNumber - 1; i--)
                                             {
                                                 var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
                                                 route.StationList.Add(station.AsStationViewModel());
@@ -348,7 +348,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                       //  int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
                                         if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
                                         {
-                                            for (int i = stationRouteOld.OrderNumber - 1; i != stationRouteNew.OrderNumber -1; i --)
+                                            for (int i = stationRouteOld.OrderNumber ; i != stationRouteNew.OrderNumber -1; i --)
                                             {
                                                 var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
                                                 route.StationList.Add(station.AsStationViewModel());

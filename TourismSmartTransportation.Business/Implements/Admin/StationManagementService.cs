@@ -51,7 +51,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     response.EnsureSuccessStatusCode();
                     var body = await response.Content.ReadAsStringAsync();
                     var jmessage = JObject.Parse(body);
-                    var distance = double.Parse(jmessage["routes"][0]["distance"].ToString());
+                    var distance = decimal.Parse(jmessage["routes"][0]["distance"].ToString());
                     if ( distance<= 200)
                     {
                         var linkStation = new LinkStation()
@@ -59,7 +59,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             LinkStationId = Guid.NewGuid(),
                             FirstStationId = station.StationId,
                             SecondStationId = x.StationId,
-                            Content = "Đi bộ khoảng cách " + distance+"m"
+                            Content = "Đi bộ khoảng cách " + distance+"m",
+                            Distance= distance
                         };
                         await _unitOfWork.LinkStationRepository.Add(linkStation);
                     }   
