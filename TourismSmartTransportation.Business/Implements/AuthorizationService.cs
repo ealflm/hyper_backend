@@ -16,6 +16,7 @@ using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
+using TourismSmartTransportation.Business.ViewModel.Mobile.Driver.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Partner.Authorization;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
@@ -61,7 +62,7 @@ namespace TourismSmartTransportation.Business.Implements
                         }
                     case 3:
                         {
-                            model = await LoginEmailPassword<AdminViewModel>(loginModel.UserName, loginModel.Password, new AdminViewModel(), loginType);
+                            model = await LoginEmailPassword<DriverViewModel>(loginModel.UserName, loginModel.Password, new DriverViewModel(), loginType);
                             break;
                         }
                 }
@@ -89,7 +90,7 @@ namespace TourismSmartTransportation.Business.Implements
                         }
                     case 3:
                         {
-                            result = GetToken((AdminViewModel)model.Data, 3);
+                            result = GetToken((DriverViewModel)model.Data, 3);
                             break;
                         }
                 }
@@ -142,7 +143,7 @@ namespace TourismSmartTransportation.Business.Implements
 
             if (user != null && VerifyPassword(password, user.Password, user.Salt))
             {
-                if (user.Status == 1)
+                if (user.Status != 0)
                 {
                     foreach (var x in result.GetType().GetProperties())
                     {
@@ -345,9 +346,18 @@ namespace TourismSmartTransportation.Business.Implements
             };
         }
 
-        public async Task<Response> CheckExistedPhoneNumber(string phoneNumber)
+        public async Task<Response> CheckExistedPhoneNumber(string phoneNumber, User role = User.Customer)
         {
-            var existedPhone = await _unitOfWork.CustomerRepository.Query().AnyAsync(x => x.Phone == phoneNumber);
+            dynamic existedPhone = false;
+            if (role == User.Customer)
+            {
+                existedPhone = await _unitOfWork.CustomerRepository.Query().AnyAsync(x => x.Phone == phoneNumber);
+            }
+            else if (role == User.Driver)
+            {
+                existedPhone = await _unitOfWork.DriverRepository.Query().AnyAsync(x => x.Phone == phoneNumber);
+            }
+
             if (existedPhone)
             {
                 return new()

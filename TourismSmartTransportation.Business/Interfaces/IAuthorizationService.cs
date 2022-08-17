@@ -16,7 +16,7 @@ namespace TourismSmartTransportation.Business.Interfaces
         Task<AuthorizationResultViewModel> Login(LoginSearchModel model, Login loginType);
         Task<AuthorizationResultViewModel> RegisterForAdmin(RegisterSearchModel model);
         Task<Response> RegisterForCustomer(RegisterModel model);
-        Task<Response> CheckExistedPhoneNumber(string phoneNumber);
+        Task<Response> CheckExistedPhoneNumber(string phoneNumber, User role = User.Customer);
         Task<Response> SendOTP(string phone);
         Task<Response> VerifyOTP(OTPVerificationModel model);
         Task<Response> SendOTPByTwilio(string phone);

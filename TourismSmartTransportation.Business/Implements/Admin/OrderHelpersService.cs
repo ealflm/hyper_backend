@@ -114,6 +114,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         await _unitOfWork.OrderDetailOfBookingServiceRepository.Add(orderDetail);
                         content = $"Sử dụng {ServiceTypeDefaultData.BOOK_SERVICE_CONTENT}";
                         newOrder.Status = (int)OrderStatus.Unpaid; // Cập nhật lại trạng thái order đổi với service 'đặt xe' 
+                        await _unitOfWork.OrderRepository.Add(newOrder);
+                        await _unitOfWork.SaveChangesAsync();
+                        return new()
+                        {
+                            StatusCode = 201,
+                            Message = "Đã tạo hóa đơn với trạng thái chưa thanh toán cho dịch vụ đặt xe"
+                        };
                     }
                     else if (serviceType.Name.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME))
                     {
@@ -295,29 +302,149 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-        /* public async Task<Response> MakeOrderTest(MakeOrderTestModel model)
-         {
-             var newOrder = new CreateOrderModel()
-             {
-                 CustomerId = model.CustomerId,
-                 ServiceTypeId = model.ServiceTypeId != null ? model.ServiceTypeId.Value : null,
-                 DiscountId = model.DiscountId != null ? model.DiscountId.Value : null,
-                 TotalPrice = model.TotalPrice
-             };
+        public async Task<Response> ProcessBooking(ProcessBookingModel model)
+        {
+            // Xử lý cho hóa đơn
+            if (model.ChangeOrder)
+            {
+                var order = await _unitOfWork.OrderRepository
+                            .Query()
+                            .Where(x => x.ServiceTypeId.ToString() == ServiceTypeDefaultData.BOOK_SERVICE_ID)
+                            .Where(x => x.CustomerId.ToString() == model.CustomerId)
+                            .Where(x => x.Status != (int)OrderStatus.Canceled && x.Status != (int)OrderStatus.Done)
+                            .FirstOrDefaultAsync();
 
-             var newOrderDetailInfo = new OrderDetailsInfo()
-             {
-                 PackageId = model.PriceOfBusServiceId != null ? model.PackageId.Value : null,
-                 PriceOfBusServiceId = model.PriceOfBusServiceId != null ? model.PriceOfBusServiceId.Value : null,
-                 PriceOfBookingServiceId = model.PriceOfBookingServiceId != null ? model.PriceOfBookingServiceId.Value : null,
-                 PriceOfRentingServiceId = model.PriceOfRentingServiceId != null ? model.PriceOfRentingServiceId.Value : null,
-                 Price = model.Price,
-                 Quantity = model.Quantity,
-                 Content = model.Content,
+                order.Status = model.OrderStatus;
 
-             };
+                // Chỉ tiến hành thanh toán khi tài xế đến đón khách
+                if (model.OrderStatus == (int)OrderStatus.Paid && model.CustomerTripStatus == (int)CustomerTripStatus.PickedUp)
+                {
+                    // Sử dụng gói dịch vụ
+                    var currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(order.CustomerId);
+                    if (currentPackageIsUsed != null)
+                    {
+                        var numberOfTripsNow = currentPackageIsUsed.CurrentNumberOfTrips + 1;
+                        if (numberOfTripsNow <= currentPackageIsUsed.LimitNumberOfTrips)
+                        {
+                            order.TotalPrice -= (order.TotalPrice * currentPackageIsUsed.DiscountValueTrip);
+                        }
+                    }
 
-             return await CreateOrder(newOrder, newOrderDetailInfo);
-         }*/
+                    // kiểm tra ví trước khi thánh toán
+                    var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(order.CustomerId)).FirstOrDefaultAsync();
+                    if (wallet.AccountBalance < order.TotalPrice)
+                    {
+                        return new()
+                        {
+                            StatusCode = 400,
+                            Message = "Số tiền trong ví không đủ!"
+                        };
+                    }
+
+                    // Tạo giao dịch khi tài xế đã đến đón khách hàng
+                    var transaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = "Sử dụng dịch vụ đặt xe",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.UtcNow,
+                        Amount = -order.TotalPrice,
+                        Status = 1,
+                        WalletId = wallet.WalletId
+                    };
+
+                    // cập nhật lại ví của khách hàng
+                    wallet.AccountBalance -= order.TotalPrice;
+                    await _unitOfWork.TransactionRepository.Add(transaction);
+                    _unitOfWork.WalletRepository.Update(wallet);
+
+
+
+                    // Lấy ví của partner
+                    var partnerWallet = await _unitOfWork.WalletRepository
+                                                    .Query()
+                                                    .Where(x => x.PartnerId == order.PartnerId)
+                                                    .FirstOrDefaultAsync();
+
+                    // Tạo transaction cho partner nhận tiền từ giao dịch sử dụng dịch vụ của customer
+                    var partnerTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Đối tác nhận 90% hóa đơn",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.UtcNow,
+                        Amount = order.TotalPrice * 0.9M,
+                        Status = 1,
+                        WalletId = partnerWallet.WalletId
+                    };
+
+                    // Cập nhật lại ví của partner
+                    partnerWallet.AccountBalance += partnerTransaction.Amount;
+                    await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+                    _unitOfWork.WalletRepository.Update(partnerWallet);
+
+
+
+                    // Lấy ví của admin
+                    var adminWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == null && x.CustomerId == null)
+                                        .FirstOrDefaultAsync();
+
+                    // Tạo transaction cho admin nhận tiền từ giao dịch sử dụng dịch vụ của customer
+                    var adminTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Hệ thống nhận 10% hóa đơn",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.UtcNow,
+                        Amount = order.TotalPrice * 0.1M,
+                        Status = 1,
+                        WalletId = adminWallet.WalletId
+                    };
+
+                    // Cập nhật lại ví của admin
+                    adminWallet.AccountBalance += adminTransaction.Amount;
+                    await _unitOfWork.TransactionRepository.Add(adminTransaction);
+                    _unitOfWork.WalletRepository.Update(adminWallet);
+
+
+                }
+                // cập nhật hóa đơn
+                _unitOfWork.OrderRepository.Update(order);
+            }
+
+
+            // Xử lý cho customer trip
+            if (model.ChangeCustomerTrip)
+            {
+                var customerTrip = await _unitOfWork.CustomerTripRepository
+                                    .Query()
+                                    .Where(x => x.CustomerId.ToString() == model.CustomerId)
+                                    .Where(x => x.Status == (int)CustomerTripStatus.New ||
+                                                x.Status == (int)CustomerTripStatus.Accepted ||
+                                                x.Status == (int)CustomerTripStatus.PickedUp)
+                                    .FirstOrDefaultAsync();
+
+                customerTrip.Status = model.CustomerTripStatus;
+                _unitOfWork.CustomerTripRepository.Update(customerTrip);
+            }
+
+            if (model.ChangeCustomerTrip == false && model.ChangeOrder == false)
+            {
+                return new()
+                {
+                    StatusCode = 304,
+                    Message = "Không có sự thay đổi"
+                };
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Cập nhật trạng thái thành công"
+            };
+        }
     }
 }

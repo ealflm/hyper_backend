@@ -8,6 +8,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
     public interface IOrderHelpersService
     {
         Task<Response> CreateOrder(CreateOrderModel order);
-        //Task<Response> MakeOrderTest(MakeOrderTestModel model);
+        Task<Response> ProcessBooking(ProcessBookingModel model);
     }
 }
