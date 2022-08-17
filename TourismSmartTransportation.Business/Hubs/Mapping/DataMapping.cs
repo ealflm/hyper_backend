@@ -1,4 +1,6 @@
-namespace TourismSmartTransportation.Business.Hubs
+using TourismSmartTransportation.Business.Hubs.Models;
+
+namespace TourismSmartTransportation.Business.Hubs.Mapping
 {
     public class DataMapping
     {

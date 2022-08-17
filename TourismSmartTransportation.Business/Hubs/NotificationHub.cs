@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
+using TourismSmartTransportation.Business.Hubs.Mapping;
+using TourismSmartTransportation.Business.Hubs.Models;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Partner;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.Order;
@@ -119,6 +121,35 @@ namespace TourismSmartTransportation.Business.Hubs
                     });
                 }
             }
+        }
+
+        public List<object> GetDriversListMatching(StartLocationBookingModel model)
+        {
+            List<object> list = null;
+            foreach (var item in _dataMapping.GetDrivers(DriverStatus.On).GetItems())
+            {
+                if (list == null)
+                {
+                    list = new List<object>();
+                }
+                var driverId = item.Key;
+                var lng = (double)item.Value.Longitude;
+                var lat = (double)item.Value.Latitude;
+                GeoCoordinate customerCoordinates = new GeoCoordinate((double)model.Latitude, (double)model.Longitude);
+                GeoCoordinate driverCoordinates = new GeoCoordinate(lat, lng);
+                double distanceBetween = customerCoordinates.GetDistanceTo(driverCoordinates); // tính khoảng cách giữa driver và customer
+
+                if (distanceBetween <= DISTANCES[DISTANCES.Count - 1])
+                {
+                    list.Add(new
+                    {
+                        Longitude = lng,
+                        Latitude = lat,
+                    });
+                }
+            }
+
+            return list;
         }
 
         public async Task CheckAcceptedRequest(DriverResponseModel response)

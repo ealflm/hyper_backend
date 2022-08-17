@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using TourismSmartTransportation.Business.Hubs.Models;
 
-namespace TourismSmartTransportation.Business.Hubs
+namespace TourismSmartTransportation.Business.Hubs.Mapping
 {
     public class SearchMapping
     {

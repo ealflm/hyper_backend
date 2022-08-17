@@ -1,4 +1,4 @@
-namespace TourismSmartTransportation.Business.Hubs
+namespace TourismSmartTransportation.Business.Hubs.Mapping
 {
     public class RoomMapping
     {

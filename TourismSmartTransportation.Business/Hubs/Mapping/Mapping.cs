@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TourismSmartTransportation.Business.Hubs
+namespace TourismSmartTransportation.Business.Hubs.Mapping
 {
     public class Mapping<T>
     {
