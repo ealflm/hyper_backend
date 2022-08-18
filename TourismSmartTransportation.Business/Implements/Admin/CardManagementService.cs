@@ -167,7 +167,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
         public async Task<Response> CustomerMatch(UpdateCardModel model)
         {
-            if (model.Uid != null)
+            var card = await _unitOfWork.CardRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
+            if (card == null)
             {
                 model.Uid = DecryptString(model.Uid);
                 var entity = await _unitOfWork.CardRepository.Query().Where(x => x.Uid.Equals(model.Uid)).FirstOrDefaultAsync();
@@ -180,24 +181,32 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     };
                 }
                 entity.CustomerId = model.CustomerId;
-                entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
+                entity.Status = (int)CardStatus.Linked;
                 _unitOfWork.CardRepository.Update(entity);
             }
             else
             {
-                var entity = await _unitOfWork.CardRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
-                if (entity == null)
+                if (model.Uid != null)
                 {
-                    return new()
+                    model.Uid = DecryptString(model.Uid);
+                    var entity = await _unitOfWork.CardRepository.Query().Where(x => x.Uid.Equals(model.Uid)).FirstOrDefaultAsync();
+                    if (entity == null)
                     {
-                        StatusCode = 404,
-                        Message = "Không tìm thấy!"
-                    };
+                        return new()
+                        {
+                            StatusCode = 404,
+                            Message = "Không tìm thấy!"
+                        };
+                    }
+                    entity.CustomerId = model.CustomerId;
+                    entity.Status = (int)CardStatus.Linked;
+                    _unitOfWork.CardRepository.Update(entity);
                 }
-                entity.CustomerId = null;
-                entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
-                _unitOfWork.CardRepository.Update(entity);
+                card.CustomerId = null;
+                card.Status = (int)CardStatus.NotLinked;
+                _unitOfWork.CardRepository.Update(card);
             }
+            
             await _unitOfWork.SaveChangesAsync();
             return new()
             {
