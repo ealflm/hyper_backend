@@ -117,6 +117,10 @@ namespace TourismSmartTransportation.Business.Implements.Company
                 .OrderBy(x => x.ModifiedDate)
                 .Select(x => x.AsRentStationViewModel())
                 .ToListAsync();
+            foreach(RentStationViewModel x in discount)
+            {
+                x.TotalVehicle = await _unitOfWork.VehicleRepository.Query().Where(y => y.RentStationId.Equals(x.Id)).CountAsync();
+            }
             var listAfterSorting = GetListAfterSorting(discount, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
             var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
