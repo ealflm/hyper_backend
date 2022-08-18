@@ -78,5 +78,11 @@ namespace ApiVer1Url
 
         // booking
         public const string Booking = BaseApiUrl + "/booking";
+
+        // feedback for driver
+        public const string FeebackForDriver = BaseApiUrl + "/feedback-for-driver";
+
+        // feedback for vehicle
+        public const string FeebackForVehicle = BaseApiUrl + "/feedback-for-vehicle";
     }
 }

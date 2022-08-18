@@ -222,6 +222,8 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IBuyPackageService, BuyPackageService>();
             services.AddScoped<INotificationCollectionService, NotificationCollectionService>();
             services.AddScoped<IBookingService, BookingService>();
+            services.AddScoped<IFeedbackForDriverService, FeedbackForDriverService>();
+            services.AddScoped<IFeedbackForVehicleService, FeedbackForVehicleService>();
             //Azure AD
             services.AddScoped(_ =>
             {
