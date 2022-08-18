@@ -20,5 +20,6 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagemen
         public string Color { get; set; }
         public int? IsRunning { get; set; }
         public int Status { get; set; }
+        public decimal Rate { get; set; }
     }
 }

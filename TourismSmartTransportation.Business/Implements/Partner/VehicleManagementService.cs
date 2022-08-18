@@ -135,6 +135,23 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 x.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(x.ServiceTypeId)).Name;
                 x.CompanyName = (await _unitOfWork.PartnerRepository.GetById(x.PartnerId)).CompanyName;
                 x.VehicleTypeName = (await _unitOfWork.VehicleTypeRepository.GetById(x.VehicleTypeId)).Label;
+                var customerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(y => y.VehicleId.Equals(x.Id)).ToListAsync();
+                decimal rate = 0;
+                int count = 0;
+                foreach(CustomerTrip y in customerTrip)
+                {
+                    var feedback = await _unitOfWork.FeedbackForVehicleRepository.Query().Where(x => x.CustomerTripId.Equals(y.CustomerTripId)).FirstOrDefaultAsync();
+                    if(feedback != null)
+                    {
+                        rate += feedback.Rate;
+                        count++;
+                    }
+                    
+                }
+                if (count > 0)
+                {
+                    x.Rate = rate / count;
+                }
                 if (x.PriceRentingId != null)
                 {
                     var priceEntity = await _unitOfWork.PriceOfRentingServiceRepository.GetById(x.PriceRentingId.Value);
