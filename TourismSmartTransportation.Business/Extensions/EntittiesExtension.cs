@@ -502,5 +502,28 @@ namespace TourismSmartTransportation.Business.Extensions
                 VehicleTypeId= item.VehicleTypeId
             };
         }
+
+        public static FeedbackForDriverViewModel AsFeedbackForDriverViewModel(this FeedbackForDriver item)
+        {
+            return new()
+            {
+                CustomerTripId= item.CustomerTripId,
+                Content= item.Content,
+                DriverId= item.DriverId,
+                FeedbackForDriverId= item.FeedbackForDriverId,
+                Rate= item.Rate
+            };
+        }
+
+        public static FeedbackForVehicleViewModel AsFeedbackForVehicleViewModel(this FeedbackForVehicle item)
+        {
+            return new()
+            {
+                CustomerTripId = item.CustomerTripId,
+                Content = item.Content,                
+                Rate = item.Rate,
+                FeedbackVehicleId= item.FeedbackVehicleId
+            };
+        }
     }
 }
