@@ -56,6 +56,24 @@ namespace TourismSmartTransportation.Business.Implements.Shared
             return customerTrips;
         }
 
+        public async Task<List<CustomerTripViewModel>> GetCustomerTripsForDriver(Guid driverId)
+        {
+            var driver = await _unitOfWork.DriverRepository.GetById(driverId);
+            var customerTrips = await _unitOfWork.CustomerTripRepository.Query().Where(x=> x.VehicleId.Equals(driver.VehicleId)).OrderByDescending(x => x.CreatedDate).Select(x => x.AsCustomerTripViewModel()).ToListAsync();
+          
+            foreach (CustomerTripViewModel x in customerTrips)
+            {
+                var vehicle = await _unitOfWork.VehicleRepository.GetById(x.VehicleId);
+                var customer = await _unitOfWork.CustomerRepository.GetById(x.CustomerId);
+                var serviceType = await _unitOfWork.ServiceTypeRepository.GetById(vehicle.ServiceTypeId);
+                x.VehicleName = vehicle.Name;
+                x.LicensePlates = vehicle.LicensePlates;
+                x.ServiceTypeName = serviceType.Name;
+                x.CustomerName = customer.FirstName + " " + customer.LastName;
+            }
+            return customerTrips;
+        }
+
         public async Task<List<CustomerTripViewModel>> GetCustomerTripsListForRentingService(CustomerTripSearchModel model)
         {
             var customerTripsList = await _unitOfWork.CustomerTripRepository

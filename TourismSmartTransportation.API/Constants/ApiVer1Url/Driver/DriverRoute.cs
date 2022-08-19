@@ -16,5 +16,11 @@ namespace ApiVer1Url
 
         // check number
         public const string CheckPhoneNumber = BaseApiUrl + "/authorization/login/verify";
+
+        // customer trip
+        public const string CustomerTrip = BaseApiUrl + "/customer-trip";
+
+        // change password
+        public const string ChangePassword = BaseApiUrl + "/authorization/change-password";
     }
 }

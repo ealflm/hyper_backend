@@ -7,6 +7,7 @@ using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer.Authorization;
+using TourismSmartTransportation.Business.SearchModel.Shared;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 
 namespace TourismSmartTransportation.Business.Interfaces
@@ -21,5 +22,7 @@ namespace TourismSmartTransportation.Business.Interfaces
         Task<Response> VerifyOTP(OTPVerificationModel model);
         Task<Response> SendOTPByTwilio(string phone);
         Task<Response> VerifyOTPByTwilio(OTPVerificationModel model);
+        Task<Response> ChangePasswordAllRole(PasswordVerificationModel model, Login role);
     }
 }
+

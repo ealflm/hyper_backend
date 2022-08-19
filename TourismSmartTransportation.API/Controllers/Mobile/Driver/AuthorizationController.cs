@@ -10,6 +10,7 @@ using TourismSmartTransportation.API.Validation;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer.Authorization;
+using TourismSmartTransportation.Business.SearchModel.Shared;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 
 namespace TourismSmartTransportation.API.Controllers.Mobile.Driver
@@ -61,6 +62,14 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Driver
         public async Task<IActionResult> VerifyOTP([FromForm] OTPVerificationModel model)
         {
             return SendResponse(await _authorizationService.VerifyOTPByTwilio(model));
+        }
+
+
+        [HttpPut]
+        [Route(ApiVer1Url.Driver.ChangePassword)]
+        public async Task<IActionResult> ChangePassword([FromForm] PasswordVerificationModel model)
+        {
+            return SendResponse(await _authorizationService.ChangePasswordAllRole(model, global::Login.Driver));
         }
     }
 }
