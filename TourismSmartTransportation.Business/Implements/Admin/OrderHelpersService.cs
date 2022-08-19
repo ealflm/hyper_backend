@@ -113,14 +113,14 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         };
                         await _unitOfWork.OrderDetailOfBookingServiceRepository.Add(orderDetail);
                         content = $"Sử dụng {ServiceTypeDefaultData.BOOK_SERVICE_CONTENT}";
-                        newOrder.Status = (int)OrderStatus.Unpaid; // Cập nhật lại trạng thái order đổi với service 'đặt xe' 
-                        await _unitOfWork.OrderRepository.Add(newOrder);
-                        await _unitOfWork.SaveChangesAsync();
-                        return new()
-                        {
-                            StatusCode = 201,
-                            Message = "Đã tạo hóa đơn với trạng thái chưa thanh toán cho dịch vụ đặt xe"
-                        };
+                        newOrder.Status = (int)OrderStatus.Paid; // Cập nhật lại trạng thái order đổi với service 'đặt xe' 
+                        // await _unitOfWork.OrderRepository.Add(newOrder);
+                        // await _unitOfWork.SaveChangesAsync();
+                        // return new()
+                        // {
+                        //     StatusCode = 201,
+                        //     Message = "Đã tạo hóa đơn với trạng thái chưa thanh toán cho dịch vụ đặt xe"
+                        // };
                     }
                     else if (serviceType.Name.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME))
                     {

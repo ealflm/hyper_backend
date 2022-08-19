@@ -1,54 +1,59 @@
+using System.Collections.Generic;
+
 namespace TourismSmartTransportation.Business.Hubs.Mapping
 {
     public class RoomMapping
     {
-        private readonly Mapping<string> _customers = new Mapping<string>();
-        private readonly Mapping<string> _drivers = new Mapping<string>();
+        private readonly Dictionary<string, string> _rooms =
+            new Dictionary<string, string>();
 
-        public int CustomerCount
+        public int Count
         {
             get
             {
-                return _customers.Count;
+                return _rooms.Count;
             }
         }
 
-        public int DriverCount
+        public Dictionary<string, string> GetRooms()
         {
-            get
+            return _rooms;
+        }
+
+        public string GetValue(string key)
+        {
+            string value;
+            lock (_rooms)
             {
-                return _drivers.Count;
+                if (_rooms.TryGetValue(key, out value))
+                {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+
+        public void Add(string key, string value)
+        {
+            lock (_rooms)
+            {
+                if (!_rooms.ContainsKey(key))
+                {
+                    _rooms.Add(key, value);
+                }
             }
         }
 
-        public void Add(string key, string value, bool isCustomer = true)
+        public void Remove(string key)
         {
-            if (isCustomer)
+            lock (_rooms)
             {
-                _customers.Add(key, value);
+                if (_rooms.ContainsKey(key))
+                {
+                    _rooms.Remove(key);
+                }
             }
-
-            _drivers.Add(value, key);
-        }
-
-        public string GetValue(string key, bool isCustomer = true)
-        {
-            if (isCustomer)
-            {
-                return _customers.GetValue(key);
-            }
-
-            return _drivers.GetValue(key);
-        }
-
-        public void Remove(string key, bool isCustomer = true)
-        {
-            if (isCustomer)
-            {
-                _customers.Remove(key);
-            }
-
-            _drivers.Remove(_customers.GetValue(key));
         }
     }
 }

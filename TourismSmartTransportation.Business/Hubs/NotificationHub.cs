@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
@@ -40,6 +41,7 @@ namespace TourismSmartTransportation.Business.Hubs
         private readonly static SearchMapping _seachMapping = new SearchMapping();
         private readonly static ConnectionMapping<string> _connections = new ConnectionMapping<string>(); // Tạo instance connection mapping
         private readonly static DataMapping _dataMapping = new DataMapping(); // Tạo instance lưu danh sách thông tin customer và danh sách thông tin driver
+        private readonly static RoomMapping _roomMapping = new RoomMapping(); // Tạo instance chứa driver và customer khi đã booking 
 
         public NotificationHub(ILogger<NotificationHub> logger,
                                 IUnitOfWork unitOfWork,
@@ -50,6 +52,42 @@ namespace TourismSmartTransportation.Business.Hubs
             _unitOfWork = unitOfWork;
             _driverService = driverService;
             _orderHelperService = orderHelpersService;
+        }
+
+        private bool CompareTime(DateTime date, Time time = Time.Day)
+        {
+            var day = DateTime.UtcNow.Day;
+            var month = DateTime.UtcNow.Month;
+            var year = DateTime.UtcNow.Year;
+
+            DateTime start = new DateTime(year, month, day);
+            dynamic end = new DateTime(year, month, day).AddDays(1);
+            if (time == Time.Month)
+            {
+                end = new DateTime(year, month, day).AddMonths(1);
+            }
+
+            if (start.CompareTo(date) <= 0 && date.CompareTo(end) < 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public Expression<Func<CustomerTrip, bool>> CompareTime(Time time = Time.Day)
+        {
+            var day = DateTime.UtcNow.Day;
+            var month = DateTime.UtcNow.Month;
+            var year = DateTime.UtcNow.Year;
+
+            DateTime start = new DateTime(year, month, day);
+            DateTime end = new DateTime(year, month, day).AddDays(1);
+            if (time == Time.Month)
+            {
+                end = new DateTime(year, month, day).AddMonths(1);
+            }
+            return x => start.CompareTo(x.CreatedDate) <= 0 && x.CreatedDate.CompareTo(end) < 0;
         }
 
         public async Task FindDriver(string json)
@@ -75,6 +113,9 @@ namespace TourismSmartTransportation.Business.Hubs
             for (int i = customer.IntervalLoopIndex; i < DISTANCES.Count; i++) // Tìm kiếm trong những khoảng distance 3000m 5000m 7000m
             {
                 _logger.LogInformation($"---------- Go to IntervalLoopIndex - {i}---------------");
+
+                customer.IntervalLoopIndex = i; // cập nhật lại loop index 
+                _dataMapping.Add(model.Id, customer, User.Customer);
 
                 foreach (var item in _dataMapping.GetDrivers(DriverStatus.On).GetItems())
                 {
@@ -116,12 +157,83 @@ namespace TourismSmartTransportation.Business.Hubs
                     continue;
                 }
 
-                _logger.LogInformation("----------- DRIVER FOUNDED -------------");
-                // implement thuật toán tìm tài xế
-                var rand = new Random();
-                var index = rand.Next(0, driversList.Count - 1);
-                var driver = driversList[index];
-                driver.ItemIndex = index;
+                _logger.LogInformation("----------- FOUND THE DRIVERS LIST CAN BE MATCH WITH CUSTOMER -------------");
+
+                // Lặp qua danh sách tài xế khả dụng để lấy điểm số
+                foreach (var driverItem in driversList)
+                {
+                    // Lấy danh sách điểm đánh giá của driver
+                    var driverRates = await _unitOfWork.FeedbackForDriverRepository
+                                    .Query()
+                                    .Where(x => x.DriverId.ToString() == driverItem.Id)
+                                    .Select(x => x.Rate)
+                                    .ToListAsync();
+                    var driverRateAvg = driverRates.Count == 0 ? 0 : driverRates.Average(); // tính điểm trung bình rate của driver
+
+                    // lây thông tin partner
+                    var partnerId = (await _unitOfWork.DriverRepository.GetById(Guid.Parse(driverItem.Id))).PartnerId;
+
+                    // lấy danh sách toàn bộ cuốc của dịch vụ đặt xe trong tháng
+                    var allTripsInMonth = (await _unitOfWork.CustomerTripRepository
+                                                    .Query()
+                                                    .Where(CompareTime(Time.Day))
+                                                    .Join(_unitOfWork.VehicleRepository.Query(),
+                                                        customerTrip => customerTrip.VehicleId,
+                                                        vehicle => vehicle.VehicleId,
+                                                        (customerTrip, vehicle) => new { customerTrip, vehicle }
+                                                    )
+                                                    .Join(_unitOfWork.DriverRepository.Query(),
+                                                        cusTripVeh => cusTripVeh.vehicle.VehicleId,
+                                                        driver => driver.VehicleId,
+                                                        (cusTripVeh, driver) => new { cusTripVeh, driver }
+                                                    )
+                                                    .Join(_unitOfWork.ServiceTypeRepository.Query(),
+                                                        cusTripVehDri => cusTripVehDri.cusTripVeh.vehicle.ServiceTypeId,
+                                                        serviceType => serviceType.ServiceTypeId,
+                                                        (x, y) => new
+                                                        {
+                                                            DriverId = x.driver.DriverId,
+                                                            VehicleId = x.cusTripVeh.vehicle.VehicleId,
+                                                            PartnerId = x.driver.PartnerId,
+                                                            ServiceTypeId = y.ServiceTypeId,
+                                                            CreatedDate = x.cusTripVeh.customerTrip.CreatedDate
+                                                        }
+                                                    )
+                                                    .Where(x => x.ServiceTypeId.ToString() == ServiceTypeDefaultData.BOOK_SERVICE_ID)
+                                                    .Where(x => x.PartnerId == partnerId)
+                                                    .ToListAsync());
+
+                    // tính số cuốc partner trong tháng hiện tại
+                    int amountTripsOfPartner = allTripsInMonth.Count;
+
+                    // Tính số cuốc của driver trong ngày
+                    int amountTripsOfDriver = 0;
+                    foreach (var driverTripItem in allTripsInMonth)
+                    {
+                        if (driverTripItem.DriverId.ToString() == driverItem.Id && CompareTime(driverTripItem.CreatedDate, Time.Day))
+                        {
+                            amountTripsOfDriver += 1;
+                        }
+                    }
+
+
+                    // tính điểm driver
+                    driverItem.Point = 10 - (5.0 / (driverRateAvg == 0 ? 10 : driverRateAvg)) - (amountTripsOfDriver / 10) - (amountTripsOfPartner / 100);
+                }
+
+
+
+                // var rand = new Random();
+                // var index = rand.Next(0, driversList.Count - 1);
+                // var driver = driversList[index];
+
+                driversList.Sort(delegate (DataHubModel x, DataHubModel y)
+                {
+                    return x.Point.CompareTo(y.Point);
+                });
+                _seachMapping.UpdateDictionaryValue(model.Id, driversList); // cập nhật lại danh sách tài xế có thể matching với yều cầu của khách hàng
+
+                var driver = driversList[0];
                 isFoundDriver = true;
                 // driver.IntervalLoopIndex = i;
 
@@ -146,12 +258,21 @@ namespace TourismSmartTransportation.Business.Hubs
             {
                 // write code not found driver
                 _logger.LogInformation("------------- DRIVER MATCHING WITH REQUEST NOT FOUND -------------");
+                foreach (var connectionId in _connections.GetConnections(model.Id))
+                {
+                    await Clients.Client(connectionId).SendAsync("BookingResponse", new
+                    {
+                        StatusCode = 404,
+                        Message = "Không tìm thấy tài xế"
+                    });
+                }
+
             }
 
             _logger.LogInformation("---------------- End FindDriver Hub Function ------------------");
         }
 
-        public List<object> GetDriversListMatching(string json)
+        public string GetDriversListMatching(string json)
         {
             _logger.LogInformation("------------ Begin GetDriversListMatching Hub Function ------------");
 
@@ -185,30 +306,26 @@ namespace TourismSmartTransportation.Business.Hubs
             {
                 _logger.LogInformation($"------------ Drivers List Matching With Customer ::::: Count: {list.Count} ------------");
             }
+
+            var parseToJson = Newtonsoft.Json.JsonConvert.SerializeObject(list);
             _logger.LogInformation("------------ End GetDriversListMatching Hub Function ------------");
 
-            return list;
+            return parseToJson;
         }
 
-        public async Task CheckAcceptedRequest(string json)
+        public async Task<bool> CheckAcceptedRequest(string json, string status)
         {
             _logger.LogInformation("---------------- Begin CheckAcceptedRequest Hub Function ------------------");
+            _logger.LogInformation($"---------------- JSON LOG {json} ------------------");
 
             DriverResponseModel response = Newtonsoft.Json.JsonConvert.DeserializeObject<DriverResponseModel>(json);
+
+            _logger.LogInformation("---------------- DOPE ------------------");
+
             // Tài xế nhận yều cầu đặt xe
-            if (response.Accepted)
+            if (status == "1")
             {
                 _logger.LogInformation("---------------- Driver Accepted The Booking Request ------------------");
-
-                foreach (var connectionId in _connections.GetConnections(response.Customer.Id))
-                {
-                    await Clients.Client(connectionId).SendAsync("BookingResponse", new
-                    {
-                        StatusCode = 200,
-                        Driver = response.Driver,
-                        Message = "Yêu cầu đặt xe của bạn đã thành công"
-                    });
-                }
 
                 // Lấy thông tin phương tiện thông qua driver
                 var driver = await _unitOfWork.DriverRepository.GetById(Guid.Parse(response.Driver.Id));
@@ -220,7 +337,7 @@ namespace TourismSmartTransportation.Business.Hubs
                     Content = ServiceTypeDefaultData.BUS_SERVICE_CONTENT,
                     Price = response.Customer.Price,
                     Quantity = 1,
-                    PriceOfBusServiceId = Guid.Parse(response.Customer.PriceBookingId)
+                    PriceOfBookingServiceId = Guid.Parse(response.Customer.PriceBookingId)
                 };
                 var orderDetailList = new List<OrderDetailsInfo>();
                 orderDetailList.Add(orderDetails);
@@ -237,7 +354,7 @@ namespace TourismSmartTransportation.Business.Hubs
                 var respone = await _orderHelperService.CreateOrder(createOrder);
                 if (respone.StatusCode != 201)
                 {
-                    // thông báo lỗi nếu cần
+                    return false;
                 }
 
                 var customerTrip = new CustomerTrip()
@@ -246,56 +363,291 @@ namespace TourismSmartTransportation.Business.Hubs
                     CreatedDate = DateTime.Now,
                     ModifiedDate = DateTime.Now,
                     CustomerId = Guid.Parse(response.Customer.Id),
-                    VehicleId = vehicle.VehicleTypeId,
+                    VehicleId = vehicle.Id,
                     Distance = response.Customer.Distance,
                     Status = (int)CustomerTripStatus.Accepted
                 };
+
                 await _unitOfWork.CustomerTripRepository.Add(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Gửi thông báo đến cho khách hàng 
+                foreach (var connectionId in _connections.GetConnections(response.Customer.Id))
+                {
+                    await Clients.Client(connectionId).SendAsync("BookingResponse", new
+                    {
+                        StatusCode = 200,
+                        Driver = response.Driver,
+                        Message = "Yêu cầu đặt xe của bạn đã thành công"
+                    });
+                }
+
+                // Lưu lại thông tin giữa khách hàng và tài xế khi đã giao tiếp với nhau
+                _roomMapping.Add(response.Customer.Id, response.Driver.Id);
+                _roomMapping.Add(response.Driver.Id, response.Customer.Id);
+
+                return true;
             }
             else // Tài xế từ chối yêu cầu 
             {
                 _logger.LogInformation("---------------- Driver Rejected The Booking Request ------------------");
+                // Xóa tài xế ra khỏi danh sách matching
+                var driversList = _seachMapping.GetValues(response.Customer.Id);
+                driversList.RemoveAt(0);
 
-                if (response.Customer.IntervalLoopIndex < DISTANCES.Count)
+                if (driversList.Count == 0) // không tìm thấy driver trong list có thể matching với customer thì duyệt ở độ dài khác
                 {
-                    DataHubModel customer = _dataMapping.GetValue(response.Customer.Id, User.Customer);
-                    customer.IntervalLoopIndex += 1;
-                    _dataMapping.Add(response.Customer.Id, customer, User.Customer); // cập nhật lại customer trong danh sách _datamapping
+                    _logger.LogInformation("---------------- Call FindDriver Function to extend distance range ------------------");
 
-                    // xóa driver khỏi danh sách nhưng tài xế phù hợp với yêu cầu của khách hàng
-                    var driversList = _seachMapping.GetValues(response.Customer.Id);
-                    driversList.RemoveAt(response.Driver.ItemIndex);
-                    _seachMapping.UpdateDictionaryValue(response.Customer.Id, driversList); // cập nhật lại danh sách tài xế có thể matching với yều cầu của khách hàng
+                    if (response.Customer.IntervalLoopIndex < DISTANCES.Count)
+                    {
+                        DataHubModel customer = _dataMapping.GetValue(response.Customer.Id, User.Customer);
+                        customer.IntervalLoopIndex += 1;
+                        _dataMapping.Add(response.Customer.Id, customer, User.Customer); // cập nhật lại customer trong danh sách _datamapping
 
-                    LocationModel model = new LocationModel();
-                    model.Id = customer.Id;
-                    model.Longitude = customer.Longitude;
-                    model.Latitude = customer.Latitude;
-                    model.Seats = customer.Seats;
-                    model.Distance = customer.Distance;
-                    model.Price = customer.Price;
-                    model.PriceBookingId = customer.PriceBookingId;
+                        // xóa driver khỏi danh sách nhưng tài xế phù hợp với yêu cầu của khách hàng
+                        // driversList.RemoveAt(response.Driver.ItemIndex);
+                        // _seachMapping.UpdateDictionaryValue(response.Customer.Id, driversList); // cập nhật lại danh sách tài xế có thể matching với yều cầu của khách hàng
 
-                    string jsonLocationModel = Newtonsoft.Json.JsonConvert.SerializeObject(model); // parse object to json
-                    await FindDriver(jsonLocationModel);
+                        LocationModel model = new LocationModel();
+                        model.Id = customer.Id;
+                        model.Longitude = customer.Longitude;
+                        model.Latitude = customer.Latitude;
+                        model.Seats = customer.Seats;
+                        model.Distance = customer.Distance;
+                        model.Price = customer.Price;
+                        model.PriceBookingId = customer.PriceBookingId;
+
+                        string jsonLocationModel = Newtonsoft.Json.JsonConvert.SerializeObject(model); // parse object to json
+                        await FindDriver(jsonLocationModel);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("-------------- DRIVER NOT FOUND -----------------");
+                        foreach (var connectionId in _connections.GetConnections(response.Customer.Id))
+                        {
+                            await Clients.Client(connectionId).SendAsync("BookingResponse", new
+                            {
+                                StatusCode = 404,
+                                Message = "Không tìm thấy tài xế"
+                            });
+                        }
+
+                    }
                 }
                 else
                 {
-                    _logger.LogInformation("-------------- DRIVER NOT FOUND -----------------");
-                    foreach (var connectionId in _connections.GetConnections(response.Customer.Id))
+                    _logger.LogInformation("---------------- FOUNDED OTHER DRIVER ------------------");
+                    var driver = driversList[0];
+                    foreach (var cId in _connections.GetConnections(driver.Id))
                     {
-                        await Clients.Client(connectionId).SendAsync("BookingResponse", new
+                        await Clients.Client(cId).SendAsync("BookingRequest", new
                         {
-                            StatusCode = 404,
-                            Message = "Không tìm thấy tài xế"
+                            StatusCode = "200",
+                            Driver = driver,
+                            Customer = response.Customer,
+                            Type = "Booking",
+                            Message = "Bạn nhận được yêu cầu đặt xe từ khách hàng."
                         });
-                    }
 
+                        _logger.LogInformation("----------- Already sent booking request to driver -------------");
+                    }
                 }
             }
 
             _logger.LogInformation("---------------- End CheckAcceptedRequest Hub Function ------------------");
+            return true;
+        }
+
+        public async Task<bool> CancelBooking(string customerId)
+        {
+            _logger.LogInformation("---------------- Customer cancelled booking request ------------------");
+
+            var driverId = _roomMapping.GetValue(customerId);
+            var customer = _dataMapping.GetValue(customerId, User.Customer);
+            var driver = _dataMapping.GetValue(driverId, User.Driver);
+            if (customer != null && driver != null)
+            {
+                GeoCoordinate customerCoordinates = new GeoCoordinate(customer.Latitude, customer.Longitude);
+                GeoCoordinate driverCoordinates = new GeoCoordinate(driver.Latitude, driver.Longitude);
+                double distanceBetween = customerCoordinates.GetDistanceTo(driverCoordinates); // tính khoảng cách giữa driver và customer 
+
+                var refundPrice = 0M;
+                if (driver.DistanceBetween > 2000 && ((double)driver.DistanceBetween - distanceBetween) > ((double)driver.DistanceBetween * 0.6))
+                {
+                    _logger.LogInformation("---------------- Refund a part total price of order  ------------------");
+                    refundPrice = customer.Price - customer.Price * 0.3M; // tính phí vi phạm
+                }
+                else
+                {
+                    _logger.LogInformation("---------------- Refund all total price of order  ------------------");
+                    refundPrice = customer.Price; // trả lại toàn bộ tiền cho khách
+                }
+
+                var order = await _unitOfWork.OrderRepository
+                            .Query()
+                            .Where(x => x.ServiceTypeId.ToString() == ServiceTypeDefaultData.BOOK_SERVICE_ID)
+                            .Where(x => x.CustomerId.ToString() == customer.Id)
+                            .Where(x => x.Status != (int)OrderStatus.Canceled && x.Status != (int)OrderStatus.Done)
+                            .FirstOrDefaultAsync();
+
+                // cập nhật lại giá tiền và trạng thái của order
+                order.TotalPrice = order.TotalPrice - refundPrice;
+                order.Status = (int)OrderStatus.Canceled;
+                _unitOfWork.OrderRepository.Update(order);
+
+                // cập nhật lại trạng thái của customertrip
+                var customerTrip = await _unitOfWork.CustomerTripRepository
+                                    .Query()
+                                    .Where(x => x.CustomerId.ToString() == customer.Id)
+                                    .Where(x => x.Status == (int)CustomerTripStatus.Accepted)
+                                    .FirstOrDefaultAsync();
+
+                customerTrip.Status = (int)CustomerTripStatus.Canceled;
+                _unitOfWork.CustomerTripRepository.Update(customerTrip);
+
+                // Tạo transaction cho customer
+                var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.ToString().Equals(customer.Id)).FirstOrDefaultAsync();
+                var transaction = new Transaction()
+                {
+                    TransactionId = Guid.NewGuid(),
+                    WalletId = wallet.WalletId,
+                    Amount = refundPrice,
+                    Content = "Hoàn trả tiền cho khách hàng",
+                    CreatedDate = DateTime.Now,
+                    OrderId = order.OrderId,
+                    Status = 1,
+                };
+                wallet.AccountBalance += refundPrice;
+                _unitOfWork.WalletRepository.Update(wallet);
+                await _unitOfWork.TransactionRepository.Add(transaction);
+
+                // Lấy ví của partner
+                var partnerWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == order.PartnerId)
+                                        .FirstOrDefaultAsync();
+
+                // Tạo transaction cho partner
+                var partnerTransaction = new Transaction()
+                {
+                    TransactionId = Guid.NewGuid(),
+                    Content = $"Đối tác gửi lại 90% tiền thừa",
+                    OrderId = order.OrderId,
+                    CreatedDate = DateTime.Now,
+                    Amount = -(refundPrice * 0.9M), // xét dấu âm cho giao dịch trừ tiền
+                    Status = 1,
+                    WalletId = partnerWallet.WalletId
+                };
+                partnerWallet.AccountBalance = partnerWallet.AccountBalance - (-partnerTransaction.Amount); // trừ tiền từ transaction
+                await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+                _unitOfWork.WalletRepository.Update(partnerWallet);
+
+                // Tạo transaction cho admin
+                var adminWallet = await _unitOfWork.WalletRepository
+                                    .Query()
+                                    .Where(x => x.PartnerId == null && x.CustomerId == null)
+                                    .FirstOrDefaultAsync();
+
+                var adminTransaction = new Transaction()
+                {
+                    TransactionId = Guid.NewGuid(),
+                    Content = $"Hệ Thống Gửi lại 10% tiền thừa",
+                    OrderId = order.OrderId,
+                    CreatedDate = DateTime.Now,
+                    Amount = -(refundPrice * 0.1M), // xét dấu âm cho giao dịch trừ tiền
+                    Status = 1,
+                    WalletId = adminWallet.WalletId
+                };
+                adminWallet.AccountBalance = adminWallet.AccountBalance - (-adminTransaction.Amount); // trừ tiền từ transaction
+                await _unitOfWork.TransactionRepository.Add(adminTransaction);
+                _unitOfWork.WalletRepository.Update(adminWallet);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                // xóa customer and driver khỏi danh sách kết nối (room)
+                _roomMapping.Remove(driver.Id);
+                _roomMapping.Remove(customerId);
+
+                _logger.LogInformation("---------------- End cancel booking hub function  ------------------");
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task DriverArrived(string driverId)
+        {
+            _logger.LogInformation("---------------- BEGIN Driver Arrived Hub Function  ------------------");
+
+            var customerId = _roomMapping.GetValue(driverId);
+            foreach (var connectionId in _connections.GetConnections(customerId))
+            {
+                await Clients.Client(connectionId).SendAsync("DriverArrived", new
+                {
+                    StatusCode = 200,
+                    Message = "Tài xế đã đến điểm đón"
+                });
+            }
+
+            _logger.LogInformation("---------------- END Driver Arrived Hub Function  ------------------");
+
+        }
+
+        public async Task DriverPickedUp(string driverId)
+        {
+            _logger.LogInformation("---------------- BEGIN Driver Picked Up Hub Function  ------------------");
+
+            var customerId = _roomMapping.GetValue(driverId);
+            var customerTrip = await _unitOfWork.CustomerTripRepository
+                                    .Query()
+                                    .Where(x => x.CustomerId.ToString() == customerId)
+                                    .Where(x => x.Status == (int)CustomerTripStatus.Accepted)
+                                    .FirstOrDefaultAsync();
+
+            customerTrip.Status = (int)CustomerTripStatus.PickedUp;
+            _unitOfWork.CustomerTripRepository.Update(customerTrip);
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("---------------- END Driver Picked Up Hub Function  ------------------");
+        }
+
+        public async Task CompletedBooking(string driverId)
+        {
+            _logger.LogInformation("---------------- BEGIN Completed Booking Hub Function  ------------------");
+
+            var customerId = _roomMapping.GetValue(driverId);
+            var customerTrip = await _unitOfWork.CustomerTripRepository
+                                    .Query()
+                                    .Where(x => x.CustomerId.ToString() == customerId)
+                                    .Where(x => x.Status == (int)CustomerTripStatus.PickedUp)
+                                    .FirstOrDefaultAsync();
+
+            customerTrip.Status = (int)CustomerTripStatus.Done;
+            _unitOfWork.CustomerTripRepository.Update(customerTrip);
+
+            var order = await _unitOfWork.OrderRepository
+                            .Query()
+                            .Where(x => x.ServiceTypeId.ToString() == ServiceTypeDefaultData.BOOK_SERVICE_ID)
+                            .Where(x => x.CustomerId.ToString() == customerId)
+                            .Where(x => x.Status == (int)OrderStatus.Paid)
+                            .FirstOrDefaultAsync();
+
+            // cập nhật lại giá tiền và trạng thái của order
+            order.Status = (int)OrderStatus.Done;
+            _unitOfWork.OrderRepository.Update(order);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            // xóa customer and driver khỏi danh sách kết nối (room)
+            _roomMapping.Remove(driverId);
+            _roomMapping.Remove(customerId);
+
+            // Xóa khỏi danh sách tìm kiếm 
+            _seachMapping.Remove(customerId);
+
+            _logger.LogInformation("---------------- BEGIN Completed Booking Hub Function  ------------------");
         }
 
         public async Task<bool> OpenDriver(string json) // hàm được gọi khi tài xế bật chế độ nhận yêu cầu đặt xe từ khách hàng
@@ -304,19 +656,27 @@ namespace TourismSmartTransportation.Business.Hubs
 
             LocationModel model = Newtonsoft.Json.JsonConvert.DeserializeObject<LocationModel>(json);
             var dataHubModel = _dataMapping.GetValue(model.Id, User.Driver);
+            var driverStatus = dataHubModel.Status;
             if (dataHubModel != null)
             {
                 dataHubModel.Longitude = model.Longitude;
                 dataHubModel.Latitude = model.Latitude;
                 dataHubModel.Status = (int)DriverStatus.On;
                 _dataMapping.Add(model.Id, dataHubModel, User.Driver);
+
+                var drivervalue = _dataMapping.GetValue(model.Id, User.Driver);
+                var drivervaluejson = Newtonsoft.Json.JsonConvert.SerializeObject(drivervalue);
+                _logger.LogInformation($"------------ Update status driver in datamapping :::: JSON: {drivervaluejson}  -------------");
             }
 
-            var driverResponse = await _driverService.UpdateDriverStatus(model.Id, (int)DriverStatus.On); // cập nhật status driver xuống db
-            if (driverResponse.StatusCode != 201)
+            if (driverStatus != (int)DriverStatus.On)
             {
-                _logger.LogError("------------ Update Driver Status Failed to Database -----------");
-                return false;
+                var driverResponse = await _driverService.UpdateDriverStatus(model.Id, (int)DriverStatus.On); // cập nhật status driver xuống db
+                if (driverResponse.StatusCode != 201)
+                {
+                    _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                    return false;
+                }
             }
 
             _logger.LogInformation("------------ End OpenDriver Hub Function -----------");
@@ -328,7 +688,16 @@ namespace TourismSmartTransportation.Business.Hubs
         {
             _logger.LogInformation("------------ Begin CloseDriver Hub Function -----------");
 
-            _dataMapping.Remove(driverId, User.Driver);
+            // _dataMapping.Remove(driverId, User.Driver);
+            // cập nhật lại trạng thái driver về chế độ tắt nhận request
+            var dataHubModel = _dataMapping.GetValue(driverId, User.Driver);
+            dataHubModel.Status = (int)DriverStatus.Off;
+            _dataMapping.Add(driverId, dataHubModel, User.Driver);
+
+            var drivervalue = _dataMapping.GetValue(driverId, User.Driver);
+            var drivervaluejson = Newtonsoft.Json.JsonConvert.SerializeObject(drivervalue);
+            _logger.LogInformation($"------------ ON CLOSEDRIVER FUNCTION - Update status driver in datamapping :::: JSON: {drivervaluejson}  -------------");
+
             var driverResponse = await _driverService.UpdateDriverStatus(driverId, (int)DriverStatus.Off);
             if (driverResponse.StatusCode != 201)
             {
@@ -354,10 +723,13 @@ namespace TourismSmartTransportation.Business.Hubs
                             .ToDictionaryAsync(x => x.Id.ToString());
         }
 
+        // public Task<bool> 
+
         // ------------- Overrivde method --------------
         public override Task OnConnectedAsync() // hàm được gọi khi có thiết bị connect tới hub
         {
             _logger.LogInformation("------------------ Begin On Connected Async Hub Function --------------------");
+
             // load vehicle có dịch vụ là đặt xe
             if (_vehicleStore.VehiclesList.Count == 0)
             {
@@ -375,6 +747,7 @@ namespace TourismSmartTransportation.Business.Hubs
                 id = Context.User.Claims.Where(x => x.Type == "DriverId").Select(x => x.Value).FirstOrDefault();
                 isCustomerRole = false;
             }
+
             _logger.LogInformation($"--------------- OnConnectedAsync Context.User.Claim: {id} - {Context.ConnectionId} -------------");
 
             _connections.Add(id, Context.ConnectionId); // lưu id người dùng và id máy người dùng (connectionId)
@@ -491,6 +864,7 @@ namespace TourismSmartTransportation.Business.Hubs
                 if (driver.VehicleId != null && _vehicleStore.VehiclesList.ContainsKey(driver.VehicleId.Value.ToString()))
                 {
                     _dataMapping.Add(driverHubViewModel.Id, driverHubViewModel, User.Driver);
+                    Task.WaitAll(_driverService.UpdateDriverStatus(driver.DriverId.ToString(), (int)DriverStatus.Off)); // cập nhật trạng thái xuống database
                     _logger.LogInformation("------------------ Added Driver To DataMapping Store --------------------");
                     _logger.LogInformation($"------------------ Drivers List in DataMapping Store :::: Count: {_dataMapping.GetDrivers().Count} --------------------");
                 }
