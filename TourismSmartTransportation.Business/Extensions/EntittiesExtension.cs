@@ -23,6 +23,8 @@ using TourismSmartTransportation.Business.ViewModel.Admin.PackageItem;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 using TourismSmartTransportation.Business.ViewModel.Admin.BasePriceOfBusService;
 using TourismSmartTransportation.Business.ViewModel.Shared;
+using System;
+using System.Linq.Expressions;
 
 namespace TourismSmartTransportation.Business.Extensions
 {
@@ -497,9 +499,9 @@ namespace TourismSmartTransportation.Business.Extensions
             {
                 PriceOfBookingServiceId = item.PriceOfBookingServiceId,
                 FixedDistance = item.FixedDistance,
-                FixedPrice= item.FixedPrice,
-                PricePerKilometer= item.PricePerKilometer,
-                VehicleTypeId= item.VehicleTypeId
+                FixedPrice = item.FixedPrice,
+                PricePerKilometer = item.PricePerKilometer,
+                VehicleTypeId = item.VehicleTypeId
             };
         }
 
@@ -507,11 +509,11 @@ namespace TourismSmartTransportation.Business.Extensions
         {
             return new()
             {
-                CustomerTripId= item.CustomerTripId,
-                Content= item.Content,
-                DriverId= item.DriverId,
-                FeedbackForDriverId= item.FeedbackForDriverId,
-                Rate= item.Rate
+                CustomerTripId = item.CustomerTripId,
+                Content = item.Content,
+                DriverId = item.DriverId,
+                FeedbackForDriverId = item.FeedbackForDriverId,
+                Rate = item.Rate
             };
         }
 
@@ -520,9 +522,9 @@ namespace TourismSmartTransportation.Business.Extensions
             return new()
             {
                 CustomerTripId = item.CustomerTripId,
-                Content = item.Content,                
+                Content = item.Content,
                 Rate = item.Rate,
-                FeedbackVehicleId= item.FeedbackVehicleId
+                FeedbackVehicleId = item.FeedbackVehicleId
             };
         }
     }
