@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 using TourismSmartTransportation.API.Utilities.Response;
 using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
+using TourismSmartTransportation.Business.SearchModel.Shared;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 
 namespace TourismSmartTransportation.API.Controllers.Partner
 {
     [ApiController]
-    public class AuthorizationController : ControllerBase
+    public class AuthorizationController : BaseController
     {
         private readonly Business.Interfaces.IAuthorizationService _authorizationService;
 
@@ -36,5 +37,11 @@ namespace TourismSmartTransportation.API.Controllers.Partner
             return Ok(loginViewModel);
         }
 
+        [HttpPut]
+        [Route(ApiVer1Url.Partner.Profile + "/change-password")]
+        public async Task<IActionResult> ChangePassword([FromForm] PasswordVerificationModel model)
+        {
+            return SendResponse(await _authorizationService.ChangePasswordAllRole(model, global::Login.Company));
+        }
     }
 }

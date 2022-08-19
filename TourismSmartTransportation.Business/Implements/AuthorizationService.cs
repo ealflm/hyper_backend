@@ -15,6 +15,7 @@ using TourismSmartTransportation.Business.Interfaces;
 using TourismSmartTransportation.Business.SearchModel.Admin.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Common.Authorization;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer.Authorization;
+using TourismSmartTransportation.Business.SearchModel.Shared;
 using TourismSmartTransportation.Business.ViewModel.Admin.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Driver.Authorization;
 using TourismSmartTransportation.Business.ViewModel.Partner.Authorization;
@@ -452,6 +453,105 @@ namespace TourismSmartTransportation.Business.Implements
                 StatusCode = 400,
                 Message = "Xác thực thất bại!"
             };
+        }
+
+
+        public async Task<Response> ChangePasswordAllRole(PasswordVerificationModel model, Login role)
+        {
+            int check = -1;
+            switch ((int)role)
+            {
+                case 1:
+                    {
+                        var account = await _unitOfWork.PartnerRepository
+                            .Query()
+                            .Where(x => x.Username == model.Username)
+                            .FirstOrDefaultAsync();
+                        check =  ChangePassword<TourismSmartTransportation.Data.Models.Partner>( account, model);
+                        if (check == 2)
+                        {
+                            _unitOfWork.PartnerRepository.Update(account);
+                        }
+                        break;
+                    }
+                case 2:
+                    {
+                        var account = await _unitOfWork.CustomerRepository
+                            .Query()
+                            .Where(x => x.Phone == model.Username)
+                            .FirstOrDefaultAsync();
+                        check =  ChangePassword<Customer>( account, model);
+                        if (check == 2)
+                        {
+                            _unitOfWork.CustomerRepository.Update(account);
+                        }
+                        break;
+                    }
+                case 3:
+                    {
+                        var account = await _unitOfWork.DriverRepository
+                            .Query()
+                            .Where(x => x.Phone == model.Username)
+                            .FirstOrDefaultAsync();
+                        check =  ChangePassword<Driver>( account, model);
+                        if (check == 2)
+                        {
+                            _unitOfWork.DriverRepository.Update(account);
+                        }
+                        break;
+                    }
+
+            }
+
+            switch (check)
+            {
+                case 0:
+                    {
+                        return new()
+                        {
+                            StatusCode = 400,
+                            Message = "Tài khoản không chính xác"
+                        };
+                    }
+                case 1:
+                    {
+                        return new()
+                        {
+                            StatusCode = 400,
+                            Message = "Mật khẩu không chính xác"
+                        };
+                    }
+                default:
+                    {
+                        await _unitOfWork.SaveChangesAsync();
+                        return new()
+                        {
+                            StatusCode = 200,
+                            Message = "Đổi mật khẩu thành công"
+                        };
+                    }
+            }
+        }
+
+
+        private  int ChangePassword<T>( T account, PasswordVerificationModel model)
+        {
+            
+            if (account == null)
+            {
+                return 0;
+            }
+            if (!VerifyPassword(model.OldPassowrd,(byte[]) account.GetType().GetProperty("Password").GetValue(account), (byte[]) account.GetType().GetProperty("Salt").GetValue(account)))
+            {
+                return 1;
+            }
+
+            // Some fields will be change
+            CreatePasswordHash(model.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            account.GetType().GetProperty("Password").SetValue(account,  passwordHash);
+            account.GetType().GetProperty("Salt").SetValue(account, passwordSalt);
+            account.GetType().GetProperty("ModifiedDate").SetValue(account, DateTime.Now);
+            return 2;
         }
     }
 }

@@ -56,11 +56,6 @@ namespace TourismSmartTransportation.API.Controllers.Partner
         //     return SendResponse(await _service.ChangePassowrd(id, model));
         // }
 
-        [HttpPut]
-        [Route(ApiVer1Url.Partner.Profile + "/change-password")]
-        public async Task<IActionResult> ChangePassword([FromForm] PasswordVerificationModel model)
-        {
-            return SendResponse(await _service.ChangePassowrd(model));
-        }
+        
     }
 }
