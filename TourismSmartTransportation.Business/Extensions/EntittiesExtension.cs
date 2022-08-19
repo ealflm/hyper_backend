@@ -443,6 +443,7 @@ namespace TourismSmartTransportation.Business.Extensions
                 DayOfWeek = item.DayOfWeek,
                 TimeStart = item.TimeStart,
                 TimeEnd = item.TimeEnd,
+                Week= item.Week,
                 Status = item.Status
             };
         }
