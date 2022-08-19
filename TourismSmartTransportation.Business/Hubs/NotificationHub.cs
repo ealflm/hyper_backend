@@ -93,12 +93,24 @@ namespace TourismSmartTransportation.Business.Hubs
         public async Task FindDriver(string json)
         {
             _logger.LogInformation("---------------- Begin FindDriver Hub Function ------------------");
+            _logger.LogInformation($"---------------- JSON FINDDRIVER {json} ------------------");
 
             LocationModel model = Newtonsoft.Json.JsonConvert.DeserializeObject<LocationModel>(json); // parse json to object
+
+            if (model == null)
+            {
+                _logger.LogInformation($"---------------- Customer invalid ------------------");
+                return;
+
+            }
+
+            _logger.LogInformation($"---------------- Model MODEL {model.Id} -----------------");
+
 
             DataHubModel customer = _dataMapping.GetValue(model.Id, User.Customer);
             if (customer != null)
             {
+                _logger.LogInformation($"---------------- Model Customer: {customer.LastName} {customer.FirstName} -----------------");
                 customer.Longitude = model.Longitude;
                 customer.Latitude = model.Latitude;
                 customer.PriceBookingId = model.PriceBookingId;
@@ -119,6 +131,9 @@ namespace TourismSmartTransportation.Business.Hubs
 
                 foreach (var item in _dataMapping.GetDrivers(DriverStatus.On).GetItems())
                 {
+                    _logger.LogInformation($"---------- DriverKEY::: {item.Key} ---------------");
+                    _logger.LogInformation($"---------- DriverNAME::: {item.Value.LastName} - {item.Value.FirstName} ---------------");
+                    _logger.LogInformation($"---------- DriverID::: {item.Value.Id} ---------------");
                     _logger.LogInformation($"---------- GO TO FIND MATCHING DRIVER ---------------");
                     var driverId = item.Key;
                     var lng = (double)item.Value.Longitude;
@@ -127,8 +142,21 @@ namespace TourismSmartTransportation.Business.Hubs
                     GeoCoordinate driverCoordinates = new GeoCoordinate(lat, lng);
                     double distanceBetween = customerCoordinates.GetDistanceTo(driverCoordinates); // tính khoảng cách giữa driver và customer
 
+
+                    _logger.LogInformation($"---------- distanceBetween {distanceBetween} ---------------");
+
                     var d = await _unitOfWork.DriverRepository.GetById(Guid.Parse(driverId)); // lấy thông tin driver
+                    if (d == null)
+                    {
+                        continue;
+                    }
+
                     var vehicle = _vehicleStore.VehiclesList.GetValueOrDefault(d.VehicleId.Value.ToString()); // lấy thông tin xe mà driver đang được cấp
+                    if (vehicle == null)
+                    {
+                        continue;
+                    }
+
                     var vehicleType = await _unitOfWork.VehicleTypeRepository.Query().Where(x => x.VehicleTypeId == vehicle.VehicleTypeId).FirstOrDefaultAsync(); // lấy thông tin loại xe
 
                     if (distanceBetween <= DISTANCES[i] && vehicleType.Seats == model.Seats)
@@ -148,6 +176,7 @@ namespace TourismSmartTransportation.Business.Hubs
                             DistanceBetween = distanceBetween
                         };
                         _seachMapping.Add(model.Id, searchingDriver); // thêm những driver thỏa mãn điều kiện vào danh sách có thể phù hợp với yêu cầu từ khách hàng
+                        _logger.LogInformation($"---------- Add success _seachMapping ---------------");
                     }
                 }
 
@@ -277,10 +306,19 @@ namespace TourismSmartTransportation.Business.Hubs
             _logger.LogInformation("------------ Begin GetDriversListMatching Hub Function ------------");
 
             StartLocationBookingModel model = Newtonsoft.Json.JsonConvert.DeserializeObject<StartLocationBookingModel>(json);
+            _logger.LogInformation($"------------ StartLocationBookingModel model {model}  ------------");
+
+            if (model == null)
+            {
+                _logger.LogInformation("------------ EMPTY DRIVERS LIST ------------");
+                _logger.LogInformation("------------ End GetDriversListMatching Hub Function ------------");
+                return "[]";
+            }
+
             List<object> list = null;
-            var abcList = _dataMapping.GetDrivers(DriverStatus.On).GetItems().Count;
             foreach (var item in _dataMapping.GetDrivers(DriverStatus.On).GetItems())
             {
+
                 if (list == null)
                 {
                     list = new List<object>();
@@ -302,11 +340,13 @@ namespace TourismSmartTransportation.Business.Hubs
                 }
             }
 
-            if (list != null)
+            if (list == null)
             {
-                _logger.LogInformation($"------------ Drivers List Matching With Customer ::::: Count: {list.Count} ------------");
+                _logger.LogInformation($"------------ NOT FOUND DRIVERS ------------");
+                return "[]";
             }
 
+            _logger.LogInformation($"------------ Drivers List Matching With Customer ::::: Count: {list.Count} ------------");
             var parseToJson = Newtonsoft.Json.JsonConvert.SerializeObject(list);
             _logger.LogInformation("------------ End GetDriversListMatching Hub Function ------------");
 
@@ -330,6 +370,11 @@ namespace TourismSmartTransportation.Business.Hubs
                 // Lấy thông tin phương tiện thông qua driver
                 var driver = await _unitOfWork.DriverRepository.GetById(Guid.Parse(response.Driver.Id));
                 var vehicle = _vehicleStore.VehiclesList.GetValueOrDefault(driver.VehicleId.Value.ToString());
+
+                _logger.LogInformation($"---------------- DriverID:::: {driver.DriverId}------------------");
+                _logger.LogInformation($"---------------- VehicleID:::: {vehicle.Id}------------------");
+                _logger.LogInformation($"---------------- response.Customer.PriceBookingId:::: {response.Customer.PriceBookingId}------------------");
+                _logger.LogInformation($"---------------- response.Customer.Price:::: {response.Customer.Price}------------------");
 
                 // Tạo order cho yêu cầu đặt xe này
                 OrderDetailsInfo orderDetails = new OrderDetailsInfo()
@@ -370,6 +415,8 @@ namespace TourismSmartTransportation.Business.Hubs
 
                 await _unitOfWork.CustomerTripRepository.Add(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("---------------- Make order and customer trip success !!!! ------------------");
 
                 // Gửi thông báo đến cho khách hàng 
                 foreach (var connectionId in _connections.GetConnections(response.Customer.Id))
@@ -489,6 +536,7 @@ namespace TourismSmartTransportation.Business.Hubs
                             .Where(x => x.ServiceTypeId.ToString() == ServiceTypeDefaultData.BOOK_SERVICE_ID)
                             .Where(x => x.CustomerId.ToString() == customer.Id)
                             .Where(x => x.Status != (int)OrderStatus.Canceled && x.Status != (int)OrderStatus.Done)
+                            .OrderByDescending(x => x.CreatedDate)
                             .FirstOrDefaultAsync();
 
                 // cập nhật lại giá tiền và trạng thái của order
@@ -604,11 +652,21 @@ namespace TourismSmartTransportation.Business.Hubs
                                     .Query()
                                     .Where(x => x.CustomerId.ToString() == customerId)
                                     .Where(x => x.Status == (int)CustomerTripStatus.Accepted)
+                                    .OrderByDescending(x => x.CreatedDate)
                                     .FirstOrDefaultAsync();
 
             customerTrip.Status = (int)CustomerTripStatus.PickedUp;
             _unitOfWork.CustomerTripRepository.Update(customerTrip);
             await _unitOfWork.SaveChangesAsync();
+
+            foreach (var connectionId in _connections.GetConnections(customerId))
+            {
+                await Clients.Client(connectionId).SendAsync("DriverPickedUp", new
+                {
+                    StatusCode = 200,
+                    Message = "Bạn đã lên xe!"
+                });
+            }
 
             _logger.LogInformation("---------------- END Driver Picked Up Hub Function  ------------------");
         }
@@ -622,6 +680,7 @@ namespace TourismSmartTransportation.Business.Hubs
                                     .Query()
                                     .Where(x => x.CustomerId.ToString() == customerId)
                                     .Where(x => x.Status == (int)CustomerTripStatus.PickedUp)
+                                    .OrderByDescending(x => x.CreatedDate)
                                     .FirstOrDefaultAsync();
 
             customerTrip.Status = (int)CustomerTripStatus.Done;
@@ -632,6 +691,7 @@ namespace TourismSmartTransportation.Business.Hubs
                             .Where(x => x.ServiceTypeId.ToString() == ServiceTypeDefaultData.BOOK_SERVICE_ID)
                             .Where(x => x.CustomerId.ToString() == customerId)
                             .Where(x => x.Status == (int)OrderStatus.Paid)
+                            .OrderByDescending(x => x.CreatedDate)
                             .FirstOrDefaultAsync();
 
             // cập nhật lại giá tiền và trạng thái của order
@@ -639,6 +699,15 @@ namespace TourismSmartTransportation.Business.Hubs
             _unitOfWork.OrderRepository.Update(order);
 
             await _unitOfWork.SaveChangesAsync();
+
+            foreach (var connectionId in _connections.GetConnections(customerId))
+            {
+                await Clients.Client(connectionId).SendAsync("CompletedBooking", new
+                {
+                    StatusCode = 200,
+                    Message = "Cảm ơn quý khách đã đặt xe."
+                });
+            }
 
             // xóa customer and driver khỏi danh sách kết nối (room)
             _roomMapping.Remove(driverId);
@@ -691,6 +760,12 @@ namespace TourismSmartTransportation.Business.Hubs
             // _dataMapping.Remove(driverId, User.Driver);
             // cập nhật lại trạng thái driver về chế độ tắt nhận request
             var dataHubModel = _dataMapping.GetValue(driverId, User.Driver);
+            if (dataHubModel == null)
+            {
+                _logger.LogInformation("------------ Driver Not Found to Close -----------");
+                return false;
+            }
+
             dataHubModel.Status = (int)DriverStatus.Off;
             _dataMapping.Add(driverId, dataHubModel, User.Driver);
 
@@ -798,6 +873,49 @@ namespace TourismSmartTransportation.Business.Hubs
                     }
                 }
                 _dataMapping.Add(customerHubViewModel.Id, customerHubViewModel, User.Customer);
+
+                // mock data for driver
+                // DataHubModel driverHubViewModel = new DataHubModel()
+                // {
+                //     Id = "ff7bb0f5-b404-4f36-a736-20a73a7c7498",
+                //     FirstName = "Sang",
+                //     LastName = "Thanh",
+                //     Gender = "True",
+                //     Phone = "0323456789",
+                //     PhotoUrl = "",
+                //     Longitude = 104.034085,
+                //     Latitude = 10.177049,
+                //     Status = 2
+                // };
+                // _dataMapping.Add(driverHubViewModel.Id, driverHubViewModel, User.Driver);
+
+                DataHubModel driverHubViewModel1 = new DataHubModel()
+                {
+                    Id = "80fa07ec-cde1-480f-bca8-2fad927c4da3",
+                    FirstName = "Phương Nam",
+                    LastName = "Đào",
+                    Gender = "True",
+                    Phone = "0369085835",
+                    PhotoUrl = "",
+                    Longitude = 103.996448,
+                    Latitude = 10.184779,
+                    Status = 2
+                };
+                _dataMapping.Add(driverHubViewModel1.Id, driverHubViewModel1, User.Driver);
+
+                // DataHubModel driverHubViewModel2 = new DataHubModel()
+                // {
+                //     Id = "f811fa90-4bad-42c4-91d3-f156d79810ad",
+                //     FirstName = "Thảo",
+                //     LastName = "Thu",
+                //     Gender = "False",
+                //     Phone = "0982354461",
+                //     PhotoUrl = "",
+                //     Longitude = 104.006527,
+                //     Latitude = 10.136884,
+                //     Status = 2
+                // };
+                // _dataMapping.Add(driverHubViewModel2.Id, driverHubViewModel2, User.Driver);
             }
             else
             {

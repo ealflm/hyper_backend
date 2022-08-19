@@ -280,8 +280,8 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IFirebaseCloudMsgService, FirebaseCloudMsgService>();
 
             // Azure SignalR
-            // services.AddSignalR().AddAzureSignalR(Configuration["SignalR:ConnectionString"]);
-            services.AddSignalR();
+            services.AddSignalR().AddAzureSignalR(Configuration["SignalR:ConnectionString"]);
+            // services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
