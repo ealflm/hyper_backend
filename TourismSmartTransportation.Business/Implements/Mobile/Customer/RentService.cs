@@ -81,7 +81,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             id = DecryptString(id);
             var vehicle = await _unitOfWork.VehicleRepository.GetById(new Guid(id));
-            if (vehicle.Status != 3)
+            if (vehicle.Status ==1)
             {
                 var price = await _unitOfWork.PriceOfRentingServiceRepository.GetById(vehicle.PriceRentingId.Value);
                 var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME)).FirstOrDefaultAsync();
