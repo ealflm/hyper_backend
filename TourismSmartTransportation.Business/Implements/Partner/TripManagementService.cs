@@ -206,6 +206,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                                             DayOfWeek = tripRouteVehicle.tripRoute.trip.DayOfWeek,
                                             TimeStart = tripRouteVehicle.tripRoute.trip.TimeStart,
                                             TimeEnd = tripRouteVehicle.tripRoute.trip.TimeEnd,
+                                            Week= tripRouteVehicle.tripRoute.trip.Week,
                                             Status = tripRouteVehicle.tripRoute.trip.Status
                                         }
                                     )

@@ -18,6 +18,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Partner.RouteManagement
         public int DayOfWeek { get; set; }
         public string TimeStart { get; set; }
         public string TimeEnd { get; set; }
+        public string Week { get; set; }
         public int Status { get; set; }
     }
 }
