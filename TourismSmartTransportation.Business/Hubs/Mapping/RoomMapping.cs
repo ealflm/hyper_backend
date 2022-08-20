@@ -42,6 +42,8 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
                 {
                     _rooms.Add(key, value);
                 }
+
+                _rooms[key] = value;
             }
         }
 
