@@ -321,6 +321,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             entity.DayOfWeek = UpdateTypeOfNotNullAbleObject<int>(entity.DayOfWeek, model.DayOfWeek);
             entity.TimeStart = UpdateTypeOfNullAbleObject<string>(entity.TimeStart, model.TimeStart);
             entity.TimeEnd = UpdateTypeOfNullAbleObject<string>(entity.TimeEnd, model.TimeEnd);
+            entity.Week = UpdateTypeOfNullAbleObject<string>(entity.Week, model.Week);
             entity.Status = UpdateTypeOfNotNullAbleObject<int>(entity.Status, model.Status);
 
             _unitOfWork.TripRepository.Update(entity);
