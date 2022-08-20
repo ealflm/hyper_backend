@@ -7,9 +7,6 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
 {
     public class StoreDataMappingWithMultipleKeys<K, V>
     {
-        // Key là sẽ lưu id người dùng
-        // Value là một danh sách lưu giá trị duy nhất (HashSet)
-        // Cover cho trường hợp một tài khoản người dùng login trên nhiều máy khác nhau
         private readonly Dictionary<K, HashSet<V>> _maps =
             new Dictionary<K, HashSet<V>>();
 
