@@ -263,6 +263,14 @@ namespace TourismSmartTransportation.Business.Hubs
                 _seachMapping.UpdateDictionaryValue(model.Id, driversList); // cập nhật lại danh sách tài xế có thể matching với yều cầu của khách hàng
 
                 var driver = driversList[0];
+                driver.Status = (int)DriverStatus.OnBusy;
+                _dataMapping.Add(driver.Id, driver, User.Driver);
+                var driverResponse = await _driverService.UpdateDriverStatus(driver.Id, (int)DriverStatus.OnBusy); // cập nhật status driver xuống db
+                if (driverResponse.StatusCode != 201)
+                {
+                    _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                }
+
                 isFoundDriver = true;
                 // driver.IntervalLoopIndex = i;
 
@@ -292,6 +300,9 @@ namespace TourismSmartTransportation.Business.Hubs
                     await Clients.Client(connectionId).SendAsync("BookingResponse", new
                     {
                         StatusCode = 404,
+                        Customer = "",
+                        Type = "Booking",
+                        Driver = "",
                         Message = "Không tìm thấy tài xế"
                     });
                 }
@@ -437,7 +448,17 @@ namespace TourismSmartTransportation.Business.Hubs
             }
             else // Tài xế từ chối yêu cầu 
             {
+                response.Driver.Status = (int)DriverStatus.On;
+                _dataMapping.Add(response.Driver.Id, response.Driver, User.Driver);
+
+                var driverResponse = await _driverService.UpdateDriverStatus(response.Driver.Id, (int)DriverStatus.On); // cập nhật status driver xuống db
+                if (driverResponse.StatusCode != 201)
+                {
+                    _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                }
+
                 _logger.LogInformation("---------------- Driver Rejected The Booking Request ------------------");
+
                 // Xóa tài xế ra khỏi danh sách matching
                 var driversList = _seachMapping.GetValues(response.Customer.Id);
                 driversList.RemoveAt(0);
@@ -486,6 +507,14 @@ namespace TourismSmartTransportation.Business.Hubs
                 {
                     _logger.LogInformation("---------------- FOUNDED OTHER DRIVER ------------------");
                     var driver = driversList[0];
+                    driver.Status = (int)DriverStatus.OnBusy;
+                    _dataMapping.Add(driver.Id, driver, User.Driver);
+                    var drp = await _driverService.UpdateDriverStatus(driver.Id, (int)DriverStatus.OnBusy); // cập nhật status driver xuống db
+                    if (drp.StatusCode != 201)
+                    {
+                        _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                    }
+
                     foreach (var cId in _connections.GetConnections(driver.Id))
                     {
                         await Clients.Client(cId).SendAsync("BookingRequest", new
@@ -818,6 +847,21 @@ namespace TourismSmartTransportation.Business.Hubs
             dynamic id = Context.User.Claims.Where(x => x.Type == "CustomerId").Select(x => x.Value).FirstOrDefault();
             if (id == null)
             {
+                var vehicleId = (Context.User.Claims.Where(x => x.Type == "VehicleId").Select(x => x.Value).FirstOrDefault())?.ToString();
+                if (string.IsNullOrEmpty(vehicleId))
+                {
+                    _logger.LogInformation("------------ Driver has not assigned the vehicle--------------");
+                    return Task.CompletedTask;
+                }
+
+                // kiểm tra loại dịch vụ có phải là đặt xe hay không
+                if (!_vehicleStore.VehiclesList.ContainsKey(vehicleId))
+                {
+                    _logger.LogInformation("------------ Vehicle is not for booking service --------------");
+                    return Task.CompletedTask;
+                }
+
+
                 _logger.LogInformation("------------ Driver Role --------------");
                 id = Context.User.Claims.Where(x => x.Type == "DriverId").Select(x => x.Value).FirstOrDefault();
                 isCustomerRole = false;
@@ -874,48 +918,20 @@ namespace TourismSmartTransportation.Business.Hubs
                 }
                 _dataMapping.Add(customerHubViewModel.Id, customerHubViewModel, User.Customer);
 
-                // mock data for driver
-                // DataHubModel driverHubViewModel = new DataHubModel()
+                // DataHubModel driverHubViewModel1 = new DataHubModel()
                 // {
-                //     Id = "ff7bb0f5-b404-4f36-a736-20a73a7c7498",
-                //     FirstName = "Sang",
-                //     LastName = "Thanh",
+                //     Id = "80fa07ec-cde1-480f-bca8-2fad927c4da3",
+                //     FirstName = "Phương Nam",
+                //     LastName = "Đào",
                 //     Gender = "True",
-                //     Phone = "0323456789",
+                //     Phone = "0369085835",
                 //     PhotoUrl = "",
-                //     Longitude = 104.034085,
-                //     Latitude = 10.177049,
+                //     Longitude = 103.996448,
+                //     Latitude = 10.184779,
                 //     Status = 2
                 // };
-                // _dataMapping.Add(driverHubViewModel.Id, driverHubViewModel, User.Driver);
+                // _dataMapping.Add(driverHubViewModel1.Id, driverHubViewModel1, User.Driver);
 
-                DataHubModel driverHubViewModel1 = new DataHubModel()
-                {
-                    Id = "80fa07ec-cde1-480f-bca8-2fad927c4da3",
-                    FirstName = "Phương Nam",
-                    LastName = "Đào",
-                    Gender = "True",
-                    Phone = "0369085835",
-                    PhotoUrl = "",
-                    Longitude = 103.996448,
-                    Latitude = 10.184779,
-                    Status = 2
-                };
-                _dataMapping.Add(driverHubViewModel1.Id, driverHubViewModel1, User.Driver);
-
-                // DataHubModel driverHubViewModel2 = new DataHubModel()
-                // {
-                //     Id = "f811fa90-4bad-42c4-91d3-f156d79810ad",
-                //     FirstName = "Thảo",
-                //     LastName = "Thu",
-                //     Gender = "False",
-                //     Phone = "0982354461",
-                //     PhotoUrl = "",
-                //     Longitude = 104.006527,
-                //     Latitude = 10.136884,
-                //     Status = 2
-                // };
-                // _dataMapping.Add(driverHubViewModel2.Id, driverHubViewModel2, User.Driver);
             }
             else
             {
