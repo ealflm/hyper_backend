@@ -137,6 +137,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     x.CardUid = (await _unitOfWork.CardRepository.Query().Where(y => y.CustomerId.Equals(x.Id)).FirstOrDefaultAsync()).Uid;
                 }
+                var wallet = await _unitOfWork.WalletRepository.Query().Where(y => y.CustomerId.Equals(x.Id)).FirstOrDefaultAsync();
+                var dateNow = DateTime.Now;
+                var transactions = await _unitOfWork.TransactionRepository.Query().Where(y => y.WalletId.Equals(wallet.WalletId) && y.CreatedDate.Year == dateNow.Year && y.CreatedDate.Month == dateNow.Month).ToListAsync();
+                foreach(var y in transactions)
+                {
+                    x.PurchaseMoney += (long)y.Amount;
+                }
             }
             var listAfterSorting = GetListAfterSorting(customers, model.SortBy);
             var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
