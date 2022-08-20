@@ -30,7 +30,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         {
             var orders = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(customerId)).OrderByDescending(x => x.CreatedDate).Select(x=> x.AsOrderViewModel()).ToListAsync();
             var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customerId)).FirstOrDefaultAsync();
-            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.WalletId.Equals(wallet.WalletId)).OrderByDescending(x => x.CreatedDate).Select(x=> x.AsTransactionViewModel()).ToListAsync();
+            var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.WalletId.Equals(wallet.WalletId) && x.Status==1).OrderByDescending(x => x.CreatedDate).Select(x=> x.AsTransactionViewModel()).ToListAsync();
             var customerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId)).OrderByDescending(x => x.CreatedDate).Select(x=> x.AsCustomerTripViewModel()).ToListAsync();
             foreach(OrderViewModel x in orders)
             {

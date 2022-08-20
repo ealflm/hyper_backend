@@ -488,7 +488,7 @@ Mặt khẩu: {password}
 
                 var transactions = await _unitOfWork.TransactionRepository
                                     .Query()
-                                    .Where(x => x.OrderId == order.OrderId)
+                                    .Where(x => x.OrderId == order.OrderId && x.Status==1)
                                     .Select(x => x.AsTransactionViewModel())
                                     .ToListAsync();
 

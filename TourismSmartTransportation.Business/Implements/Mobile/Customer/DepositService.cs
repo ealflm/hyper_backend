@@ -10,8 +10,10 @@ using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
+using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.MoMo;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer;
+using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 using TourismSmartTransportation.Data.Interfaces;
@@ -21,8 +23,15 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 {
     public class DepositService : BaseService, IDepositService
     {
-        public DepositService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private readonly string title = "Nạp tiền";
+        private  string mesMoMo = "";
+        private string mesPayPal = "";
+        private IFirebaseCloudMsgService _firebaseCloud;
+        private INotificationCollectionService _notificationCollection;
+        public DepositService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
         {
+            _firebaseCloud = firebaseCloud;
+            _notificationCollection = notificationCollection;
         }
 
         public async Task<DepositViewModel> GetOrderId(DepositSearchModel model)
@@ -46,7 +55,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 WalletId = walletId,
                 Amount = order.TotalPrice,
                 CreatedDate = DateTime.Now,
-                Status = 1
+                Status = 2
             };
             int uid = 1;
             try
@@ -196,9 +205,10 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         {
             var transaction = await _unitOfWork.TransactionRepository.Query().Where(x => x.OrderId.Equals(new Guid(model.requestId))).FirstOrDefaultAsync();
             var order = await _unitOfWork.OrderRepository.GetById(new Guid(model.requestId));
+            var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
             if (model.resultCode == 0 || model.resultCode == 9000)
             {
-                transaction.Status = 2;
+                transaction.Status = 1;
                 transaction.Content = "Nạp tiền vào ví từ MoMo";
                 order.Status = 2;
                 _unitOfWork.TransactionRepository.UpdateWithMultipleKey(transaction);
@@ -207,6 +217,19 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 wallet.AccountBalance += transaction.Amount;
                 _unitOfWork.WalletRepository.Update(wallet);
                 await _unitOfWork.SaveChangesAsync();
+                mesMoMo = "Quý khách đã nạp thành công " + order.TotalPrice + "VNĐ từ MoMo";
+                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Nạp tiền",mesMoMo);
+                SaveNotificationModel noti = new SaveNotificationModel()
+                {
+                    CustomerId = customer.CustomerId.ToString(),
+                    CustomerFirstName = customer.FirstName,
+                    CustomerLastName = customer.LastName,
+                    Title = title,
+                    Message = mesMoMo,
+                    Type = "Deposit",
+                    Status = (int)NotificationStatus.Active
+                };
+                await _notificationCollection.SaveNotification(noti);
                 return new()
                 {
                     StatusCode = 204,
@@ -271,7 +294,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.Created)
                 {
-                    transaction.Status = 2;
+                    transaction.Status = 1;
                     transaction.Content = "Nạp tiền vào ví từ Paypal";
                     order.Status = 2;
                     _unitOfWork.TransactionRepository.UpdateWithMultipleKey(transaction);
@@ -280,6 +303,20 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     wallet.AccountBalance += transaction.Amount;
                     _unitOfWork.WalletRepository.Update(wallet);
                     await _unitOfWork.SaveChangesAsync();
+                    var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
+                    mesPayPal = "Quý khách đã nạp thành công " + order.TotalPrice + "VNĐ từ PayPal";
+                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Nạp tiền", mesPayPal);
+                    SaveNotificationModel noti = new SaveNotificationModel()
+                    {
+                        CustomerId = customer.CustomerId.ToString(),
+                        CustomerFirstName = customer.FirstName,
+                        CustomerLastName = customer.LastName,
+                        Title = title,
+                        Message = mesPayPal,
+                        Type = "Deposit",
+                        Status = (int)NotificationStatus.Active
+                    };
+                    await _notificationCollection.SaveNotification(noti);
                     return new()
                     {
                         StatusCode = 200,

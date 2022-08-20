@@ -165,7 +165,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<SearchResultViewModel<TransactionViewModel>> GetTransaction(Guid orderId)
         {
             var transationsList = await _unitOfWork.TransactionRepository.Query()
-                .Where(x => x.OrderId == orderId)
+                .Where(x => x.OrderId == orderId && x.Status==1)
                 .Join(_unitOfWork.OrderRepository.Query(),
                     transaction => transaction.OrderId,
                     order => order.OrderId,

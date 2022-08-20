@@ -5,8 +5,10 @@ using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Interfaces.Admin;
+using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.Order;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.OrderDetail;
+using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
 
@@ -15,10 +17,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
     public class OrderHelpersService : BaseService, IOrderHelpersService
     {
         private readonly IPackageService _packageService;
-
-        public OrderHelpersService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IPackageService packageService) : base(unitOfWork, blobServiceClient)
+        private IFirebaseCloudMsgService _firebaseCloud;
+        private INotificationCollectionService _notificationCollection;
+        public OrderHelpersService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IPackageService packageService, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
         {
             _packageService = packageService;
+            _firebaseCloud = firebaseCloud;
+            _notificationCollection = notificationCollection;
         }
 
         /// <summary>
@@ -294,6 +299,22 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             _unitOfWork.WalletRepository.Update(adminWallet);
 
             await _unitOfWork.SaveChangesAsync();
+            var serviceTypeNoti = await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value);
+            var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
+            await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken,serviceTypeNoti.Content , content+" với hóa đơn "+order.TotalPrice+"VNĐ");
+            SaveNotificationModel noti = new SaveNotificationModel()
+            {
+                CustomerId = customer.CustomerId.ToString(),
+                CustomerFirstName = customer.FirstName,
+                CustomerLastName = customer.LastName,
+                Title = serviceTypeNoti.Content,
+                Message = content + " với hóa đơn " + order.TotalPrice + "VNĐ",
+                Type = serviceTypeNoti.Name,
+                Status = (int)NotificationStatus.Active
+            };
+            await _notificationCollection.SaveNotification(noti);
+
+
 
             return new()
             {
