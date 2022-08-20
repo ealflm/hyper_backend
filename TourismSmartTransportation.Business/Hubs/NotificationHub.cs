@@ -39,6 +39,7 @@ namespace TourismSmartTransportation.Business.Hubs
 
         // Mapping data store
         private readonly static SearchMapping _seachMapping = new SearchMapping();
+        private readonly static StoreDataMappingWithMultipleKeys<string, string> _driverDeclineList = new StoreDataMappingWithMultipleKeys<string, string>(); // tạo instance lưu danh sách driver từ chối cuốc của khách hàng
         private readonly static ConnectionMapping<string> _connections = new ConnectionMapping<string>(); // Tạo instance connection mapping
         private readonly static DataMapping _dataMapping = new DataMapping(); // Tạo instance lưu danh sách thông tin customer và danh sách thông tin driver
         private readonly static RoomMapping _roomMapping = new RoomMapping(); // Tạo instance chứa driver và customer khi đã booking 
@@ -131,6 +132,13 @@ namespace TourismSmartTransportation.Business.Hubs
 
                 foreach (var item in _dataMapping.GetDrivers(DriverStatus.On).GetItems())
                 {
+                    // kiểm tra xem tài xế này đã từ chối trước đó hay chưa
+                    var isExisted = _driverDeclineList.CheckExistedValue(customer.Id, item.Key);
+                    if (isExisted)
+                    {
+                        continue;
+                    }
+
                     _logger.LogInformation($"---------- DriverKEY::: {item.Key} ---------------");
                     _logger.LogInformation($"---------- DriverNAME::: {item.Value.LastName} - {item.Value.FirstName} ---------------");
                     _logger.LogInformation($"---------- DriverID::: {item.Value.Id} ---------------");
@@ -157,7 +165,7 @@ namespace TourismSmartTransportation.Business.Hubs
                         continue;
                     }
 
-                    var vehicleType = await _unitOfWork.VehicleTypeRepository.Query().Where(x => x.VehicleTypeId == vehicle.VehicleTypeId).FirstOrDefaultAsync(); // lấy thông tin loại xe
+                    var vehicleType = await _unitOfWork.VehicleTypeRepository.Query().Where(x => x.VehicleTypeId.ToString() == vehicle.VehicleTypeId.ToString()).FirstOrDefaultAsync(); // lấy thông tin loại xe
 
                     if (distanceBetween <= DISTANCES[i] && vehicleType.Seats == model.Seats)
                     {
@@ -440,6 +448,9 @@ namespace TourismSmartTransportation.Business.Hubs
                     });
                 }
 
+                // khách hàng đã đặt dc xe, reset lại d sách decline driver
+                _driverDeclineList.RemoveAllValues(response.Customer.Id);
+
                 // Lưu lại thông tin giữa khách hàng và tài xế khi đã giao tiếp với nhau
                 _roomMapping.Add(response.Customer.Id, response.Driver.Id);
                 _roomMapping.Add(response.Driver.Id, response.Customer.Id);
@@ -448,6 +459,9 @@ namespace TourismSmartTransportation.Business.Hubs
             }
             else // Tài xế từ chối yêu cầu 
             {
+                // lưu thông tin driver từ chối yêu cầu từ customer nào
+                _driverDeclineList.Add(response.Driver.Id, response.Driver.Id);
+
                 response.Driver.Status = (int)DriverStatus.On;
                 _dataMapping.Add(response.Driver.Id, response.Driver, User.Driver);
 
@@ -809,6 +823,8 @@ namespace TourismSmartTransportation.Business.Hubs
                 return false;
             }
 
+            _driverDeclineList.Remove(driverId);
+
             _logger.LogInformation("------------ End CloseDriver Hub Function -----------");
             return true;
         }
@@ -1013,11 +1029,19 @@ namespace TourismSmartTransportation.Business.Hubs
         public override Task OnDisconnectedAsync(Exception exception) // hàm được gọi khi có thiết bị ngắt kết nối tới hub
         {
             _logger.LogInformation("------------------------Begin On Disconnected Async--------------------------");
-            dynamic id = Context.User.Claims.Where(x => x.Type == "CustomerId").Select(x => x.Value).FirstOrDefault();
+            dynamic id = (Context.User.Claims.Where(x => x.Type == "CustomerId").Select(x => x.Value).FirstOrDefault())?.ToString();
             if (id == null)
             {
-                id = Context.User.Claims.Where(x => x.Type == "DriverId").Select(x => x.Value).FirstOrDefault();
+                id = (Context.User.Claims.Where(x => x.Type == "DriverId").Select(x => x.Value).FirstOrDefault()).ToString();
+                var driverHubModel = _dataMapping.GetValue(id, User.Driver);
+                driverHubModel.Status = (int)DriverStatus.Off;
+                _dataMapping.Add(id, driverHubModel, User.Driver);
+                Task.WaitAll(_driverService.UpdateDriverStatus(id, (int)DriverStatus.Off)); // cập nhật status driver xuống db
+                _logger.LogInformation("------------------------ Driver is OFF --------------------------");
             }
+
+            _driverDeclineList.Remove(id);
+
             _logger.LogInformation($"OnDisconnectedAsync Context.User.Claim: {id} - {Context.ConnectionId}");
 
             _connections.Remove(id, Context.ConnectionId);
