@@ -60,7 +60,7 @@ namespace TourismSmartTransportation.API.Controllers.Admin
         [Route(ApiVer1Url.Admin.Discount + "/customer")]
         public async Task<IActionResult> SendDiscountToCustomer([FromBody] SendDiscountToCustomer model)
         {
-            return SendResponse(await _service.SendDiscountToCustomer(model));
+            return SendResponse(await _service.SendDiscountToCustomers(model));
         }
     }
 }

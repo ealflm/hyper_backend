@@ -211,9 +211,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             };
         }
 
-        public async Task<Response> SendDiscountToCustomer(SendDiscountToCustomer model)
+        private async Task<Response> SendDiscountToCustomer(Guid customerId, Guid discountId)
         {
-            var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId);
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
             if (customer == null)
             {
                 return new()
@@ -223,7 +223,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 };
             }
 
-            var discount = await _unitOfWork.DiscountRepository.GetById(model.DiscountId);
+            var discount = await _unitOfWork.DiscountRepository.GetById(discountId);
             if (discount == null)
             {
                 return new()
@@ -326,6 +326,23 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
             _unitOfWork.DiscountRepository.Update(discount);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<Response> SendDiscountToCustomers(SendDiscountToCustomer model)
+        {
+            foreach(Guid x in model.CustomerIdList)
+            {
+                var result= await SendDiscountToCustomer(x, model.DiscountId);
+                if(result.StatusCode!= 201)
+                {
+                    return result;
+                }
+            }
+            return new()
+            {
+                StatusCode = 201,
+                Message = "Gửi mã giảm giá cho khách hàng thành công!"
+            };
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
@@ -9,6 +10,6 @@ namespace TourismSmartTransportation.Business.SearchModel.Admin.Discount
         public Guid DiscountId { get; set; }
 
         [Required]
-        public Guid CustomerId { get; set; }
+        public List<Guid> CustomerIdList { get; set; }
     }
 }

@@ -23,6 +23,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Admin.CustomerManagement
         public string Email { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
+        public long PurchaseMoney { get; set; }
         public int Status { get; set; }
     }
 }
