@@ -8,6 +8,7 @@ using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.SearchModel.Shared;
+using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 using TourismSmartTransportation.Data.Interfaces;
 using TourismSmartTransportation.Data.Models;
@@ -16,8 +17,12 @@ namespace TourismSmartTransportation.Business.Implements.Shared
 {
     public class CustomerTripService : BaseService, ICustomerTripService
     {
-        public CustomerTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private IFirebaseCloudMsgService _firebaseCloud;
+        private INotificationCollectionService _notificationCollection;
+        public CustomerTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
         {
+            _firebaseCloud = firebaseCloud;
+            _notificationCollection = notificationCollection;
         }
 
         public async Task<List<CustomerTripViewModel>> GetCustomerTrips()
@@ -219,7 +224,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 adminWallet.AccountBalance -= returnPrice * 0.1M;
                 await _unitOfWork.TransactionRepository.Add(adminTransaction);
                 _unitOfWork.WalletRepository.Update(adminWallet);
-
+                var customer = await _unitOfWork.CustomerRepository.GetById(customerTrip.CustomerId);
                 Guid rentStationId = customerTrip.ReturnVehicleStationId.Value;
                 if (vehicle.RentStationId.Equals(rentStationId))
                 {
@@ -235,12 +240,38 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                     };
                     wallet.AccountBalance += bonusPrice;
                     await _unitOfWork.TransactionRepository.Add(bonusTransaction);
+                    var mesBonusPrice = string.Format("Quý khách được thưởng thêm phí hoàn trả phương tiện đúng trạm {0:N0}VND 10% hóa đơn thuê phương tiện không tín phí thu hồi", bonusPrice);
+                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Phần thưởng", mesBonusPrice);
+                    SaveNotificationModel notiBonus = new SaveNotificationModel()
+                    {
+                        CustomerId = customer.CustomerId.ToString(),
+                        CustomerFirstName = customer.FirstName,
+                        CustomerLastName = customer.LastName,
+                        Title = "Phần thưởng",
+                        Message = mesBonusPrice,
+                        Type = "Bonus",
+                        Status = (int)NotificationStatus.Active
+                    };
+                    await _notificationCollection.SaveNotification(notiBonus);
                 }
 
                 _unitOfWork.WalletRepository.Update(wallet);
                 vehicle.Status = (int)VehicleStatus.Ready;
                 _unitOfWork.VehicleRepository.Update(vehicle);
                 await _unitOfWork.SaveChangesAsync();
+                var mesReturnPrice = string.Format("Quý khách vừa được hoàn {0:N0} VNĐ phí thu hồi phương tiện", returnPrice);
+                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken,"Hoàn phí thu hồi phương tiện" , mesReturnPrice);
+                SaveNotificationModel noti = new SaveNotificationModel()
+                {
+                    CustomerId = customer.CustomerId.ToString(),
+                    CustomerFirstName = customer.FirstName,
+                    CustomerLastName = customer.LastName,
+                    Title = "Hoàn phí thu hồi phương tiện",
+                    Message = mesReturnPrice,
+                    Type = "Refund",
+                    Status = (int)NotificationStatus.Active
+                };
+                await _notificationCollection.SaveNotification(noti);
 
 
             }

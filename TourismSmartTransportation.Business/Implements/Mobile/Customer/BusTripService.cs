@@ -15,9 +15,11 @@ using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Implements.Admin;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
+using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.Order;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.OrderDetail;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer;
+using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
 using TourismSmartTransportation.Business.ViewModel.Admin.StationManagement;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
@@ -31,9 +33,13 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
     public class BusTripService : BaseService, IBusTripService
     {
         private IOrderHelpersService orderheplper;
-        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IOrderHelpersService orderHelpers) : base(unitOfWork, blobServiceClient)
+        private IFirebaseCloudMsgService _firebaseCloud;
+        private INotificationCollectionService _notificationCollection;
+        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IOrderHelpersService orderHelpers, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
         {
             orderheplper = orderHelpers;
+            _firebaseCloud = firebaseCloud;
+            _notificationCollection = notificationCollection;
         }
 
         public async Task<List<List<RouteViewModel>>> FindBusTrip(BusTripSearchModel model)
@@ -401,6 +407,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         {
 
             var customerId = (await _unitOfWork.CardRepository.Query().Where(x => x.Uid.Equals(model.Uid)).FirstOrDefaultAsync()).CustomerId;
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId.Value);
             var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
             var today = DateTime.UtcNow.AddHours(7);
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId.Value) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
@@ -526,7 +533,117 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
+
+                    var mesReturnPrice = string.Format("Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
+                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn phí dịch vụ xe buýt", mesReturnPrice);
+                    SaveNotificationModel noti = new SaveNotificationModel()
+                    {
+                        CustomerId = customer.CustomerId.ToString(),
+                        CustomerFirstName = customer.FirstName,
+                        CustomerLastName = customer.LastName,
+                        Title = "Hoàn phí dịch vụ xe buýt",
+                        Message = mesReturnPrice,
+                        Type = "Refund",
+                        Status = (int)NotificationStatus.Active
+                    };
+                    await _notificationCollection.SaveNotification(noti);
+
                 }
+                // trường hợp order có total price = 0 là xài gói dịch vụ, 
+                // tránh trường hợp order có total price != 0 và refundPrice < 0
+                else if (order.TotalPrice == 0)
+                {
+
+                    // cập nhật lại trạng thái của order -> hoàn thành
+                    order.Status = (int)OrderStatus.Done;
+                    _unitOfWork.OrderRepository.Update(order);
+
+                    // tạo giao dịch khi xuống trạm và sử dụng gói dịch vụ để thanh toán
+                    var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
+                    var transaction = new Transaction()
+                    {
+                        WalletId = wallet.WalletId,
+                        Amount = 0,
+                        Content = "Xuống trạm, sử dụng gói dịch vụ để thanh toán",
+                        CreatedDate = DateTime.Now,
+                        OrderId = order.OrderId,
+                        Status = 1,
+                        TransactionId = Guid.NewGuid()
+                    };
+                    await _unitOfWork.TransactionRepository.Add(transaction);
+
+                    // Lấy full giá của trip
+                    var route = await _unitOfWork.RouteRepository.GetById(tripEntity.RouteId);
+                    var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
+                    var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
+                    var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
+                    var priceAfterRefunding = basePrice.Price - (-refundPrice); // tính tiền dựa trên khoảng cách mà khách hàng đi được
+
+                    // Cập nhật ví lại cho partner
+                    var partnerWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == order.PartnerId)
+                                        .FirstOrDefaultAsync();
+
+                    var partnerTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Đối tác gửi tiền hoa hồng lại cho hệ thống",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.Now,
+                        Amount = -priceAfterRefunding * 0.1M, // xét dấu âm cho giao dịch trừ tiền
+                        Status = 1,
+                        WalletId = partnerWallet.WalletId
+                    };
+                    partnerWallet.AccountBalance = partnerWallet.AccountBalance - (-partnerTransaction.Amount); // trừ tiền từ transaction
+                    await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+                    _unitOfWork.WalletRepository.Update(partnerWallet);
+
+                    // Cập nhật ví lại cho Admin
+                    var adminWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == null && x.CustomerId == null)
+                                        .FirstOrDefaultAsync();
+
+                    var adminTransaction = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = $"Hệ thống nhận tiền hoa hồng từ đối tác",
+                        OrderId = order.OrderId,
+                        CreatedDate = DateTime.Now,
+                        Amount = priceAfterRefunding * 0.1M,
+                        Status = 1,
+                        WalletId = adminWallet.WalletId
+                    };
+                    adminWallet.AccountBalance += adminTransaction.Amount;
+                    await _unitOfWork.TransactionRepository.Add(adminTransaction);
+                    _unitOfWork.WalletRepository.Update(adminWallet);
+
+                    // cập nhật thêm vị trí xuống trạm và trạng thái -> hoàn thành của customer trip
+                    oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
+
+                    await _unitOfWork.SaveChangesAsync();
+
+                    var mesReturnPrice = string.Format("Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance);
+                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo gói dịch vụ", mesReturnPrice);
+                    SaveNotificationModel noti = new SaveNotificationModel()
+                    {
+                        CustomerId = customer.CustomerId.ToString(),
+                        CustomerFirstName = customer.FirstName,
+                        CustomerLastName = customer.LastName,
+                        Title = "Thông báo gói dịch vụ",
+                        Message = mesReturnPrice,
+                        Type = "Package",
+                        Status = (int)NotificationStatus.Active
+                    };
+                    await _notificationCollection.SaveNotification(noti);
+
+
+                }
+
+
                 return new()
                 {
                     StatusCode = 204,
@@ -601,7 +718,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var vehicleId = new Guid(DecryptString(model.Uid));
             var vehicle = await _unitOfWork.VehicleRepository.GetById(vehicleId);
             var today = DateTime.UtcNow.AddHours(7);
-
+            var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId);
 
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
             var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME)).FirstOrDefaultAsync();
@@ -726,11 +843,27 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
+
+                    var mesReturnPrice = string.Format("Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
+                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn phí dịch vụ xe buýt", mesReturnPrice);
+                    SaveNotificationModel noti = new SaveNotificationModel()
+                    {
+                        CustomerId = customer.CustomerId.ToString(),
+                        CustomerFirstName = customer.FirstName,
+                        CustomerLastName = customer.LastName,
+                        Title = "Hoàn phí dịch vụ xe buýt",
+                        Message = mesReturnPrice,
+                        Type = "Refund",
+                        Status = (int)NotificationStatus.Active
+                    };
+                    await _notificationCollection.SaveNotification(noti);
+
                 }
                 // trường hợp order có total price = 0 là xài gói dịch vụ, 
                 // tránh trường hợp order có total price != 0 và refundPrice < 0
                 else if (order.TotalPrice == 0)
                 {
+                    
                     // cập nhật lại trạng thái của order -> hoàn thành
                     order.Status = (int)OrderStatus.Done;
                     _unitOfWork.OrderRepository.Update(order);
@@ -802,6 +935,22 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     await _unitOfWork.SaveChangesAsync();
+
+                    var mesReturnPrice = string.Format("Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance);
+                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo gói dịch vụ", mesReturnPrice);
+                    SaveNotificationModel noti = new SaveNotificationModel()
+                    {
+                        CustomerId = customer.CustomerId.ToString(),
+                        CustomerFirstName = customer.FirstName,
+                        CustomerLastName = customer.LastName,
+                        Title = "Thông báo gói dịch vụ",
+                        Message = mesReturnPrice,
+                        Type = "Package",
+                        Status = (int)NotificationStatus.Active
+                    };
+                    await _notificationCollection.SaveNotification(noti);
+
+
                 }
 
                 return new()

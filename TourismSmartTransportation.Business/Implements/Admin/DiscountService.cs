@@ -252,12 +252,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             if (discount.Status == (int)DiscountStatus.UnSent)
             {
+                await _firebaseService.SendNotificationForRentingService(customer.RegistrationToken, "Mã giảm giá từ hệ thống", $"Bạn vừa nhận được mã giảm giá {discount.Code}. Hãy áp dụng khi thanh toán hóa đơn.");
                 SaveNotificationModel notiModel = new SaveNotificationModel()
                 {
                     CustomerId = customer.CustomerId.ToString(),
                     CustomerFirstName = customer.FirstName,
                     CustomerLastName = customer.LastName,
-                    Title = "Mã giảm giá từ hệ thông",
+                    Title = "Mã giảm giá từ hệ thống",
                     Type = "Discount",
                     Message = $"Bạn vừa nhận được mã giảm giá {discount.Code}. Hãy áp dụng khi thanh toán hóa đơn."
                 };

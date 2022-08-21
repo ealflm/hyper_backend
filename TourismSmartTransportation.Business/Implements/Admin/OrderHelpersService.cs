@@ -185,7 +185,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     var distancesNow = currentPackageIsUsed.CurrentDistances + order.Distance;
                     var cardSwipesNow = currentPackageIsUsed.CurrentCardSwipes + 1;
-
+                    
                     // Sử dụng package cho trường hợp đi xe buýt
                     if (newOrder.ServiceTypeId != null &&
                         newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID) &&
@@ -301,20 +301,33 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             await _unitOfWork.SaveChangesAsync();
             var serviceTypeNoti = await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value);
             var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
-            await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken,serviceTypeNoti.Content , content+" với hóa đơn "+order.TotalPrice+"VNĐ");
+            string mes = string.Format(content + " với hóa đơn {0:N0} VNĐ", order.TotalPrice);
+            if (isUsingPackage)
+            {
+                if (newOrder.ServiceTypeId != null && newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID))
+                {
+                    mes = "Quý khách vừa sử dụng 1 lần đi xe buýt";
+                }
+                else
+                {
+                    currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(newOrder.CustomerId);
+                    mes += string.Format(" với gói dịch vụ giảm {0:N0}%.", (currentPackageIsUsed.DiscountValueTrip*100));
+                    
+                }
+
+            }
+            await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, serviceTypeNoti.Content, mes);
             SaveNotificationModel noti = new SaveNotificationModel()
             {
                 CustomerId = customer.CustomerId.ToString(),
                 CustomerFirstName = customer.FirstName,
                 CustomerLastName = customer.LastName,
                 Title = serviceTypeNoti.Content,
-                Message = content + " với hóa đơn " + order.TotalPrice + "VNĐ",
+                Message = mes,
                 Type = serviceTypeNoti.Name,
                 Status = (int)NotificationStatus.Active
             };
             await _notificationCollection.SaveNotification(noti);
-
-
 
             return new()
             {
