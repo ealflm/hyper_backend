@@ -307,7 +307,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.WalletRepository.Update(wallet);
                     await _unitOfWork.SaveChangesAsync();
                     var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
-                    mesPayPal = string.Format("Quý khách đã nạp thành công {0:N0} VNĐ từ PayPal", order.TotalPrice);
+                    CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+                    mesPayPal = string.Format(elGR,"Quý khách đã nạp thành công {0:N0} VNĐ từ PayPal", order.TotalPrice);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, titlePayPal, mesPayPal);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
