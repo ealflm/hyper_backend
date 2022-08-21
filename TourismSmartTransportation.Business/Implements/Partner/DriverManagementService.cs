@@ -307,6 +307,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 if (check != null)
                 {
                     vehiclesList.RemoveAt(i);
+                    --i;
                 }
             }
 
