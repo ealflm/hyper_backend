@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -12,8 +13,10 @@ using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
+using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.MoMo;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer;
+using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 using TourismSmartTransportation.Data.Interfaces;
@@ -23,8 +26,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 {
     public class BookingService : BaseService, IBookingService
     {
-        public BookingService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private IFirebaseCloudMsgService _firebaseCloud;
+        private INotificationCollectionService _notificationCollection;
+        public BookingService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
         {
+            _firebaseCloud = firebaseCloud;
+            _notificationCollection = notificationCollection;
         }
 
         public static string DecryptString(string cipherText)
@@ -79,6 +86,30 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
 
             return result;
+        }
+
+        public async Task<Response> RefundBooking(double amount, Guid customerId)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
+            CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+            string mes = string.Format(elGR, "Quý khách được hoàn tiền đặt xe {0:N0} VNĐ 70% hóa đơn", amount);
+            await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn tiền đặt xe", mes);
+            SaveNotificationModel noti = new SaveNotificationModel()
+            {
+                CustomerId = customer.CustomerId.ToString(),
+                CustomerFirstName = customer.FirstName,
+                CustomerLastName = customer.LastName,
+                Title = "Hoàn tiền đặt xe",
+                Message = mes,
+                Type = "Booking",
+                Status = (int)NotificationStatus.Active
+            };
+            await _notificationCollection.SaveNotification(noti);
+            return new()
+            {
+                StatusCode = 200,
+                Message = "hoàn tiền thành công"
+            };
         }
     }
 }
