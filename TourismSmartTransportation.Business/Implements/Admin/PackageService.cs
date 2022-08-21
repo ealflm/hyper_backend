@@ -255,8 +255,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         {
             List<Order> ordersList = await _unitOfWork.OrderRepository
                                     .Query()
-                                    .Where(order => order.CustomerId == customerId)
+                                    .Where(order => order.CustomerId == customerId && order.Status != (int)OrderStatus.NotUse)
                                     .Where(order => order.ServiceTypeId == Guid.Parse(ServiceTypeDefaultData.PURCHASE_PACKAGE_SERVICE_ID))
+                                    .OrderByDescending(order => order.CreatedDate)
                                     .ToListAsync();
 
             CurrentPackageIsUsedModel result = null;
