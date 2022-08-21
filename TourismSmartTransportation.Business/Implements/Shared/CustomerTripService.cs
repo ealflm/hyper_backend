@@ -242,7 +242,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                     };
                     wallet.AccountBalance += bonusPrice;
                     await _unitOfWork.TransactionRepository.Add(bonusTransaction);
-                    var mesBonusPrice = string.Format(elGR,"Quý khách được thưởng thêm phí hoàn trả phương tiện đúng trạm {0:N0}VND 10% hóa đơn thuê phương tiện không tín phí thu hồi", bonusPrice);
+                    var mesBonusPrice = string.Format(elGR,"Quý khách được thưởng thêm phí hoàn trả phương tiện đúng trạm {0:N0} VNĐ 10% hóa đơn thuê phương tiện không tín phí thu hồi", bonusPrice);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Phần thưởng", mesBonusPrice);
                     SaveNotificationModel notiBonus = new SaveNotificationModel()
                     {
@@ -259,7 +259,9 @@ namespace TourismSmartTransportation.Business.Implements.Shared
 
                 _unitOfWork.WalletRepository.Update(wallet);
                 vehicle.Status = (int)VehicleStatus.Ready;
+                customerTrip.Status = (int)CustomerTripStatus.Done;
                 _unitOfWork.VehicleRepository.Update(vehicle);
+                _unitOfWork.CustomerTripRepository.Update(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
                 var mesReturnPrice = string.Format(elGR,"Quý khách vừa được hoàn {0:N0} VNĐ phí thu hồi phương tiện", returnPrice);
                 await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken,"Hoàn phí thu hồi phương tiện" , mesReturnPrice);
