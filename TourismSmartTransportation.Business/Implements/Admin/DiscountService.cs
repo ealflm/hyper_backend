@@ -263,6 +263,9 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Message = $"Bạn vừa nhận được mã giảm giá {discount.Code}. Hãy áp dụng khi thanh toán hóa đơn."
                 };
                 await _notiService.SaveNotification(notiModel);
+                discount.Status = (int)DiscountStatus.BeSent;
+                _unitOfWork.DiscountRepository.Update(discount);
+                await _unitOfWork.SaveChangesAsync();
                 return new()
                 {
                     StatusCode = 201,
