@@ -413,7 +413,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var today = DateTime.UtcNow.AddHours(7);
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId.Value) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
             var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME)).FirstOrDefaultAsync();
-            if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < 60)
+            if (oldCustomerTrip != null && DateTime.UtcNow.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < 60)
             {
                 var location = oldCustomerTrip.Coordinates.Split(';');
                 decimal startLongitude = decimal.Parse(location[0]);
