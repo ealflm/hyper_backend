@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -177,7 +178,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             dynamic currentPackageIsUsed = null;
             bool isUsingPackage = false;
             decimal orderPrice = 0;
-
+            decimal newOrderTotalPrice = newOrder.TotalPrice;
             if (isUsingService) // kiểm tra có sử dụng package hay không
             {
                 currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(newOrder.CustomerId);
@@ -213,7 +214,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Content = content,
                 OrderId = newOrder.OrderId,
                 CreatedDate = newOrder.CreatedDate,
-                Amount = -newOrder.TotalPrice,
+                Amount = -newOrderTotalPrice,
                 Status = 1,
                 WalletId = wallet.WalletId
             };
@@ -223,6 +224,25 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             await _unitOfWork.TransactionRepository.Add(transaction);
             _unitOfWork.WalletRepository.Update(wallet);
             await _unitOfWork.OrderRepository.Add(newOrder);
+
+
+            if (isUsingPackage)
+            {
+                if (newOrder.ServiceTypeId != null && newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID))
+                {
+                    var transactionRefund = new Transaction()
+                    {
+                        TransactionId = Guid.NewGuid(),
+                        Content = "Hoàn tiền từ gói dịch vụ",
+                        OrderId = newOrder.OrderId,
+                        CreatedDate = newOrder.CreatedDate,
+                        Amount = newOrderTotalPrice,
+                        Status = 1,
+                        WalletId = wallet.WalletId
+                    };
+                    await _unitOfWork.TransactionRepository.Add(transactionRefund);
+                }
+            }
 
 
 
@@ -301,7 +321,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             await _unitOfWork.SaveChangesAsync();
             var serviceTypeNoti = await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value);
             var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
-            string mes = string.Format(content + " với hóa đơn {0:N0} VNĐ", order.TotalPrice);
+            CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+            string mes = string.Format(elGR,content + " với hóa đơn {0:N0} VNĐ", order.TotalPrice);
             if (isUsingPackage)
             {
                 if (newOrder.ServiceTypeId != null && newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID))

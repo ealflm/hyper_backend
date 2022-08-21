@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -221,6 +222,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                     WalletId = adminWallet.WalletId
                 };
 
+                CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
                 adminWallet.AccountBalance -= returnPrice * 0.1M;
                 await _unitOfWork.TransactionRepository.Add(adminTransaction);
                 _unitOfWork.WalletRepository.Update(adminWallet);
@@ -240,7 +242,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                     };
                     wallet.AccountBalance += bonusPrice;
                     await _unitOfWork.TransactionRepository.Add(bonusTransaction);
-                    var mesBonusPrice = string.Format("Quý khách được thưởng thêm phí hoàn trả phương tiện đúng trạm {0:N0}VND 10% hóa đơn thuê phương tiện không tín phí thu hồi", bonusPrice);
+                    var mesBonusPrice = string.Format(elGR,"Quý khách được thưởng thêm phí hoàn trả phương tiện đúng trạm {0:N0}VND 10% hóa đơn thuê phương tiện không tín phí thu hồi", bonusPrice);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Phần thưởng", mesBonusPrice);
                     SaveNotificationModel notiBonus = new SaveNotificationModel()
                     {
@@ -259,7 +261,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 vehicle.Status = (int)VehicleStatus.Ready;
                 _unitOfWork.VehicleRepository.Update(vehicle);
                 await _unitOfWork.SaveChangesAsync();
-                var mesReturnPrice = string.Format("Quý khách vừa được hoàn {0:N0} VNĐ phí thu hồi phương tiện", returnPrice);
+                var mesReturnPrice = string.Format(elGR,"Quý khách vừa được hoàn {0:N0} VNĐ phí thu hồi phương tiện", returnPrice);
                 await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken,"Hoàn phí thu hồi phương tiện" , mesReturnPrice);
                 SaveNotificationModel noti = new SaveNotificationModel()
                 {

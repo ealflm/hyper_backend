@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -218,7 +219,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 wallet.AccountBalance += transaction.Amount;
                 _unitOfWork.WalletRepository.Update(wallet);
                 await _unitOfWork.SaveChangesAsync();
-                mesMoMo = string.Format("Quý khách đã nạp thành công {0:N0} VNĐ từ MoMo", order.TotalPrice);
+                CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+                mesMoMo = string.Format(elGR,"Quý khách đã nạp thành công {0:N0} VNĐ từ MoMo", order.TotalPrice);
                 await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, titleMoMo ,mesMoMo);
                 SaveNotificationModel noti = new SaveNotificationModel()
                 {

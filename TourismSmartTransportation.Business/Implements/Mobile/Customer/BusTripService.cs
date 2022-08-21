@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -533,8 +534,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
-
-                    var mesReturnPrice = string.Format("Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
+                    CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+                    var mesReturnPrice = string.Format(elGR,"Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn phí dịch vụ xe buýt", mesReturnPrice);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
@@ -557,20 +558,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     // cập nhật lại trạng thái của order -> hoàn thành
                     order.Status = (int)OrderStatus.Done;
                     _unitOfWork.OrderRepository.Update(order);
-
-                    // tạo giao dịch khi xuống trạm và sử dụng gói dịch vụ để thanh toán
-                    var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
-                    var transaction = new Transaction()
-                    {
-                        WalletId = wallet.WalletId,
-                        Amount = 0,
-                        Content = "Xuống trạm, sử dụng gói dịch vụ để thanh toán",
-                        CreatedDate = DateTime.Now,
-                        OrderId = order.OrderId,
-                        Status = 1,
-                        TransactionId = Guid.NewGuid()
-                    };
-                    await _unitOfWork.TransactionRepository.Add(transaction);
+                    
 
                     // Lấy full giá của trip
                     var route = await _unitOfWork.RouteRepository.GetById(tripEntity.RouteId);
@@ -625,8 +613,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     await _unitOfWork.SaveChangesAsync();
-
-                    var mesReturnPrice = string.Format("Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance);
+                    CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+                    var mesReturnPrice = string.Format(elGR,"Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance/1000);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo gói dịch vụ", mesReturnPrice);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
@@ -843,8 +831,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
-
-                    var mesReturnPrice = string.Format("Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
+                    CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+                    var mesReturnPrice = string.Format(elGR,"Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn phí dịch vụ xe buýt", mesReturnPrice);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
@@ -868,19 +856,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     order.Status = (int)OrderStatus.Done;
                     _unitOfWork.OrderRepository.Update(order);
 
-                    // tạo giao dịch khi xuống trạm và sử dụng gói dịch vụ để thanh toán
-                    var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
-                    var transaction = new Transaction()
-                    {
-                        WalletId = wallet.WalletId,
-                        Amount = 0,
-                        Content = "Xuống trạm, sử dụng gói dịch vụ để thanh toán",
-                        CreatedDate = DateTime.Now,
-                        OrderId = order.OrderId,
-                        Status = 1,
-                        TransactionId = Guid.NewGuid()
-                    };
-                    await _unitOfWork.TransactionRepository.Add(transaction);
+                    
 
                     // Lấy full giá của trip
                     var route = await _unitOfWork.RouteRepository.GetById(tripEntity.RouteId);
@@ -935,8 +911,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     await _unitOfWork.SaveChangesAsync();
-
-                    var mesReturnPrice = string.Format("Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance);
+                    CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+                    var mesReturnPrice = string.Format(elGR,"Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance/1000);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo gói dịch vụ", mesReturnPrice);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
