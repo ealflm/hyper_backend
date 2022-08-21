@@ -418,7 +418,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 var location = oldCustomerTrip.Coordinates.Split(';');
                 decimal startLongitude = decimal.Parse(location[0]);
                 decimal startLatitude = decimal.Parse(location[1]);
-                var tripEntity = await _unitOfWork.TripRepository.Query().Where(x => x.TripId == oldCustomerTrip.TripId).FirstOrDefaultAsync();
+                var tripEntity = await _unitOfWork.TripRepository.GetById(oldCustomerTrip.TripId.Value);
                 var stationRouteList = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tripEntity.RouteId)).ToListAsync();
                 decimal minDisStart = decimal.MaxValue;
                 decimal minDisEnd = decimal.MaxValue;
@@ -532,6 +532,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.WalletRepository.Update(adminWallet);
 
                     oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    oldCustomerTrip.Distance = distance;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
                     CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
@@ -610,6 +611,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     // cập nhật thêm vị trí xuống trạm và trạng thái -> hoàn thành của customer trip
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
                     oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    oldCustomerTrip.Distance = distance;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     await _unitOfWork.SaveChangesAsync();
@@ -829,6 +831,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.WalletRepository.Update(adminWallet);
 
                     oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    oldCustomerTrip.Distance = distance;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
                     CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
@@ -908,6 +911,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     // cập nhật thêm vị trí xuống trạm và trạng thái -> hoàn thành của customer trip
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
                     oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    oldCustomerTrip.Distance = distance;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     await _unitOfWork.SaveChangesAsync();
