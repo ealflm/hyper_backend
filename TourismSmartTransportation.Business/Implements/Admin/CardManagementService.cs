@@ -266,5 +266,11 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Message = "Cập nhật thành công!"
             };
         }
+
+        public async Task<CardViewModel> GetByCustomerId(Guid customerId)
+        {
+            var card = await _unitOfWork.CardRepository.Query().Where(x => x.CustomerId.Equals(customerId)).Select(x=> x.AsCardViewModel()).FirstOrDefaultAsync();
+            return card;
+        }
     }
 }
