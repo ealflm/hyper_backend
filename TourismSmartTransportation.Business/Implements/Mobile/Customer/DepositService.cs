@@ -23,7 +23,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 {
     public class DepositService : BaseService, IDepositService
     {
-        private readonly string title = "Nạp tiền";
+        private readonly string titleMoMo = "Nạp tiền từ MoMo";
+        private readonly string titlePayPal = "Nạp tiền từ PayPal";
         private  string mesMoMo = "";
         private string mesPayPal = "";
         private IFirebaseCloudMsgService _firebaseCloud;
@@ -44,7 +45,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 CustomerId = model.CustomerId,
                 TotalPrice = model.Amount,
                 ServiceTypeId = serviceType.ServiceTypeId,
-                Status = 1
+                Status = 3
             };
             await _unitOfWork.OrderRepository.Add(order);
             var walletId = (await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync()).WalletId;
@@ -217,14 +218,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 wallet.AccountBalance += transaction.Amount;
                 _unitOfWork.WalletRepository.Update(wallet);
                 await _unitOfWork.SaveChangesAsync();
-                mesMoMo = "Quý khách đã nạp thành công " + order.TotalPrice + "VNĐ từ MoMo";
-                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Nạp tiền",mesMoMo);
+                mesMoMo = string.Format("Quý khách đã nạp thành công {0:N0} VNĐ từ MoMo", order.TotalPrice);
+                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, titleMoMo ,mesMoMo);
                 SaveNotificationModel noti = new SaveNotificationModel()
                 {
                     CustomerId = customer.CustomerId.ToString(),
                     CustomerFirstName = customer.FirstName,
                     CustomerLastName = customer.LastName,
-                    Title = title,
+                    Title = titleMoMo,
                     Message = mesMoMo,
                     Type = "Deposit",
                     Status = (int)NotificationStatus.Active
@@ -304,14 +305,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.WalletRepository.Update(wallet);
                     await _unitOfWork.SaveChangesAsync();
                     var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
-                    mesPayPal = "Quý khách đã nạp thành công " + order.TotalPrice + "VNĐ từ PayPal";
-                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Nạp tiền", mesPayPal);
+                    mesPayPal = string.Format("Quý khách đã nạp thành công {0:N0} VNĐ từ PayPal", order.TotalPrice);
+                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, titlePayPal, mesPayPal);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
                         CustomerId = customer.CustomerId.ToString(),
                         CustomerFirstName = customer.FirstName,
                         CustomerLastName = customer.LastName,
-                        Title = title,
+                        Title = titlePayPal,
                         Message = mesPayPal,
                         Type = "Deposit",
                         Status = (int)NotificationStatus.Active
