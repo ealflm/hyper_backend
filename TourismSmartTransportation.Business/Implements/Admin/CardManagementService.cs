@@ -14,13 +14,19 @@ using TourismSmartTransportation.Business.SearchModel.Admin.CardManagement;
 using System.Text;
 using System.Security.Cryptography;
 using System.IO;
+using TourismSmartTransportation.Business.Interfaces.Shared;
+using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class CardManagementService : BaseService, ICardManagementService
     {
-        public CardManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private IFirebaseCloudMsgService _firebaseCloud;
+        private INotificationCollectionService _notificationCollection;
+        public CardManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
         {
+            _firebaseCloud = firebaseCloud;
+            _notificationCollection = notificationCollection;
         }
 
         public async Task<Response> Create(string uid)
@@ -168,6 +174,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<Response> CustomerMatch(UpdateCardModel model)
         {
             var card = await _unitOfWork.CardRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
+            var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId.Value);
             if (card == null)
             {
                 model.Uid = DecryptString(model.Uid);
@@ -183,6 +190,19 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 entity.CustomerId = model.CustomerId;
                 entity.Status = (int)CardStatus.Linked;
                 _unitOfWork.CardRepository.Update(entity);
+                var mes = "Quý khách vừa liên kết thẻ thành công";
+                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo liên kết thẻ", mes);
+                SaveNotificationModel noti = new SaveNotificationModel()
+                {
+                    CustomerId = customer.CustomerId.ToString(),
+                    CustomerFirstName = customer.FirstName,
+                    CustomerLastName = customer.LastName,
+                    Title = "Thông báo liên kết thẻ",
+                    Message = mes,
+                    Type = "Card",
+                    Status = (int)NotificationStatus.Active
+                };
+                await _notificationCollection.SaveNotification(noti);
             }
             else
             {
@@ -201,13 +221,45 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     entity.CustomerId = model.CustomerId;
                     entity.Status = (int)CardStatus.Linked;
                     _unitOfWork.CardRepository.Update(entity);
+                    var mes = "Quý khách vừa cập nhật thẻ thành công";
+                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo cập nhật thẻ", mes);
+                    SaveNotificationModel noti = new SaveNotificationModel()
+                    {
+                        CustomerId = customer.CustomerId.ToString(),
+                        CustomerFirstName = customer.FirstName,
+                        CustomerLastName = customer.LastName,
+                        Title = "Thông báo cập nhật thẻ",
+                        Message = mes,
+                        Type = "Card",
+                        Status = (int)NotificationStatus.Active
+                    };
+                    await _notificationCollection.SaveNotification(noti);
                 }
                 card.CustomerId = null;
                 card.Status = (int)CardStatus.NotLinked;
                 _unitOfWork.CardRepository.Update(card);
+                if(model.Uid == null)
+                {
+                    var mes = "Quý khách vừa ngắt liên kết thẻ thành công";
+                    await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo ngắt liên kết thẻ", mes);
+                    SaveNotificationModel noti = new SaveNotificationModel()
+                    {
+                        CustomerId = customer.CustomerId.ToString(),
+                        CustomerFirstName = customer.FirstName,
+                        CustomerLastName = customer.LastName,
+                        Title = "Thông báo ngắt liên kết thẻ",
+                        Message = mes,
+                        Type = "Card",
+                        Status = (int)NotificationStatus.Active
+                    };
+                    await _notificationCollection.SaveNotification(noti);
+                }
             }
             
             await _unitOfWork.SaveChangesAsync();
+
+
+
             return new()
             {
                 StatusCode = 201,
