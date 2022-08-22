@@ -11,6 +11,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
     {
         Task<List<CardViewModel>> Search(CardSearchModel model);
         Task<CardViewModel> GetById(Guid id);
+        Task<CardViewModel> GetByCustomerId(Guid customerId);
         Task<Response> Create(string uid);
         Task<Response> Update(Guid id, UpdateCardModel model);
         Task<Response> Delete(Guid id);

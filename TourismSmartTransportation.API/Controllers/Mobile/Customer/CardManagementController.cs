@@ -9,6 +9,7 @@ using TourismSmartTransportation.Business.SearchModel.Admin.CardManagement;
 namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 {
     [ApiController]
+    [Route(ApiVer1Url.Customer.CardMatch)]
     [Authorize]
     public class CardManagementController : BaseController
     {
@@ -20,10 +21,15 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
         }
 
         [HttpPost]
-        [Route(ApiVer1Url.Customer.CardMatch)]
         public async Task<IActionResult> CustomerMatch([FromBody] UpdateCardModel model)
         {
             return SendResponse(await _service.CustomerMatch(model));
+        }
+
+        [HttpGet("{customerId}")]
+        public async Task<IActionResult> GetCard(Guid customerId)
+        {
+            return SendResponse(await _service.GetByCustomerId(customerId));
         }
     }
 }

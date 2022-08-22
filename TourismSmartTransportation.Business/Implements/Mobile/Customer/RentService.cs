@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -12,8 +13,10 @@ using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
+using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.MoMo;
 using TourismSmartTransportation.Business.SearchModel.Mobile.Customer;
+using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
 using TourismSmartTransportation.Business.ViewModel.Common;
 using TourismSmartTransportation.Business.ViewModel.Mobile.Customer;
 using TourismSmartTransportation.Data.Interfaces;
@@ -23,8 +26,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 {
     public class RentService : BaseService, IRentService
     {
-        public RentService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private IFirebaseCloudMsgService _firebaseCloud;
+        private INotificationCollectionService _notificationCollection;
+        public RentService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
         {
+            _firebaseCloud = firebaseCloud;
+            _notificationCollection = notificationCollection;
         }
 
         public static string DecryptString(string cipherText)
@@ -52,6 +59,67 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
         }
 
+        public async Task<Response> CheckMergeOrder(int time, Guid customerTripId)
+        {
+            var customerTrip = await _unitOfWork.CustomerTripRepository.GetById(customerTripId);
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
+            var orders = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(customerTrip.CustomerId) && x.ServiceTypeId.Equals(new Guid(ServiceTypeDefaultData.RENT_SERVICE_ID)))
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
+            foreach(var x in orders)
+            {
+                var orderDetails = await _unitOfWork.OrderDetailOfRentingServiceRepository.Query().Where(y => y.LicensePlates.Equals(vehicle.LicensePlates) && y.OrderId.Equals(x.OrderId)).ToListAsync();
+                if (orderDetails.Count > 0)
+                {
+                    int sumQuantity = 0;
+                    int sum = 0;
+                    PriceOfRentingService priceOfRentingService = null;
+                    foreach(var y in orderDetails)
+                    {
+                        sum += y.ModePrice;
+                        if(y.PriceOfRentingServiceId!= null)
+                        {
+                            sumQuantity += y.Quantity;
+                            priceOfRentingService = await _unitOfWork.PriceOfRentingServiceRepository.GetById(y.PriceOfRentingServiceId.Value);
+                        }
+                    }
+                    if (sum > 0)
+                    {
+                        return new()
+                        {
+                            StatusCode=400,
+                            Message="Không thể gộp hóa đơn"
+                        };
+                    }
+                    else
+                    {
+                        if (sumQuantity + time > priceOfRentingService.MaxTime)
+                        {
+                            return new()
+                            {
+                                StatusCode = 200,
+                                Message = "Có thể gộp hóa đơn"
+                            };
+                        }
+                        else
+                        {
+                            return new()
+                            {
+                                StatusCode = 400,
+                                Message = "Không thể gộp hóa đơn"
+                            };
+                        }
+                    }
+                }
+            }
+
+            return new()
+            {
+                StatusCode = 400,
+                Message = "Không thể gộp hóa đơn"
+            };
+        }
+
         public async Task<Response> CreateCustomerTrip(CustomerTripSearchModel model)
         {
             var customerTrip = new CustomerTrip()
@@ -76,6 +144,124 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             };
         }
 
+        public async Task<Response> ExtendRentingOrder(ExtendOrderSearchModel model)
+        {
+            //CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+            var customerTrip = await _unitOfWork.CustomerTripRepository.GetById(model.CustomerTripId);
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
+            var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customerTrip.CustomerId)).FirstOrDefaultAsync();
+            var orders = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(customerTrip.CustomerId) && x.ServiceTypeId.Equals(new Guid(ServiceTypeDefaultData.RENT_SERVICE_ID))).OrderByDescending(x => x.CreatedDate).ToListAsync();
+            foreach (var x in orders)
+            {
+                var orderDetails = await _unitOfWork.OrderDetailOfRentingServiceRepository.Query().Where(y => y.LicensePlates.Equals(vehicle.LicensePlates) && y.OrderId.Equals(x.OrderId)).OrderBy(y=> y.PriceOfRentingServiceId).ToListAsync();
+                if (orderDetails.Count > 0)
+                {
+                    if (model.MergeOrder)
+                    {
+                        for (int i = 1; i < orderDetails.Count; i++)
+                        {
+                            customerTrip.RentDeadline = customerTrip.RentDeadline.Value.AddHours(-orderDetails[i].Quantity);
+                        }
+                        customerTrip.RentDeadline = customerTrip.RentDeadline.Value.AddDays(1);
+                        _unitOfWork.CustomerTripRepository.Update(customerTrip);
+                        decimal transcationAmount = model.Price + orderDetails[0].Price - x.TotalPrice;
+                        Transaction transaction = new Transaction()
+                        {
+                            Amount= transcationAmount,
+                            Content="Gộp hóa đơn thuê phương tiện",
+                            CreatedDate= DateTime.Now,
+                            OrderId= x.OrderId,
+                            Status=1,
+                            TransactionId= Guid.NewGuid(),
+                            WalletId=wallet.WalletId
+                        };
+                        await _unitOfWork.TransactionRepository.Add(transaction);
+                        wallet.AccountBalance += transcationAmount;
+                        _unitOfWork.WalletRepository.Update(wallet);
+                        x.TotalPrice = model.Price + orderDetails[0].Price;
+                        _unitOfWork.OrderRepository.Update(x);
+                        OrderDetailOfRentingService orderDetail = new OrderDetailOfRentingService()
+                        {
+                            Content = model.Content,
+                            LicensePlates = vehicle.LicensePlates,
+                            ModePrice = model.ModePrice,
+                            OrderDetailId = Guid.NewGuid(),
+                            OrderId = x.OrderId,
+                            Price = model.Price,
+                            Quantity = model.Quantity,
+                            Status = 1
+                        };
+                        await _unitOfWork.OrderDetailOfRentingServiceRepository.Add(orderDetail);
+                        for(int i=1; i < orderDetails.Count; i++)
+                        {
+                            await _unitOfWork.OrderDetailOfRentingServiceRepository.Remove(orderDetails[i].OrderDetailId);
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        Transaction transaction = new Transaction()
+                        {
+                            Amount = model.Price* model.Quantity,
+                            Content = "Gia hạn thuê phương tiện",
+                            CreatedDate = DateTime.Now,
+                            OrderId = x.OrderId,
+                            Status = 1,
+                            TransactionId = Guid.NewGuid(),
+                            WalletId = wallet.WalletId
+                        };
+                        await _unitOfWork.TransactionRepository.Add(transaction);
+                        wallet.AccountBalance -= model.Price * model.Quantity;
+                        _unitOfWork.WalletRepository.Update(wallet);
+                        x.TotalPrice += model.Price * model.Quantity;
+                        _unitOfWork.OrderRepository.Update(x);
+                        OrderDetailOfRentingService orderDetail = new OrderDetailOfRentingService()
+                        {
+                            Content = model.Content,
+                            LicensePlates = vehicle.LicensePlates,
+                            ModePrice = model.ModePrice,
+                            OrderDetailId = Guid.NewGuid(),
+                            OrderId= x.OrderId,
+                            Price= model.Price,
+                            Quantity= model.Quantity,
+                            Status=1
+                        };
+                        await _unitOfWork.OrderDetailOfRentingServiceRepository.Add(orderDetail);
+                        if (model.ModePrice == 0)
+                        {
+                            customerTrip.RentDeadline = customerTrip.RentDeadline.Value.AddHours((double)model.Quantity);
+                        }
+                        else
+                        {
+                            customerTrip.RentDeadline = customerTrip.RentDeadline.Value.AddDays((double)model.Quantity);
+                        }
+                        _unitOfWork.CustomerTripRepository.Update(customerTrip);
+                        break;
+                    }
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerTrip.CustomerId);
+            string mes = string.Format("Quý khách đã gia hạn thành công dịch vụ thuê phương tiện {0} đến ngày {1}.", vehicle.LicensePlates, customerTrip.RentDeadline.Value.AddHours(7));
+            await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Gia hạn thuê phương tiện", mes);
+            SaveNotificationModel noti = new SaveNotificationModel()
+            {
+                CustomerId = customer.CustomerId.ToString(),
+                CustomerFirstName = customer.FirstName,
+                CustomerLastName = customer.LastName,
+                Title = "Gia hạn thuê phương tiện",
+                Message = mes,
+                Type = "Renting",
+                Status = (int)NotificationStatus.Active
+            };
+            await _notificationCollection.SaveNotification(noti);
+            return new()
+            {
+                StatusCode = 200,
+                Message = "Gia hạn hóa đơn thành công"
+            };
+        }
         public async Task<PriceRentingViewModel> GetPrice(string id)
         {
 
@@ -124,6 +310,51 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 return result;
             }
             return null;
+        }
+
+        public async Task<PriceRentingViewModel> GetPriceExtend(Guid customerTripId)
+        {
+            var customerTrip = await _unitOfWork.CustomerTripRepository.GetById(customerTripId);
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
+            var price = await _unitOfWork.PriceOfRentingServiceRepository.GetById(vehicle.PriceRentingId.Value);
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.RENT_SERVICE_NAME)).FirstOrDefaultAsync();
+            var result = new PriceRentingViewModel()
+            {
+                PriceOfRentingServiceId = price.PriceOfRentingServiceId,
+                MaxTime = price.MaxTime,
+                MinTime = price.MinTime,
+                PricePerHour = price.PricePerHour,
+                Status = price.Status,
+                VehicleName = vehicle.Name,
+                Color = vehicle.Color,
+                LicensePlates = vehicle.LicensePlates,
+                PricePerDay = price.FixedPrice,
+                PartnerId = vehicle.PartnerId,
+                ServiceTypeId = serviceType.ServiceTypeId
+            };
+            var dateNow = DateTime.Now;
+            if (dateNow.DayOfWeek == DayOfWeek.Saturday || dateNow.DayOfWeek == DayOfWeek.Sunday)
+            {
+                result.PricePerDay = price.WeekendPrice;
+            }
+            var client = new HttpClient();
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://holidays.abstractapi.com/v1/?api_key=ba043ce3a5274588ae52c2b1c4a6aebc&country=VN&year=" + dateNow.Year + "&month=" + dateNow.Month + "&day=" + dateNow.Day),
+            };
+            using (var response = await client.SendAsync(request))
+            {
+                response.EnsureSuccessStatusCode();
+                var body = await response.Content.ReadAsStringAsync();
+                if (body.IndexOf("name") >= 0)
+                {
+                    result.PricePerDay = price.HolidayPrice;
+                }
+            }
+            result.CategoryName = (await _unitOfWork.CategoryRepository.GetById(price.CategoryId)).Name;
+            result.PublishYearName = (await _unitOfWork.PublishYearRepository.GetById(price.PublishYearId)).Name;
+            return result;
         }
 
         public async Task<Response> ReturnVehicle(ReturnVehicleSearchModel model)

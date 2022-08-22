@@ -29,6 +29,28 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
         {
             return SendResponse(await _service.GetPrice(id));
         }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Customer.RentService + "/extend/{customerTripId}")]
+        public async Task<IActionResult> GetPriceExtend(Guid customerTripId)
+        {
+            return SendResponse(await _service.GetPriceExtend(customerTripId));
+        }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Customer.RentService + "/extend")]
+        public async Task<IActionResult> CheckMergeOrder([FromQuery] int time, [FromQuery] Guid customerTripId)
+        {
+            return SendResponse(await _service.CheckMergeOrder(time, customerTripId));
+        }
+
+        [HttpPost]
+        [Route(ApiVer1Url.Customer.RentService + "/extend")]
+        public async Task<IActionResult> CreateCustomertrip([FromBody] ExtendOrderSearchModel model)
+        {
+            return SendResponse(await _service.ExtendRentingOrder(model));
+        }
+
         [HttpPost]
         [Route(ApiVer1Url.Customer.RentCustomerTrip)]
         public async Task<IActionResult> CreateCustomertrip([FromBody] CustomerTripSearchModel model)
