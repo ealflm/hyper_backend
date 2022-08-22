@@ -43,6 +43,7 @@ namespace TourismSmartTransportation.Data.Interfaces
         IGenericRepository<Wallet> WalletRepository { get; }
         IGenericRepository<LinkStation> LinkStationRepository { get; }
         IGenericRepository<LinkRoute> LinkRouteRepository { get; }
+        IGenericRepository<PartnerRoute> PartnerRouteRepository { get; }
         tourismsmarttransportationContext Context();
 
         DatabaseFacade Database();
