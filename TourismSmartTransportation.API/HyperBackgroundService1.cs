@@ -31,7 +31,7 @@ namespace TourismSmartTransportation.API
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    _logger.LogInformation("Start HyperBackgroundService1: ExecuteAsync");
+                    // _logger.LogInformation("Start HyperBackgroundService1: ExecuteAsync");
 
                     // Inject service
                     var firebaseCloudMsgScopeService = scope.ServiceProvider.GetRequiredService<IFirebaseCloudMsgService>();
@@ -47,7 +47,7 @@ namespace TourismSmartTransportation.API
                 }
 
             }
-            _logger.LogInformation("End HyperBackgroundService1: ExecuteAsync");
+            // _logger.LogInformation("End HyperBackgroundService1: ExecuteAsync");
         }
 
         public async Task RentingServiceNotificationProcess(IFirebaseCloudMsgService firebaseService,
@@ -55,7 +55,7 @@ namespace TourismSmartTransportation.API
                                                                     ICustomerTripService customerTripScopeService,
                                                                     INotificationCollectionService notificationScopeService)
         {
-            _logger.LogInformation("Start RentingServiceNotificationProcess");
+            // _logger.LogInformation("Start RentingServiceNotificationProcess");
             string title = "Dịch vụ thuê xe";
             var customerTripSearchModel = new CustomerTripSearchModel();
             var customerTripsList = await customerTripScopeService.GetCustomerTripsListForRentingService(customerTripSearchModel);
@@ -167,7 +167,7 @@ namespace TourismSmartTransportation.API
                     }
                 }
             }
-            _logger.LogInformation("End RentingServiceNotificationProcess");
+            // _logger.LogInformation("End RentingServiceNotificationProcess");
         }
     }
 }

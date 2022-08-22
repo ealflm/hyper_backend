@@ -31,7 +31,7 @@ namespace TourismSmartTransportation.API
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    _logger.LogInformation("Start HyperBackgroundService: ExecuteAsync");
+                    // _logger.LogInformation("Start HyperBackgroundService: ExecuteAsync");
 
                     // Inject service
                     var vehicleScopeService = scope.ServiceProvider.GetRequiredService<IVehicleManagementService>();
@@ -46,7 +46,7 @@ namespace TourismSmartTransportation.API
                 }
 
             }
-            _logger.LogInformation("End HyperBackgroundService: ExecuteAsync");
+            // _logger.LogInformation("End HyperBackgroundService: ExecuteAsync");
         }
 
         public string UnixTimeStampToDateTime(double unixTimeStamp)
@@ -59,7 +59,7 @@ namespace TourismSmartTransportation.API
         public async Task VehicleProcess(IVehicleManagementService vehicleScopeService, IVehicleCollectionService vehicleTrackingScopeService,
                                             ITripManagementService vehicleTripScopeService)
         {
-            _logger.LogInformation("Start VehicleProcess");
+            // _logger.LogInformation("Start VehicleProcess");
             // Get all vehicle from database
             VehicleSearchModel model = new VehicleSearchModel();
             var vehiclesList = await vehicleScopeService.Search(model);
@@ -120,7 +120,7 @@ namespace TourismSmartTransportation.API
 
                 }
             }
-            _logger.LogInformation("End VehicleProcess");
+            // _logger.LogInformation("End VehicleProcess");
         }
     }
 }
