@@ -25,9 +25,12 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
             string value;
             lock (_rooms)
             {
-                if (_rooms.TryGetValue(key, out value))
+                if (_rooms.ContainsKey(key))
                 {
-                    return value;
+                    if (_rooms.TryGetValue(key, out value))
+                    {
+                        return value;
+                    }
                 }
             }
 

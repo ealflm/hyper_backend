@@ -61,7 +61,7 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
 
         public List<DataHubModel> GetValues(string key)
         {
-            List<DataHubModel> values = null;
+            List<DataHubModel> values;
             lock (_dictionary)
             {
                 if (_dictionary.TryGetValue(key, out values))
@@ -69,7 +69,7 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
                     return values;
                 }
             }
-            return values;
+            return _dictionary.GetValueOrDefault(key);
         }
 
         public void Remove(string key)

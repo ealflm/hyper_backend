@@ -61,6 +61,7 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
         public bool CheckExistedValue(K key, V value)
         {
             HashSet<V> values;
+
             if (_maps.TryGetValue(key, out values))
             {
                 if (values.Contains(value))
