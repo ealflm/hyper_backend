@@ -29,7 +29,8 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
         [Route(ApiVer1Url.Customer.Package + "/list")]
         public async Task<IActionResult> SearchPackage([FromQuery] PackageCustomerModel model)
         {
-            return SendResponse(await _service.GetPackageNotUsed(model));
+            // return SendResponse(await _service.GetPackageNotUsed(model));
+            return SendResponse(await _service.GetAvailablePackage(model));
         }
 
         [HttpGet]

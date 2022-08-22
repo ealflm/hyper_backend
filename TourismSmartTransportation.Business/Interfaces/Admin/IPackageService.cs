@@ -16,5 +16,6 @@ namespace TourismSmartTransportation.Business.Interfaces.Admin
         Task<Response> DeletePackage(Guid id);
         Task<SearchResultViewModel<PackageViewModel>> GetPackageNotUsed(PackageCustomerModel model);
         Task<CurrentPackageIsUsedModel> GetCurrentPackageIsUsed(Guid customerId);
+        Task<SearchResultViewModel<PackageViewModel>> GetAvailablePackage(PackageCustomerModel model);
     }
 }

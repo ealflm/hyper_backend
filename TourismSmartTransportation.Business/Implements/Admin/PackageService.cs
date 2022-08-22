@@ -213,18 +213,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             List<object> paramsList = new List<object>();
             for (int i = 0; i < packageIdIsUsedList.Count; i++)
             {
-                if (packageIdIsUsedList.Count == 1)
-                {
-                    sql += "And PackageId != {" + i + "} ";
-                }
-                else if (i == packageIdIsUsedList.Count - 1)
-                {
-                    sql += "PackageId != {" + i + "} ";
-                }
-                else
-                {
-                    sql += "And PackageId != {" + i + "} And ";
-                }
+                sql += "And PackageId != {" + i + "} ";
                 paramsList.Add(packageIdIsUsedList[i]);
             }
             var packagesList = await _unitOfWork.PackageRepository
@@ -352,6 +341,43 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             }
 
             return result;
+        }
+
+        public async Task<SearchResultViewModel<PackageViewModel>> GetAvailablePackage(PackageCustomerModel model)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId);
+            if (customer == null)
+            {
+                return null;
+            }
+
+            CustomerPackagesHistorySearchModel cusPacHisModel = new CustomerPackagesHistorySearchModel() { CustomerId = customer.CustomerId };
+            var packageHisList = await _cusPacHisService.GetCustomerPackageHistory(cusPacHisModel);
+            var currentPackageIsUsed = (await GetCurrentPackageIsUsed(customer.CustomerId)).PackageId;
+            var packagesList = await _unitOfWork.PackageRepository
+                                .Query()
+                                .Where(x => x.PackageId != currentPackageIsUsed)
+                                .Where(x => x.Status == 1)
+                                .Select(x => x.AsPackageViewModel())
+                                .ToListAsync();
+
+            var listAfterSorting = GetListAfterSorting(packagesList, model.SortBy);
+            var totalRecord = GetTotalRecord(listAfterSorting, model.ItemsPerPage, model.PageIndex);
+            var listItemsAfterPaging = GetListAfterPaging(listAfterSorting, model.ItemsPerPage, model.PageIndex, totalRecord);
+            foreach (var item in listItemsAfterPaging)
+            {
+                var packageItems = await _unitOfWork.PackageItemRepository.Query()
+                                    .Where(x => x.PackageId == item.Id)
+                                    .Select(x => x.AsPackageItemViewModel())
+                                    .ToListAsync();
+                item.PackageItems = packageItems;
+            }
+            return new SearchResultViewModel<PackageViewModel>()
+            {
+                Items = listItemsAfterPaging,
+                PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
+                TotalItems = totalRecord
+            };
         }
     }
 }
