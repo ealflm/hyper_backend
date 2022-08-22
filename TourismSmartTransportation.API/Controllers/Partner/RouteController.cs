@@ -35,7 +35,22 @@ namespace TourismSmartTransportation.API.Controllers.Admin
             return SendResponse(await _service.GetRouteById(id));
         }
 
-        [HttpPost]
+
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.Route+ "/hyper-route/{partnerId}")]
+        public async Task<IActionResult> GetSystemRoute(Guid partnerId)
+        {
+            return SendResponse(await _service.GetRouteAlready(partnerId));
+        }
+
+        [HttpGet]
+        [Route(ApiVer1Url.Partner.Route+"/add-route-partner")]
+        public async Task<IActionResult> AddRouteToPartner([FromQuery]Guid partnerId, [FromQuery]Guid routeId)
+        {
+            return SendResponse(await _service.AddRouteToPartner(routeId, partnerId));
+        }
+
+       [HttpPost]
         [ServiceFilter(typeof(NotAllowedNullPropertiesAttribute))]
         public async Task<IActionResult> CreateRoute([FromBody] CreateRouteModel model)
         {

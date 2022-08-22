@@ -26,6 +26,23 @@ namespace TourismSmartTransportation.Business.Implements.Partner
 
         public async Task<Response> CreateRoute(CreateRouteModel model)
         {
+            HashSet<Guid> checkSet = new HashSet<Guid>();
+            foreach(var x in model.StationList)
+            {
+                var routes = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(x.StationId)).ToListAsync();
+                foreach(var y in routes)
+                {
+                    if (!checkSet.Add(y.RouteId))
+                    {
+                        return new()
+                        {
+                            StatusCode = 400,
+                            Message = "Tuyến đã tồn tại"
+                        };
+                    }
+                }
+            }
+
             var entity = new Route()
             {
                 RouteId = Guid.NewGuid(),
@@ -185,6 +202,12 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     }
                 }
             }
+            PartnerRoute partnerRoute = new PartnerRoute()
+            {
+                PartnerId = model.PartnerId,
+                RouteId = entity.RouteId
+            };
+            await _unitOfWork.PartnerRouteRepository.Add(partnerRoute);
             await _unitOfWork.SaveChangesAsync();
             return new()
             {
@@ -196,8 +219,8 @@ namespace TourismSmartTransportation.Business.Implements.Partner
         public async Task<SearchResultViewModel<RouteViewModel>> GetAll(RouteSearchModel model)
         {
             var routes = await _unitOfWork.RouteRepository.Query()
-                        .Where(x => model.PartnerId == null || x.PartnerId == model.PartnerId.Value)
                         .Where(x => model.Name == null || x.Name.Contains(model.Name))
+                        .Where(x=> x.Status==1)
                         .Select(x => x.AsRouteViewModel())
                         .ToListAsync();
             foreach (RouteViewModel x in routes)
@@ -210,17 +233,57 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     x.StationList.Add(station.AsStationViewModel());
                 }
             }
-
+            List<RouteViewModel> items = new List<RouteViewModel>();
+            if (model.PartnerId != null)
+            {
+                foreach (var x in routes)
+                {
+                    var partnerRoutes = await _unitOfWork.PartnerRouteRepository.Query().Where(y => y.PartnerId.Equals(model.PartnerId) && y.RouteId.Equals(x.Id)).FirstOrDefaultAsync();
+                    if (partnerRoutes != null)
+                    {
+                        items.Add(x);
+                    }
+                }
+            }
+            else
+            {
+                items = routes;
+            }
             SearchResultViewModel<RouteViewModel> result = null;
             result = new SearchResultViewModel<RouteViewModel>()
             {
-                Items = routes,
+                Items = items,
                 PageSize = 1,
-                TotalItems = routes.Count
+                TotalItems = items.Count
             };
             return result;
 
         }
+
+        public async Task<SearchResultViewModel<RouteViewModel>> GetRouteAlready(Guid partnerId)
+        {
+            var routes = await _unitOfWork.RouteRepository.Query().ToListAsync();
+            List<RouteViewModel> items = new List<RouteViewModel>();
+            foreach(var x in routes)
+            {
+                var partnerRoutes = await _unitOfWork.PartnerRouteRepository.Query().Where(y => y.PartnerId.Equals(partnerId) && y.RouteId.Equals(x.RouteId)).FirstOrDefaultAsync();
+                if(partnerRoutes== null)
+                {
+                    items.Add(x.AsRouteViewModel());
+                }
+            }
+
+            SearchResultViewModel<RouteViewModel> result = null;
+            result = new SearchResultViewModel<RouteViewModel>()
+            {
+                Items = items,
+                PageSize = 1,
+                TotalItems = items.Count
+            };
+            return result;
+        }
+
+        
 
         public async Task<RouteViewModel> GetRouteById(Guid id)
         {
@@ -242,6 +305,22 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 route.StationList.Add(station.AsStationViewModel());
             }
             return route;
+        }
+
+        public async Task<Response> AddRouteToPartner(Guid routeId, Guid partnerId)
+        {
+            PartnerRoute partnerRoute = new PartnerRoute()
+            {
+                PartnerId = partnerId,
+                RouteId = routeId
+            };
+            await _unitOfWork.PartnerRouteRepository.Add(partnerRoute);
+            await _unitOfWork.SaveChangesAsync();
+            return new()
+            {
+                StatusCode=200,
+                 Message="Thêm tuyến thành công"
+            };
         }
     }
 }
