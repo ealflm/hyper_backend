@@ -22,5 +22,8 @@ namespace ApiVer1Url
 
         // change password
         public const string ChangePassword = BaseApiUrl + "/authorization/change-password";
+
+        // save registration token (firebase service)
+        public const string Firebase = BaseApiUrl + "/firebase";
     }
 }

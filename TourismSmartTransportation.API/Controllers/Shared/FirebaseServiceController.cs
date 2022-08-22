@@ -22,5 +22,12 @@ namespace TourismSmartTransportation.API.Controllers.Shared
         {
             return SendResponse(await _firebaseService.SaveRegistrationToken(model, isCustomer: true));
         }
+
+        [HttpPost]
+        [Route(ApiVer1Url.Driver.Firebase + "/fcm/registrationToken")]
+        public async Task<IActionResult> SaveRegistrationTokenDriver(FcmRegistrationTokenModel model)
+        {
+            return SendResponse(await _firebaseService.SaveRegistrationToken(model, isDriver: true));
+        }
     }
 }
