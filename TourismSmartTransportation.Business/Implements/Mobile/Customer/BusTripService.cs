@@ -36,11 +36,13 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         private IOrderHelpersService orderheplper;
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
-        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IOrderHelpersService orderHelpers, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
+        private IPackageService _packageService;
+        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IOrderHelpersService orderHelpers, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IPackageService packageService) : base(unitOfWork, blobServiceClient)
         {
             orderheplper = orderHelpers;
             _firebaseCloud = firebaseCloud;
             _notificationCollection = notificationCollection;
+            _packageService = packageService;
         }
 
         public async Task<List<List<RouteViewModel>>> FindBusTrip(BusTripSearchModel model)
@@ -695,6 +697,28 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 };
                 await _unitOfWork.CustomerTripRepository.Add(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
+                var driver = await _unitOfWork.DriverRepository.GetById(trip.DriverId);
+                var package= _packageService.GetCurrentPackageIsUsed(customer.CustomerId).Result;
+                int quantityPeople = 1;
+                if(package!= null)
+                {
+                    var packageTmp = await _unitOfWork.PackageRepository.GetById(package.PackageId);
+                    quantityPeople = packageTmp.PeopleQuantity;
+                }
+                var mes = string.Format("Khách hàng {0} vừa lên xe. Số người lên xe {1} người", customer.FirstName+" "+customer.LastName , quantityPeople);
+                await _firebaseCloud.SendNotificationForRentingService(driver.RegistrationToken, "Thông báo lên xe", mes);
+                SaveNotificationModel noti = new SaveNotificationModel()
+                {
+                    CustomerId = customer.CustomerId.ToString(),
+                    CustomerFirstName = customer.FirstName,
+                    CustomerLastName = customer.LastName,
+                    Title = "Thông báo lên xe",
+                    Message = mes,
+                    Type = "Busing",
+                    Status = (int)NotificationStatus.Active
+                };
+                await _notificationCollection.SaveNotification(noti);
+
                 return new()
                 {
                     StatusCode = 201,
@@ -996,6 +1020,28 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 };
                 await _unitOfWork.CustomerTripRepository.Add(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
+
+                var driver = await _unitOfWork.DriverRepository.GetById(trip.DriverId);
+                var package = _packageService.GetCurrentPackageIsUsed(customer.CustomerId).Result;
+                int quantityPeople = 1;
+                if (package != null)
+                {
+                    var packageTmp = await _unitOfWork.PackageRepository.GetById(package.PackageId);
+                    quantityPeople = packageTmp.PeopleQuantity;
+                }
+                var mes = string.Format("Khách hàng {0} vừa lên xe. Số người lên xe {1} người", customer.FirstName + " " + customer.LastName, quantityPeople);
+                await _firebaseCloud.SendNotificationForRentingService(driver.RegistrationToken, "Thông báo lên xe", mes);
+                SaveNotificationModel noti = new SaveNotificationModel()
+                {
+                    CustomerId = customer.CustomerId.ToString(),
+                    CustomerFirstName = customer.FirstName,
+                    CustomerLastName = customer.LastName,
+                    Title = "Thông báo lên xe",
+                    Message = mes,
+                    Type = "Busing",
+                    Status = (int)NotificationStatus.Active
+                };
+                await _notificationCollection.SaveNotification(noti);
                 return new()
                 {
                     StatusCode = 201,
