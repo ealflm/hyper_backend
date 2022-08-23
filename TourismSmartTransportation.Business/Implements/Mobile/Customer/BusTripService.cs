@@ -151,56 +151,54 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 {
                     var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
                     if(nextStation != null)
-                    {
-                        if((double)disEnd[nextStation.StationId] < (double)disEnd[y.StationId])
-                        {
+                    { 
                             startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
                             break;
-                        }
+                        
                     }
                 }
             }
             linkStartStationList = await _unitOfWork.LinkStationRepository.Query().Where(x => x.SecondStationId.Equals(startStation.StationId)).ToListAsync();
-            foreach (var x in linkStartStationList)
+            if (linkStartStationList.Count != 0)
             {
-                var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(x.FirstStationId)).ToListAsync();
-                foreach (var y in stationRoutesTmp)
+                foreach (var x in linkStartStationList)
                 {
-                    var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
-                    if (nextStation != null)
-                    {
-                        if ((double)disEnd[nextStation.StationId] < (double)disEnd[y.StationId])
-                        {
-
-                            startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                            break;
-                        }
-                    }
-                }
-            }
-            /*for(int i=0; i < stationList.Length; i++)
-            {
-                var fromLocation = new GeoCoordinate((double)startStation.Latitude, (double)startStation.Longitude);
-                var toLocation = new GeoCoordinate((double)stationList[i].Latitude, (double)stationList[i].Longitude);
-                if (fromLocation.GetDistanceTo(toLocation)<=200)
-                {
-                    var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(stationList[i])).ToListAsync();
+                    var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(x.FirstStationId)).ToListAsync();
                     foreach (var y in stationRoutesTmp)
                     {
                         var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
                         if (nextStation != null)
                         {
-                            if ((double)disEnd[nextStation.StationId] < (double)disEnd[y.StationId])
-                            {
+
 
                                 startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
                                 break;
+                            
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for(int i=0; i < stationList.Length; i++)
+                {
+                    var fromLocation = new GeoCoordinate((double)startStation.Latitude, (double)startStation.Longitude);
+                    var toLocation = new GeoCoordinate((double)stationList[i].Latitude, (double)stationList[i].Longitude);
+                    if (fromLocation.GetDistanceTo(toLocation)<=200)
+                    {
+                        var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(stationList[i])).ToListAsync();
+                        foreach (var y in stationRoutesTmp)
+                        {
+                            var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
+                            if (nextStation != null)
+                            {
+                                    startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                                    break;
                             }
                         }
                     }
                 }
-            }*/
-
+            }
             endList.Add(endStation);
             var linkEndStationList = await _unitOfWork.LinkStationRepository.Query().Where(x => x.FirstStationId.Equals(endStation.StationId)).ToListAsync();
             foreach (var x in linkEndStationList)
@@ -211,11 +209,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
                     if (nextStation != null)
                     {
-                        if ((double)disStart[nextStation.StationId] < (double)disStart[y.StationId])
-                        {
-
                             endList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                        }
+                        break;
                     }
                 }
             }
@@ -233,6 +228,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         {
 
                             endList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                            break;
                         }
                     }
                 }
@@ -272,13 +268,17 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                                 while (queue.Count != 0)
                                 {
-                                    bool checkLink = true;
                                     var curentRoute = queue.Dequeue();
+                                    if(curentRoute.Value.Equals(new Guid("d36c0d82-d788-407c-94c4-68bda44b5ea1")))
+                                    {
+                                        Debug.WriteLine("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                                    }
                                     if (!curentRoute.Value.Equals(endRoute.RouteId))
                                     {
                                         var linkRouteList = await _unitOfWork.LinkRouteRepository.Query().Where(x => x.FirstRouteId.Equals(curentRoute.Value) || x.SecondRouteId.Equals(curentRoute.Value)).ToListAsync();
                                         foreach (LinkRoute route in linkRouteList)
                                         {
+                                            bool checkLink = true;
                                             var routeId = route.FirstRouteId;
                                             if (routeId.Equals(curentRoute.Value))
                                             {
@@ -328,6 +328,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                                 }
                                                 if (check && checkLink &&curentRoute.Count < routeCount && !routeId.Equals(startRoute.RouteId))
                                                 {
+                                                    Debug.WriteLine(routeId);
                                                     queue.Enqueue(new Node(routeId, curentRoute, stationLink));
                                                     countAppearRouteList[routeId] = ((int)countAppearRouteList[routeId]) - 1;
                                                 }
@@ -449,7 +450,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                                 route.StationList.Add(station.AsStationViewModel());
 
                                             }
-                                            route.StationList.Add(secondStation.AsStationViewModel());
+                                            //route.StationList.Add(secondStation.AsStationViewModel());
                                             route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
                                             resultPath.Add(route);
                                             var midRoute = new RouteViewModel()
@@ -481,7 +482,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                                                 var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
                                                 route.StationList.Add(station.AsStationViewModel());
                                             }
-                                            route.StationList.Add(firstStation.AsStationViewModel());
+                                            //route.StationList.Add(firstStation.AsStationViewModel());
                                             route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
                                             resultPath.Add(route);
                                             var midRoute = new RouteViewModel()
