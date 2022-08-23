@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using MongoDB.Driver;
@@ -66,19 +67,11 @@ namespace TourismSmartTransportation.Business.Implements.Shared
             };
         }
 
-        public async Task<List<NotificationCollection>> GetNotificationsByCustomer(string customerId, string type)
+        public async Task<List<NotificationCollection>> GetNotificationsByCustomer(string customerId, string type, bool isGetAll = false)
         {
-            if (string.IsNullOrEmpty(type))
-            {
-                return await _notificationService.Find(x => x.CustomerId == customerId)
-                                    .SortByDescending(x => x.Id)
-                                    .ToListAsync();
-            }
-
-            return await _notificationService.Find(x => x.CustomerId == customerId && x.Type == type)
+            return await _notificationService.Find(GetNotificationWithCondition(customerId, type, isGetAll))
                     .SortByDescending(x => x.Id)
                     .ToListAsync();
-
         }
 
         public async Task<Response> SaveNotification(SaveNotificationModel noti)
@@ -101,6 +94,20 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 StatusCode = 200,
                 Message = "Tạo mới thành công!"
             };
+        }
+
+        private Expression<Func<NotificationCollection, bool>> GetNotificationWithCondition(string customerId, string type, bool isGetAll = false)
+        {
+            if (isGetAll && string.IsNullOrEmpty(type)) // lấy tất cả thông báo
+                return x => x.CustomerId == customerId;
+
+            if (isGetAll) // lấy tất cả thông báo với type cụ thể
+                return x => x.CustomerId == customerId && x.Type == type;
+
+            if (string.IsNullOrEmpty(type)) // chỉ lấy những thông báo active
+                return x => x.CustomerId == customerId && x.Status == 1;
+
+            return x => x.CustomerId == customerId && x.Type == type && x.Status == 1; // chỉ lấy những thông báo active và với type cụ thể
         }
     }
 }

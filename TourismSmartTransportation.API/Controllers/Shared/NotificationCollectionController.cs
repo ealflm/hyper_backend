@@ -19,9 +19,9 @@ namespace TourismSmartTransportation.API.Controllers.Shared
 
         [HttpGet]
         [Route(ApiVer1Url.Customer.Notification + "/{customerId}")]
-        public async Task<ActionResult<NotificationCollection>> GetNotificationsByCustomer(string customerId, string type)
+        public async Task<ActionResult<NotificationCollection>> GetNotificationsByCustomer(string customerId, string type, bool isGetAll = false)
         {
-            return SendResponse(await _service.GetNotificationsByCustomer(customerId, type));
+            return SendResponse(await _service.GetNotificationsByCustomer(customerId, type, isGetAll));
         }
 
         [HttpPut]
