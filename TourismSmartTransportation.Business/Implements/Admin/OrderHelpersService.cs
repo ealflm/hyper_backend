@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Shared;
@@ -20,11 +21,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         private readonly IPackageService _packageService;
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
-        public OrderHelpersService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IPackageService packageService, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
+        private IConfiguration _configuration;
+        public OrderHelpersService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IPackageService packageService, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
         {
             _packageService = packageService;
             _firebaseCloud = firebaseCloud;
             _notificationCollection = notificationCollection;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -262,7 +265,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     Content = $"Đối tác nhận 90% hóa đơn",
                     OrderId = newOrder.OrderId,
                     CreatedDate = DateTime.Now,
-                    Amount = newOrder.TotalPrice * 0.9M,
+                    Amount = newOrder.TotalPrice * decimal.Parse(_configuration["Partner"]),
                     Status = 1,
                     WalletId = partnerWallet.WalletId
                 };
@@ -292,7 +295,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 Content = $"Hệ thống nhận 10% hóa đơn",
                 OrderId = newOrder.OrderId,
                 CreatedDate = DateTime.Now,
-                Amount = newOrder.TotalPrice * 0.1M,
+                Amount = newOrder.TotalPrice * decimal.Parse(_configuration["Admin"]),
                 Status = 1,
                 WalletId = adminWallet.WalletId
             };
@@ -332,7 +335,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 else
                 {
                     currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(newOrder.CustomerId);
-                    mes += string.Format(" với gói dịch vụ giảm {0:N0}%.", (currentPackageIsUsed.DiscountValueTrip*100));
+                    mes += string.Format(" với gói dịch vụ giảm {0:N0}%.", (currentPackageIsUsed.DiscountValueTrip));
                     
                 }
 
@@ -428,7 +431,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         Content = $"Đối tác nhận 90% hóa đơn",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.UtcNow,
-                        Amount = order.TotalPrice * 0.9M,
+                        Amount = order.TotalPrice * decimal.Parse(_configuration["Partner"]),
                         Status = 1,
                         WalletId = partnerWallet.WalletId
                     };
@@ -453,7 +456,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         Content = $"Hệ thống nhận 10% hóa đơn",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.UtcNow,
-                        Amount = order.TotalPrice * 0.1M,
+                        Amount = order.TotalPrice * decimal.Parse(_configuration["Admin"]),
                         Status = 1,
                         WalletId = adminWallet.WalletId
                     };

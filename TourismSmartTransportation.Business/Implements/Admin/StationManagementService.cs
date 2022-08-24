@@ -15,13 +15,16 @@ using Azure.Storage.Blobs;
 using TourismSmartTransportation.Business.CommonModel;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
     public class StationManagementService : BaseService, IStationManagementService
     {
-        public StationManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private IConfiguration _configuration;
+        public StationManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
         {
+            _configuration = configuration;
         }
 
         public async Task<Response> AddStation(AddStationViewModel model)
@@ -44,7 +47,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Get,
-                    RequestUri = new Uri("https://api.mapbox.com/directions/v5/mapbox/walking/"+x.Longitude+","+x.Latitude+";"+station.Longitude+","+station.Latitude+ "?overview=simplified&geometries=geojson&access_token=pk.eyJ1Ijoic2FuZ2RlcHRyYWkiLCJhIjoiY2w0bXFvaDRwMW9uZjNpbWtpMjZ3eGxnbCJ9.2gQ3NUL1eBYTwP1Q_qS34A")
+                    RequestUri = new Uri(_configuration["MapBox:uri"]+x.Longitude+","+x.Latitude+";"+station.Longitude+","+station.Latitude+ _configuration["MapBox:endUri"])
                 };
                 using (var response = await client.SendAsync(request))
                 {
@@ -169,7 +172,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     var request = new HttpRequestMessage
                     {
                         Method = HttpMethod.Get,
-                        RequestUri = new Uri("https://api.mapbox.com/directions/v5/mapbox/walking/" + x.Longitude + "," + x.Latitude + ";" + station.Longitude + "," + station.Latitude + "?overview=simplified&geometries=geojson&access_token=pk.eyJ1Ijoic2FuZ2RlcHRyYWkiLCJhIjoiY2w0bXFvaDRwMW9uZjNpbWtpMjZ3eGxnbCJ9.2gQ3NUL1eBYTwP1Q_qS34A")
+                        RequestUri = new Uri(_configuration["MapBox:uri"] + x.Longitude + "," + x.Latitude + ";" + station.Longitude + "," + station.Latitude + _configuration["MapBox:endUri"])
                     };
                     using (var response = await client.SendAsync(request))
                     {

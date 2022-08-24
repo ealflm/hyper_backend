@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using GeoCoordinatePortable;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
@@ -39,19 +40,21 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
         private IPackageService _packageService;
-        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IOrderHelpersService orderHelpers, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IPackageService packageService) : base(unitOfWork, blobServiceClient)
+        private static IConfiguration _configuration;
+        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IOrderHelpersService orderHelpers, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IPackageService packageService, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
         {
             orderheplper = orderHelpers;
             _firebaseCloud = firebaseCloud;
             _notificationCollection = notificationCollection;
             _packageService = packageService;
+            _configuration = configuration;
         }
 
         public async Task<List<List<RouteViewModel>>> FindBusTrip(BusTripSearchModel model)
         {
 
-            string mapboxUri = "https://api.mapbox.com/directions/v5/mapbox/walking/";
-            string endMapboxUri = "?overview=simplified&geometries=geojson&access_token=pk.eyJ1Ijoic2FuZ2RlcHRyYWkiLCJhIjoiY2w0bXFvaDRwMW9uZjNpbWtpMjZ3eGxnbCJ9.2gQ3NUL1eBYTwP1Q_qS34A";
+            string mapboxUri = _configuration["MapBox:uri"];
+            string endMapboxUri = _configuration["MapBox:endUri"];
             var result = new List<List<RouteViewModel>>();
             var stationList = await _unitOfWork.StationRepository.Query().ToArrayAsync();
             List<Station> startList = new List<Station>();
@@ -143,6 +146,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             
             startList.Add(startStation);
+            int linkStationCount = 0;
             var linkStartStationList = await _unitOfWork.LinkStationRepository.Query().Where(x => x.FirstStationId.Equals(startStation.StationId)).ToListAsync();
             foreach(var x in linkStartStationList)
             {
@@ -151,16 +155,15 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 {
                     var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
                     if(nextStation != null)
-                    { 
-                            startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                            break;
+                    {
+                        linkStationCount++;
+                        startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                        break;
                         
                     }
                 }
             }
             linkStartStationList = await _unitOfWork.LinkStationRepository.Query().Where(x => x.SecondStationId.Equals(startStation.StationId)).ToListAsync();
-            if (linkStartStationList.Count != 0)
-            {
                 foreach (var x in linkStartStationList)
                 {
                     var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(x.FirstStationId)).ToListAsync();
@@ -170,21 +173,20 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         if (nextStation != null)
                         {
 
-
-                                startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                                break;
+                            linkStationCount++;
+                            startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                            break;
                             
                         }
                     }
                 }
-            }
-            else
+            if (linkStationCount == 0)
             {
-                for(int i=0; i < stationList.Length; i++)
+                for (int i = 0; i < stationList.Length; i++)
                 {
                     var fromLocation = new GeoCoordinate((double)startStation.Latitude, (double)startStation.Longitude);
                     var toLocation = new GeoCoordinate((double)stationList[i].Latitude, (double)stationList[i].Longitude);
-                    if (fromLocation.GetDistanceTo(toLocation)<=200)
+                    if (fromLocation.GetDistanceTo(toLocation) <= 200)
                     {
                         var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(stationList[i])).ToListAsync();
                         foreach (var y in stationRoutesTmp)
@@ -192,14 +194,15 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
                             if (nextStation != null)
                             {
-                                    startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                                    break;
+                                startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                                break;
                             }
                         }
                     }
                 }
             }
             endList.Add(endStation);
+            linkStationCount = 0;
             var linkEndStationList = await _unitOfWork.LinkStationRepository.Query().Where(x => x.FirstStationId.Equals(endStation.StationId)).ToListAsync();
             foreach (var x in linkEndStationList)
             {
@@ -209,7 +212,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
                     if (nextStation != null)
                     {
-                            endList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                        linkStationCount++;
+                        endList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
                         break;
                     }
                 }
@@ -226,9 +230,31 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     {
                         if ((double)disStart[nextStation.StationId] < (double)disStart[y.StationId])
                         {
-
+                            linkStationCount++;
                             endList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
                             break;
+                        }
+                    }
+                }
+            }
+
+            if (linkStationCount == 0)
+            {
+                for (int i = 0; i < stationList.Length; i++)
+                {
+                    var fromLocation = new GeoCoordinate((double)endStation.Latitude, (double)endStation.Longitude);
+                    var toLocation = new GeoCoordinate((double)stationList[i].Latitude, (double)stationList[i].Longitude);
+                    if (fromLocation.GetDistanceTo(toLocation) <= 200)
+                    {
+                        var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(stationList[i])).ToListAsync();
+                        foreach (var y in stationRoutesTmp)
+                        {
+                            var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
+                            if (nextStation != null)
+                            {
+                                startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                                break;
+                            }
                         }
                     }
                 }
@@ -626,7 +652,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Đối tác gửi lại 90% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.9M),
+                        Amount = -(refundPrice * decimal.Parse(_configuration["Partner"])),
                         Status = 1,
                         WalletId = partnerWallet.WalletId
                     };
@@ -646,7 +672,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Hệ Thống Gửi lại 10% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.1M),
+                        Amount = -(refundPrice * decimal.Parse(_configuration["Admin"])),
                         Status = 1,
                         WalletId = adminWallet.WalletId
                     };
@@ -703,7 +729,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Đối tác gửi tiền hoa hồng lại cho hệ thống",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -priceAfterRefunding * 0.1M, // xét dấu âm cho giao dịch trừ tiền
+                        Amount = -priceAfterRefunding * decimal.Parse(_configuration["Admin"]), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = partnerWallet.WalletId
                     };
@@ -723,7 +749,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Hệ thống nhận tiền hoa hồng từ đối tác",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = priceAfterRefunding * 0.1M,
+                        Amount = priceAfterRefunding * decimal.Parse(_configuration["Admin"]),
                         Status = 1,
                         WalletId = adminWallet.WalletId
                     };
@@ -947,7 +973,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Đối tác gửi lại 90% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.9M), // xét dấu âm cho giao dịch trừ tiền
+                        Amount = -(refundPrice * decimal.Parse(_configuration["Partner"])), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = partnerWallet.WalletId
                     };
@@ -967,7 +993,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Hệ Thống Gửi lại 10% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.1M), // xét dấu âm cho giao dịch trừ tiền
+                        Amount = -(refundPrice * decimal.Parse(_configuration["Admin"])), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = adminWallet.WalletId
                     };
@@ -1025,7 +1051,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Đối tác gửi tiền hoa hồng lại cho hệ thống",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -priceAfterRefunding * 0.1M, // xét dấu âm cho giao dịch trừ tiền
+                        Amount = -priceAfterRefunding * decimal.Parse(_configuration["Admin"]), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = partnerWallet.WalletId
                     };
@@ -1045,7 +1071,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Content = $"Hệ thống nhận tiền hoa hồng từ đối tác",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = priceAfterRefunding * 0.1M,
+                        Amount = priceAfterRefunding * decimal.Parse(_configuration["Admin"]),
                         Status = 1,
                         WalletId = adminWallet.WalletId
                     };
@@ -1173,7 +1199,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
         public static string DecryptString(string cipherText)
         {
-            string key = "b14pa58l8aee4133bhce2ea2315b1916";
+            string key = _configuration["QRKey"];
             byte[] iv = new byte[16];
             byte[] buffer = Convert.FromBase64String(cipherText);
 
