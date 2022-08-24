@@ -16,6 +16,7 @@ using System.Security.Cryptography;
 using System.IO;
 using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.SearchModel.Shared.NotificationCollection;
+using Microsoft.Extensions.Configuration;
 
 namespace TourismSmartTransportation.Business.Implements.Admin
 {
@@ -23,10 +24,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
     {
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
-        public CardManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
+        private static IConfiguration _configuration;
+        public CardManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
         {
             _firebaseCloud = firebaseCloud;
             _notificationCollection = notificationCollection;
+            _configuration = configuration;
         }
 
         public async Task<Response> Create(string uid)
@@ -116,7 +119,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         }
         public static string DecryptString(string cipherText)
         {
-            string key = "b14pa58l8aee4133bhce2ea2315b1916";
+            string key = _configuration["QRKey"];
             byte[] iv = new byte[16];
             byte[] buffer = Convert.FromBase64String(cipherText);
 

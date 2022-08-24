@@ -34,7 +34,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             _notificationCollection = notificationCollection;
         }
 
-        public static string DecryptString(string cipherText)
+       /* public static string DecryptString(string cipherText)
         {
             string key = "b14pa58l8aee4133bhce2ea2315b1916";
             byte[] iv = new byte[16];
@@ -57,7 +57,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     }
                 }
             }
-        }
+        }*/
 
         public async Task<PriceBookingViewModel> GetPrice(decimal distance, int seat)
         {
