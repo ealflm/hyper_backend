@@ -19,6 +19,9 @@ namespace TourismSmartTransportation.Business.Hubs.Models
         // Thuộc tính của driver
         public double DistanceBetween { get; set; } // Khoảng cách giữa khách hàng và tài xế.
         public double Point { get; set; } // Điểm số của driver, hệ thống sẽ dựa trên điểm số này để tìm kiếm và phân bổ các yêu cầu đặt xe cho tài xế
+        public double FeedbackPoint { get; set; }
+        public string VehicleName { get; set; }
+        public string LicensePlates { get; set; }
 
 
         // Thuộc tính của customer
