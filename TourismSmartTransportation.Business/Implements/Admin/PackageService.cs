@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
@@ -361,10 +362,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             CustomerPackagesHistorySearchModel cusPacHisModel = new CustomerPackagesHistorySearchModel() { CustomerId = customer.CustomerId };
             var packageHisList = await _cusPacHisService.GetCustomerPackageHistory(cusPacHisModel);
-            var currentPackageIsUsed = (await GetCurrentPackageIsUsed(customer.CustomerId)).PackageId;
+            var currentPackageIsUsed = (await GetCurrentPackageIsUsed(customer.CustomerId));
             var packagesList = await _unitOfWork.PackageRepository
                                 .Query()
-                                .Where(x => x.PackageId != currentPackageIsUsed)
+                                .Where(CheckPackageIsUsed(currentPackageIsUsed))
                                 .Where(x => x.Status == 1)
                                 .Select(x => x.AsPackageViewModel())
                                 .ToListAsync();
@@ -386,6 +387,16 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 PageSize = GetPageSize(model.ItemsPerPage, totalRecord),
                 TotalItems = totalRecord
             };
+        }
+
+        private Expression<Func<Package, bool>> CheckPackageIsUsed(CurrentPackageIsUsedModel package = null)
+        {
+            if (package != null)
+            {
+                return x => x.PackageId != package.PackageId;
+            }
+
+            return x => true;
         }
     }
 }
