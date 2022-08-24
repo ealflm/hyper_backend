@@ -187,9 +187,23 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(newOrder.CustomerId);
                 if (currentPackageIsUsed != null && order.Distance != null)
                 {
-                    var distancesNow = currentPackageIsUsed.CurrentDistances + order.Distance;
-                    var cardSwipesNow = currentPackageIsUsed.CurrentCardSwipes + 1;
-                    
+                    dynamic distancesNow = null;
+                    dynamic cardSwipesNow = null;
+                    dynamic numberOfTripsNow = null;
+
+                    if (newOrder.ServiceTypeId != null &&
+                        newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID))
+                    {
+                        distancesNow = currentPackageIsUsed.CurrentDistances + order.Distance;
+                        cardSwipesNow = currentPackageIsUsed.CurrentCardSwipes + 1;
+                    }
+                    else if (newOrder.ServiceTypeId != null &&
+                                newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BOOK_SERVICE_ID))
+                    {
+                        numberOfTripsNow = currentPackageIsUsed.CurrentNumberOfTrips + 1;
+                    }
+
+
                     // Sử dụng package cho trường hợp đi xe buýt
                     if (newOrder.ServiceTypeId != null &&
                         newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID) &&
@@ -202,9 +216,12 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     }
                     // Sử dụng package cho trường hợp đặt xe
                     else if (newOrder.ServiceTypeId != null &&
-                                newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BOOK_SERVICE_ID))
+                                newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BOOK_SERVICE_ID) &&
+                                numberOfTripsNow <= currentPackageIsUsed.LimitNumberOfTrips)
                     {
-                        // write code using package for booking service
+                        orderPrice = newOrder.TotalPrice * currentPackageIsUsed.DiscountValueTrip;
+                        newOrder.TotalPrice = orderPrice;
+                        isUsingPackage = true;
                     }
                 }
             }
@@ -325,7 +342,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var serviceTypeNoti = await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value);
             var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
             CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-            string mes = string.Format(elGR,content + " với hóa đơn {0:N0} VNĐ", order.TotalPrice);
+            string mes = string.Format(elGR, content + " với hóa đơn {0:N0} VNĐ", order.TotalPrice);
             if (isUsingPackage)
             {
                 if (newOrder.ServiceTypeId != null && newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID))
@@ -336,7 +353,6 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 {
                     currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(newOrder.CustomerId);
                     mes += string.Format(" với gói dịch vụ giảm {0:N0}%.", (currentPackageIsUsed.DiscountValueTrip));
-                    
                 }
 
             }
