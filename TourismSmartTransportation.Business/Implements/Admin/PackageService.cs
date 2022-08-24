@@ -335,6 +335,14 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             }
                         }
 
+                        // kiểm tra xem gói dịch vụ đã xài hết chưa
+                        if ((result.CurrentDistances >= result.LimitDistances || result.CurrentCardSwipes >= result.LimitCardSwipes) &&
+                            result.CurrentNumberOfTrips >= result.LimitNumberOfTrips
+                        )
+                        {
+                            result = null;
+                        }
+
                         return result;
                     }
                 }
