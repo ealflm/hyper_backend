@@ -1,10 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using TourismSmartTransportation.Business.Hubs.Models;
 
 namespace TourismSmartTransportation.Business.Hubs
 {
     public interface INotificationHub
     {
-        Task FindDriver(string json, string isClient = "true");
+        Task FindDriver(string json, string isClient = "true", string isBackgroudService = "false");
         string GetDriversListMatching(string json);
         Task<bool> CheckAcceptedRequest(string json, string status);
         Task<bool> CancelBooking(string customerId);
@@ -18,6 +21,6 @@ namespace TourismSmartTransportation.Business.Hubs
         Task<string> GetDriverStatus(string driverId);
         Task<string> GetCustomerStatus(string customerId);
         Task LoadVehiclesList();
-        Task AutoCanceledBookingRequestAfterSpecificTime();
+        Task<Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>>> AutoCanceledBookingRequestAfterSpecificTime();
     }
 }

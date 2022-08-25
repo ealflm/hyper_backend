@@ -21,6 +21,11 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
             }
         }
 
+        public Dictionary<T, HashSet<string>> DictionaryConnections()
+        {
+            return _connections;
+        }
+
         public void Add(T key, string connectionId)
         {
             lock (_connections)
