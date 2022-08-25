@@ -60,7 +60,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             OrderDetailsInfo orderDetails = new OrderDetailsInfo()
             {
                 PackageId = package.PackageId,
-                Content = ServiceTypeDefaultData.PURCHASE_PACKAGE_SERVICE_CONTENT,
+                Content = ServiceTypeDefaultData.PURCHASE_PACKAGE_SERVICE_CONTENT+" "+ package.Name ,
                 Price = package.Price,
                 Quantity = 1,
             };

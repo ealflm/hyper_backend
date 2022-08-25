@@ -38,8 +38,22 @@ namespace TourismSmartTransportation.Business.Implements.Admin
         public async Task<Response> CreateOrder(CreateOrderModel order)
         {
             var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(order.CustomerId)).FirstOrDefaultAsync();
+            var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
             if (wallet.AccountBalance < order.TotalPrice)
             {
+                var mesWallet = "Số dư trong tài khoản của quý khách không không đủ để thực hiện dịch vụ";
+                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo số dư", mesWallet);
+                SaveNotificationModel notiWlalet = new SaveNotificationModel()
+                {
+                    CustomerId = customer.CustomerId.ToString(),
+                    CustomerFirstName = customer.FirstName,
+                    CustomerLastName = customer.LastName,
+                    Title = "Thông báo số dư",
+                    Message = mesWallet,
+                    Type = "Wallet",
+                    Status = (int)NotificationStatus.Active
+                };
+                await _notificationCollection.SaveNotification(notiWlalet);
                 return new()
                 {
                     StatusCode = 400,
@@ -77,7 +91,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         Status = 1
                     };
                     await _unitOfWork.OrderDetailOfPackageRepository.Add(orderDetail);
-                    content = ServiceTypeDefaultData.PURCHASE_PACKAGE_SERVICE_CONTENT;
+                    content = x.Content;
                     newOrder.Status = (int)OrderStatus.Done; // Cập nhật lại trạng thái order đổi với service 'mua gói dịch vụ' 
                     isUsingService = false;
                 }
@@ -279,7 +293,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 var partnerTransaction = new Transaction()
                 {
                     TransactionId = Guid.NewGuid(),
-                    Content = $"Đối tác nhận 90% hóa đơn",
+                    Content = $"Đối tác nhận " + (decimal.Parse(_configuration["Partner"]) * 100) + "% hóa đơn",
                     OrderId = newOrder.OrderId,
                     CreatedDate = DateTime.Now,
                     Amount = newOrder.TotalPrice * decimal.Parse(_configuration["Partner"]),
@@ -309,7 +323,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             var adminTransaction = new Transaction()
             {
                 TransactionId = Guid.NewGuid(),
-                Content = $"Hệ thống nhận 10% hóa đơn",
+                Content = $"Hệ thống nhận " + (decimal.Parse(_configuration["Admin"]) * 100) + "% hóa đơn",
                 OrderId = newOrder.OrderId,
                 CreatedDate = DateTime.Now,
                 Amount = newOrder.TotalPrice * decimal.Parse(_configuration["Admin"]),
@@ -340,7 +354,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             await _unitOfWork.SaveChangesAsync();
             var serviceTypeNoti = await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value);
-            var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
+            
             CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
             string mes = string.Format(elGR, content + " với hóa đơn {0:N0} VNĐ", order.TotalPrice);
             if (isUsingPackage)
@@ -444,7 +458,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     var partnerTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Đối tác nhận 90% hóa đơn",
+                        Content = $"Đối tác nhận " + (decimal.Parse(_configuration["Partner"]) * 100) + "% hóa đơn",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.UtcNow,
                         Amount = order.TotalPrice * decimal.Parse(_configuration["Partner"]),
@@ -469,7 +483,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     var adminTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Hệ thống nhận 10% hóa đơn",
+                        Content = $"Hệ thống nhận " + (decimal.Parse(_configuration["Admin"]) * 100) + "% hóa đơn",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.UtcNow,
                         Amount = order.TotalPrice * decimal.Parse(_configuration["Admin"]),
