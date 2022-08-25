@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
@@ -30,10 +31,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         private string mesPayPal = "";
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
-        public DepositService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
+        private IConfiguration _configuration;
+        public DepositService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
         {
             _firebaseCloud = firebaseCloud;
             _notificationCollection = notificationCollection;
+            _configuration = configuration;
         }
 
         public async Task<DepositViewModel> GetOrderId(DepositSearchModel model)
@@ -78,11 +81,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Get,
-                    RequestUri = new Uri("https://currency-converter18.p.rapidapi.com/api/v1/convert?from=VND&to=USD&amount=" + model.Amount),
+                    RequestUri = new Uri(_configuration["CurrencyConverter:Uri"] + model.Amount),
                     Headers =
                 {
-                    { "X-RapidAPI-Key", "f71b73fa25msh577d06701f5f1fap1160ddjsne5ea8a4de278" },
-                    { "X-RapidAPI-Host", "currency-converter18.p.rapidapi.com" },
+                    { "X-RapidAPI-Key", _configuration["CurrencyConverter:X-RapidAPI-Key"] },
+                    { "X-RapidAPI-Host", _configuration["CurrencyConverter:X-RapidAPI-Host"] },
                 },
                 };
                 using (var response = await client.SendAsync(request))
@@ -92,8 +95,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var start = body.IndexOf("convertedAmount") + 17;
                     model.Amount = decimal.Parse(body.Substring(start, 4));
                 }
-                var username = "AXZb2SctDtdMVaazixC9p-3WKxyBW2evpzldMqYi3rFn8UwEwzW_SU7Q6-upjLFWaGgBn14xOAWCIB_t";
-                var password = "EPOBnxf2gprkvwAGJSUInJa3TM0VSujkVNB7dY3ExgdJwT3bvl9syul1_JDl9p-jw1XUVaIXtqp3X7Zd";
+                var username = _configuration["PayPal:username"];
+                var password = _configuration["PayPal:password"];
                 string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1")
                                                .GetBytes(username + ":" + password));
                 var GrantType = new Dictionary<string, string>();
@@ -101,7 +104,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
-                    RequestUri = new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token"),
+                    RequestUri = new Uri(_configuration["PayPal:Uri1"]),
                     Headers =
                     {
                         { "Authorization", "Basic " + encoded }
@@ -121,7 +124,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
-                    RequestUri = new Uri("https://api-m.sandbox.paypal.com/v2/checkout/orders"),
+                    RequestUri = new Uri(_configuration["PayPal:Uri2"]),
                     Headers =
                     {
                         { "Authorization", "Bearer " + token}
@@ -142,10 +145,10 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
             else
             {
-                string endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
-                string partnerCode = "MOMODJMX20220717";
-                string accessKey = "WehkypIRwPP14mHb";
-                string serectkey = "3fq8h4CqAAPZcTTb3nCDpFKwEkQDsZzz";
+                string endpoint = _configuration["MoMo:uri"];
+                string partnerCode = _configuration["MoMo:partnerCode"];
+                string accessKey = _configuration["MoMo:accessKey"];
+                string serectkey = _configuration["MoMo:serectkey"];
                 string orderInfo = "Hyper";
                 string redirectUrl = "hyper://customer.app?uid=" + uid + "&create-date=" + new DateTimeOffset(transaction.CreatedDate).ToUnixTimeSeconds();
                 string ipnUrl = "https://tourism-smart-transportation-api.azurewebsites.net/api/v1.0/customer/deposit-momo"; //lưu ý: notifyurl không được sử dụng localhost, có thể sử dụng ngrok để public localhost trong quá trình test
@@ -258,8 +261,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var order = await _unitOfWork.OrderRepository.GetById(transaction.OrderId);
             var client = new HttpClient();
 
-            var username = "AXZb2SctDtdMVaazixC9p-3WKxyBW2evpzldMqYi3rFn8UwEwzW_SU7Q6-upjLFWaGgBn14xOAWCIB_t";
-            var password = "EPOBnxf2gprkvwAGJSUInJa3TM0VSujkVNB7dY3ExgdJwT3bvl9syul1_JDl9p-jw1XUVaIXtqp3X7Zd";
+            var username = _configuration["PayPal:username"];
+            var password = _configuration["PayPal:password"];
             string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1")
                                            .GetBytes(username + ":" + password));
             var GrantType = new Dictionary<string, string>();
@@ -267,7 +270,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token"),
+                RequestUri = new Uri(_configuration["PayPal:Uri1"]),
                 Headers =
                     {
                         { "Authorization", "Basic " + encoded }
@@ -286,7 +289,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri("https://api.sandbox.paypal.com/v2/checkout/orders/" + id + "/capture"),
+                RequestUri = new Uri(_configuration["PayPal:Uri2"] + id + "/capture"),
                 Headers =
                     {
                         { "Authorization", "Bearer " + token }

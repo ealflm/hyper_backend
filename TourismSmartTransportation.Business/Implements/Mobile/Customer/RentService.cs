@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
@@ -28,15 +29,17 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
     {
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
-        public RentService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
+        private static IConfiguration _configuration;
+        public RentService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
         {
             _firebaseCloud = firebaseCloud;
             _notificationCollection = notificationCollection;
+            _configuration = configuration;
         }
 
         public static string DecryptString(string cipherText)
         {
-            string key = "b14pa58l8aee4133bhce2ea2315b1916";
+            string key = _configuration["QRKey"];
             byte[] iv = new byte[16];
             byte[] buffer = Convert.FromBase64String(cipherText);
 
@@ -294,7 +297,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Get,
-                    RequestUri = new Uri("https://holidays.abstractapi.com/v1/?api_key=ba043ce3a5274588ae52c2b1c4a6aebc&country=VN&year=" + dateNow.Year + "&month=" + dateNow.Month + "&day=" + dateNow.Day),
+                    RequestUri = new Uri(_configuration["Holiday"] + dateNow.Year + "&month=" + dateNow.Month + "&day=" + dateNow.Day),
                 };
                 using (var response = await client.SendAsync(request))
                 {
@@ -341,7 +344,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri("https://holidays.abstractapi.com/v1/?api_key=ba043ce3a5274588ae52c2b1c4a6aebc&country=VN&year=" + dateNow.Year + "&month=" + dateNow.Month + "&day=" + dateNow.Day),
+                RequestUri = new Uri(_configuration["holiday"] + dateNow.Year + "&month=" + dateNow.Month + "&day=" + dateNow.Day),
             };
             using (var response = await client.SendAsync(request))
             {
