@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
 using TourismSmartTransportation.Business.Interfaces.Shared;
@@ -20,10 +21,12 @@ namespace TourismSmartTransportation.Business.Implements.Shared
     {
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
-        public CustomerTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
+        private static IConfiguration _configuration;
+        public CustomerTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
         {
             _firebaseCloud = firebaseCloud;
             _notificationCollection = notificationCollection;
+            _configuration = configuration;
         }
 
         public async Task<List<CustomerTripViewModel>> GetCustomerTrips()
@@ -164,7 +167,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 }
                 decimal returnPrice = orderDetailList[0].PriceOfRentingServiceId != null ? orderDetailList[1].Price : orderDetailList[0].Price;
                 decimal bonusPrice = oldOrder.TotalPrice - returnPrice;
-                bonusPrice = bonusPrice * 0.1M;
+                bonusPrice = bonusPrice * decimal.Parse(_configuration["Admin"]);
                 var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customerTrip.CustomerId)).FirstOrDefaultAsync();
 
                 // Tạo transaction khi customer sử dụng dịch vụ
@@ -192,15 +195,15 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 var partnerTransaction = new Transaction()
                 {
                     TransactionId = Guid.NewGuid(),
-                    Content = $"Đối tác trả lại 90% phí thu hồi phương tiện",
+                    Content = $"Đối tác trả lại " + (decimal.Parse(_configuration["Partner"]) * 100) + "% phí thu hồi phương tiện",
                     OrderId = oldOrder.OrderId,
                     CreatedDate = DateTime.Now,
-                    Amount = -(returnPrice * 0.9M),
+                    Amount = -(returnPrice * decimal.Parse(_configuration["Partner"])),
                     Status = 1,
                     WalletId = partnerWallet.WalletId
                 };
                 // Cập nhật lại ví của partner
-                partnerWallet.AccountBalance -= returnPrice * 0.9M;
+                partnerWallet.AccountBalance -= returnPrice * decimal.Parse(_configuration["Partner"]);
                 await _unitOfWork.TransactionRepository.Add(partnerTransaction);
                 _unitOfWork.WalletRepository.Update(partnerWallet);
 
@@ -214,16 +217,16 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 var adminTransaction = new Transaction()
                 {
                     TransactionId = Guid.NewGuid(),
-                    Content = $"Hệ thống trả lại 10% phí thu hồi phương tiện",
+                    Content = $"Hệ thống trả lại " + (decimal.Parse(_configuration["Admin"]) * 100) + "% phí thu hồi phương tiện",
                     OrderId = oldOrder.OrderId,
                     CreatedDate = DateTime.Now,
-                    Amount = -(returnPrice * 0.1M),
+                    Amount = -(returnPrice * decimal.Parse(_configuration["Admin"])),
                     Status = 1,
                     WalletId = adminWallet.WalletId
                 };
 
                 CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-                adminWallet.AccountBalance -= returnPrice * 0.1M;
+                adminWallet.AccountBalance -= returnPrice * decimal.Parse(_configuration["Admin"]);
                 await _unitOfWork.TransactionRepository.Add(adminTransaction);
                 _unitOfWork.WalletRepository.Update(adminWallet);
                 var customer = await _unitOfWork.CustomerRepository.GetById(customerTrip.CustomerId);
@@ -233,7 +236,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                     var bonusTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = "Thưởng thêm phí hoàn trả phương tiện đúng trạm 10% hóa đơn thuê phương tiện không tín phí thu hồi",
+                        Content = "Thưởng thêm phí hoàn trả phương tiện đúng trạm " + (decimal.Parse(_configuration["Admin"]) * 100) + "% hóa đơn thuê phương tiện không tín phí thu hồi",
                         OrderId = oldOrder.OrderId,
                         CreatedDate = DateTime.Now,
                         Amount = bonusPrice,

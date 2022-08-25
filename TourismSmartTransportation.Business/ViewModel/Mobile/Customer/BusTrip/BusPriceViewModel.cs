@@ -12,5 +12,6 @@ namespace TourismSmartTransportation.Business.ViewModel.Mobile.Customer.BusTrip
         public int TotalStation { get; set; }
         public decimal Distance { get; set; }
         public decimal Price { get; set; }
+        public bool IsUsePackage { get; set; }
     }
 }

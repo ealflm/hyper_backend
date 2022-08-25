@@ -630,7 +630,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     {
                         WalletId = wallet.WalletId,
                         Amount = refundPrice,
-                        Content = "Hoàn trả tiền dư",
+                        Content = "Hoàn trả tiền dư từ dịch vụ xe buýt",
                         CreatedDate = DateTime.Now,
                         OrderId = order.OrderId,
                         Status = 1,
@@ -649,7 +649,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var partnerTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Đối tác gửi lại 90% tiền thừa",
+                        Content = $"Đối tác gửi lại "+(decimal.Parse(_configuration["Partner"])*100)+"% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
                         Amount = -(refundPrice * decimal.Parse(_configuration["Partner"])),
@@ -669,7 +669,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var adminTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Hệ Thống Gửi lại 10% tiền thừa",
+                        Content = $"Hệ Thống Gửi lại " + (decimal.Parse(_configuration["Admin"]) * 100) + "% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
                         Amount = -(refundPrice * decimal.Parse(_configuration["Admin"])),
@@ -970,7 +970,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var partnerTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Đối tác gửi lại 90% tiền thừa",
+                        Content = $"Đối tác gửi lại " + (decimal.Parse(_configuration["Partner"]) * 100) + "% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
                         Amount = -(refundPrice * decimal.Parse(_configuration["Partner"])), // xét dấu âm cho giao dịch trừ tiền
@@ -990,7 +990,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var adminTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Hệ Thống Gửi lại 10% tiền thừa",
+                        Content = $"Hệ Thống Gửi lại " + (decimal.Parse(_configuration["Admin"]) * 100) + "% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
                         Amount = -(refundPrice * decimal.Parse(_configuration["Admin"])), // xét dấu âm cho giao dịch trừ tiền
@@ -1239,13 +1239,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
             var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
             var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
-
+            var currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(customerId);
             var busPrice = new BusPriceViewModel()
             {
                 Name = route.Name,
                 Distance = route.Distance,
                 TotalStation = route.TotalStation,
-                Price = basePrice.Price
+                Price = basePrice.Price,
+                IsUsePackage = currentPackageIsUsed != null
             };
             return busPrice;
         }
