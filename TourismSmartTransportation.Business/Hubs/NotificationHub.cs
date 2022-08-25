@@ -577,7 +577,7 @@ namespace TourismSmartTransportation.Business.Hubs
                     {
                         await Clients.Client(cId).SendAsync("BookingRequest", new
                         {
-                            StatusCode = "200",
+                            StatusCode = 200,
                             Driver = driver,
                             Customer = response.Customer,
                             Type = "Booking",
