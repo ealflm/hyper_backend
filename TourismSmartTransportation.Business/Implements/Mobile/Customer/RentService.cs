@@ -378,6 +378,20 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 _unitOfWork.CustomerTripRepository.Update(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
             }
+            var customer = await _unitOfWork.CustomerRepository.GetById(customerTrip.CustomerId);
+            string mes = "Quý khách vừa yêu cầu trả phương tiện thành công. Vui lòng đợi nhân viên trạm thuê xác nhận trả phương tiện.";
+            await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Yêu cầu trả phương tiện", mes);
+            SaveNotificationModel noti = new SaveNotificationModel()
+            {
+                CustomerId = customer.CustomerId.ToString(),
+                CustomerFirstName = customer.FirstName,
+                CustomerLastName = customer.LastName,
+                Title = "Yêu cầu trả phương tiện",
+                Message = mes,
+                Type = "Renting",
+                Status = (int)NotificationStatus.Active
+            };
+            await _notificationCollection.SaveNotification(noti);
             return new()
             {
                 StatusCode = 200,
