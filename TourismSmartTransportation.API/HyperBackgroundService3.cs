@@ -35,37 +35,33 @@ namespace TourismSmartTransportation.API
                         _logger.LogInformation("Start HyperBackgroundService3: ExecuteAsync");
 
                         // // Inject service
-                        // var notificationHubScopeService = scope.ServiceProvider.GetRequiredService<INotificationHub>();
+                        var notificationHubScopeService = scope.ServiceProvider.GetRequiredService<INotificationHub>();
 
-                        // Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>> dic = new Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>>();
-                        // // Processing
-                        // dic = await notificationHubScopeService.AutoCanceledBookingRequestAfterSpecificTime();
+                        Dictionary<string, Tuple<TransferHubModel, string>> dic = new Dictionary<string, Tuple<TransferHubModel, string>>();
+                        // Processing
+                        dic = await notificationHubScopeService.AutoCanceledBookingRequestAfterSpecificTime();
 
-                        // foreach (var dicItem in dic)
-                        // {
-                        //     if (dic.GetValueOrDefault(dicItem.Key) != null)
-                        //     {
-                        //         foreach (var dicValue in dic.GetValueOrDefault(dicItem.Key).Item2)
-                        //         {
-                        //             foreach (var hashSetValue in dicValue.Value)
-                        //             {
-                        //                 await _hubcontext.Clients.Client(hashSetValue).SendAsync(dicItem.Value.Item1.Method,
-                        //                     new
-                        //                     {
-                        //                         StatusCode = dicItem.Value.Item1.StatusCode,
-                        //                         Type = dicItem.Value.Item1.Type,
-                        //                         Message = dicItem.Value.Item1.Message,
-                        //                         Driver = dicItem.Value.Item1.Driver,
-                        //                         Customer = dicItem.Value.Item1.Customer
-                        //                     }
-                        //                 );
-                        //             }
-                        //         }
-                        //     }
-                        // }
+                        foreach (var dicItem in dic)
+                        {
+                            if (dic.GetValueOrDefault(dicItem.Key) != null)
+                            {
+                                await _hubcontext.Clients.Client(dicItem.Value.Item2).SendAsync(dicItem.Value.Item1.Method,
+                                            new
+                                            {
+                                                StatusCode = dicItem.Value.Item1.StatusCode,
+                                                Type = dicItem.Value.Item1.Type,
+                                                Message = dicItem.Value.Item1.Message,
+                                                Driver = dicItem.Value.Item1.Driver,
+                                                Customer = dicItem.Value.Item1.Customer
+                                            }
+                                        );
+                            }
+                        }
 
-                        // _logger.LogInformation("=================== BACKGROUND SERVICE #3 ============");
-                        // _logger.LogInformation("=================== BACKGROUND SERVICE #3 ============");
+
+
+                        _logger.LogInformation("=================== BACKGROUND SERVICE #3 ============");
+                        _logger.LogInformation("=================== BACKGROUND SERVICE #3 ============");
 
                         // Interval in specific time
                         await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
