@@ -18,6 +18,14 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
             }
         }
 
+        public Dictionary<K, HashSet<V>> Maps
+        {
+            get
+            {
+                return _maps;
+            }
+        }
+
         public void Add(K key, V value)
         {
             lock (_maps)
@@ -72,6 +80,22 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
 
             return false;
 
+        }
+
+        public bool CheckExistedValue(V value)
+        {
+            foreach (var item in _maps)
+            {
+                foreach (var item1 in _maps.Values)
+                {
+                    if (item1.Contains(value))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public void Remove(K key, V value)

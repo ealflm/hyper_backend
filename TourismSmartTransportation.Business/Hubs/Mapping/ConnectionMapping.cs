@@ -21,6 +21,11 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
             }
         }
 
+        public Dictionary<T, HashSet<string>> DictionaryConnections()
+        {
+            return _connections;
+        }
+
         public void Add(T key, string connectionId)
         {
             lock (_connections)
@@ -30,6 +35,10 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
                 {
                     connections = new HashSet<string>();
                     _connections.Add(key, connections);
+                }
+                else
+                {
+                    connections.Clear();
                 }
 
                 lock (connections)
@@ -65,20 +74,25 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
         {
             lock (_connections)
             {
-                HashSet<string> connections;
-                if (!_connections.TryGetValue(key, out connections))
-                {
-                    return;
-                }
+                // HashSet<string> connections;
+                // if (!_connections.TryGetValue(key, out connections))
+                // {
+                //     return;
+                // }
 
-                lock (connections)
-                {
-                    connections.Remove(connectionId);
+                // lock (connections)
+                // {
+                //     connections.Remove(connectionId);
 
-                    if (connections.Count == 0)
-                    {
-                        _connections.Remove(key);
-                    }
+                //     if (connections.Count == 0)
+                //     {
+                //         _connections.Remove(key);
+                //     }
+                // }
+
+                if (_connections.ContainsKey(key))
+                {
+                    _connections.Remove(key);
                 }
             }
         }

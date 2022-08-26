@@ -25,7 +25,7 @@ namespace TourismSmartTransportation.API
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    // _logger.LogInformation("Start HyperBackgroundService2: ExecuteAsync");
+                    _logger.LogInformation("Start HyperBackgroundService2: ExecuteAsync");
 
                     // Inject service
                     var discountScopeService = scope.ServiceProvider.GetRequiredService<IDiscountService>();
@@ -46,7 +46,7 @@ namespace TourismSmartTransportation.API
                 }
 
             }
-            // _logger.LogInformation("End HyperBackgroundService2: ExecuteAsync");
+            _logger.LogInformation("End HyperBackgroundService2: ExecuteAsync");
         }
     }
 }

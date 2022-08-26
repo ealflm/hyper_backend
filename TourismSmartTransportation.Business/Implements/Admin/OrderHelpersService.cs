@@ -354,7 +354,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             await _unitOfWork.SaveChangesAsync();
             var serviceTypeNoti = await _unitOfWork.ServiceTypeRepository.GetById(order.ServiceTypeId.Value);
-            
+
             CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
             string mes = string.Format(elGR, content + " với hóa đơn {0:N0} VNĐ", order.TotalPrice);
             if (isUsingPackage)
