@@ -6,6 +6,7 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
 {
     public class AutoCancelMapping
     {
+        // ID | Model send/receive | connectionId 
         private Dictionary<string, Tuple<TransferHubModel, string>> _dicStore = new Dictionary<string, Tuple<TransferHubModel, string>>();
 
         public int Count

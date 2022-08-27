@@ -37,8 +37,8 @@ namespace TourismSmartTransportation.API
                         // // Inject service
                         var notificationHubScopeService = scope.ServiceProvider.GetRequiredService<INotificationHub>();
 
-                        Dictionary<string, Tuple<TransferHubModel, string>> dic = new Dictionary<string, Tuple<TransferHubModel, string>>();
                         // Processing
+                        Dictionary<string, Tuple<TransferHubModel, string>> dic = new Dictionary<string, Tuple<TransferHubModel, string>>();
                         dic = await notificationHubScopeService.AutoCanceledBookingRequestAfterSpecificTime();
 
                         foreach (var dicItem in dic)
@@ -57,8 +57,6 @@ namespace TourismSmartTransportation.API
                                         );
                             }
                         }
-
-
 
                         _logger.LogInformation("=================== BACKGROUND SERVICE #3 ============");
                         _logger.LogInformation("=================== BACKGROUND SERVICE #3 ============");
