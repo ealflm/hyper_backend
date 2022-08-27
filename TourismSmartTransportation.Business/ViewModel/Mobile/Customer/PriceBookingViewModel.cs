@@ -14,5 +14,6 @@ namespace TourismSmartTransportation.Business.ViewModel.Mobile.Customer
         public decimal FixedDistance { get; set; }
         public decimal PricePerKilometer { get; set; }
         public decimal TotalPrice { get; set; }
+        public decimal PriceAfterDiscount { get; set; }
     }
 }

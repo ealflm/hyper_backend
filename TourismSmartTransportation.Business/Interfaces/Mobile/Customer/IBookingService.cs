@@ -15,7 +15,7 @@ namespace TourismSmartTransportation.Business.Interfaces.Mobile.Customer
 {
     public interface IBookingService
     {
-        Task<PriceBookingViewModel> GetPrice(decimal distance, int seat);
+        Task<PriceBookingViewModel> GetPrice(decimal distance, int seat, Guid customerId);
         Task<Response> RefundBooking(double price, Guid customerId, string message = "");
     }
 }

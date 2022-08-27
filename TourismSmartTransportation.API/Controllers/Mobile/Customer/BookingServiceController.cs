@@ -25,9 +25,9 @@ namespace TourismSmartTransportation.API.Controllers.Mobile.Customer
 
         [HttpGet]
         [Route(ApiVer1Url.Customer.Booking)]
-        public async Task<IActionResult> GetPrice([FromQuery] decimal distance, [FromQuery] int seat)
+        public async Task<IActionResult> GetPrice([FromQuery] decimal distance, [FromQuery] int seat, [FromQuery] Guid customerId)
         {
-            return SendResponse(await _service.GetPrice(distance, seat));
+            return SendResponse(await _service.GetPrice(distance, seat, customerId));
         }
         
 
