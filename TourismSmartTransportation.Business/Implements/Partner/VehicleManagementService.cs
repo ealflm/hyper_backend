@@ -11,13 +11,16 @@ using Azure.Storage.Blobs;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.SearchModel.Partner.VehicelManagement;
 using TourismSmartTransportation.Business.ViewModel.Partner.VehicleManagement;
+using TourismSmartTransportation.Business.Hubs;
 
 namespace TourismSmartTransportation.Business.Implements.Partner
 {
     public class VehicleManagementService : BaseService, IVehicleManagementService
     {
-        public VehicleManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private INotificationHub _notificationHub;
+        public VehicleManagementService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, INotificationHub notificationHub) : base(unitOfWork, blobServiceClient)
         {
+            _notificationHub = notificationHub;
         }
 
         public async Task<Response> Create(CreateVehicleModel model)
@@ -61,6 +64,9 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             await _unitOfWork.VehicleRepository.Add(vehicle);
 
             await _unitOfWork.SaveChangesAsync();
+
+            // cập nhật lại danh sách driver cho notification hub
+            await _notificationHub.LoadVehiclesList();
 
             return new()
             {
@@ -138,15 +144,15 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 var customerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(y => y.VehicleId.Equals(x.Id)).ToListAsync();
                 decimal rate = 0;
                 int count = 0;
-                foreach(CustomerTrip y in customerTrip)
+                foreach (CustomerTrip y in customerTrip)
                 {
                     var feedback = await _unitOfWork.FeedbackForVehicleRepository.Query().Where(x => x.CustomerTripId.Equals(y.CustomerTripId)).FirstOrDefaultAsync();
-                    if(feedback != null)
+                    if (feedback != null)
                     {
                         rate += feedback.Rate;
                         count++;
                     }
-                    
+
                 }
                 if (count > 0)
                 {
