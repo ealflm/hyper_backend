@@ -544,22 +544,22 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             lastRoute.StationList.Add(customerStartPoint.AsStationViewModel());
                             resultPath.Add(lastRoute);
                             result.Add(resultPath);
-                            if (result.Count >= 2)
+                           /* if (result.Count >= 2)
                             {
                                 break;
-                            }
+                            }*/
                         }
                     }
-                    if (result.Count >= 2)
+                    /*if (result.Count >= 2)
                     {
                         break;
                     }
-                    Debug.WriteLine("truy vet " + DateTime.Now);
+                    Debug.WriteLine("truy vet " + DateTime.Now);*/
                 }
-                if (result.Count >= 2)
+               /* if (result.Count >= 2)
                 {
                     break;
-                }
+                }*/
             }
 
             return result;

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
+using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
 using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.MoMo;
@@ -28,10 +29,12 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
     {
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
-        public BookingService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection) : base(unitOfWork, blobServiceClient)
+        private IPackageService _packageService;
+        public BookingService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IPackageService packageService) : base(unitOfWork, blobServiceClient)
         {
             _firebaseCloud = firebaseCloud;
             _notificationCollection = notificationCollection;
+            _packageService = packageService;
         }
 
         /* public static string DecryptString(string cipherText)
@@ -59,7 +62,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
              }
          }*/
 
-        public async Task<PriceBookingViewModel> GetPrice(decimal distance, int seat)
+        public async Task<PriceBookingViewModel> GetPrice(decimal distance, int seat, Guid customerId)
         {
             var vehicleTypes = await _unitOfWork.VehicleTypeRepository.Query().Where(x => x.Seats == seat).ToListAsync();
             distance = distance / 1000;
@@ -84,7 +87,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     result.TotalPrice = priceTmp;
                 }
             }
-
+            var package = await _packageService.GetCurrentPackageIsUsed(customerId);
+            if(package != null)
+            {
+                result.PriceAfterDiscount = result.TotalPrice * package.DiscountValueTrip;
+            }
             return result;
         }
 
