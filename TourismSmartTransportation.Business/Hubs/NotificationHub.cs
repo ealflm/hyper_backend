@@ -2,12 +2,13 @@ using GeoCoordinatePortable;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
@@ -17,7 +18,6 @@ using TourismSmartTransportation.Business.Hubs.Store;
 using TourismSmartTransportation.Business.Interfaces.Admin;
 using TourismSmartTransportation.Business.Interfaces.Mobile.Customer;
 using TourismSmartTransportation.Business.Interfaces.Partner;
-using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.Order;
 using TourismSmartTransportation.Business.SearchModel.Admin.PurchaseManagement.OrderDetail;
 using TourismSmartTransportation.Data.Interfaces;
@@ -26,7 +26,7 @@ using TourismSmartTransportation.Data.Models;
 namespace TourismSmartTransportation.Business.Hubs
 {
     [Authorize]
-    public class NotificationHub : Hub
+    public class NotificationHub : Hub, INotificationHub
     {
         // Inject service
         private readonly ILogger<NotificationHub> _logger;
@@ -34,10 +34,15 @@ namespace TourismSmartTransportation.Business.Hubs
         private readonly IOrderHelpersService _orderHelperService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBookingService _bookingService;
+        private IConfiguration _configuration;
 
         // Global parameters to store data
-        private readonly List<double> DISTANCES = new List<double>() { 3000, 5000, 7000, 10000 };
+        private readonly static List<double> DISTANCES = new List<double>() { 3000, 5000, 7000, 10000 };
         private readonly static VehicleStore _vehicleStore = new VehicleStore();
+        private readonly static IntervalLoopMapping _intervalLoopList = new IntervalLoopMapping();
+        private static Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>> dicStore = new Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>>();
+        // private static HashSet<string> _storeMatchingDriver = new HashSet<string>(); // Lưu driver khi customer gửi request đến driver
+
 
         // Mapping data store
         private readonly static SearchMapping _searchMapping = new SearchMapping();
@@ -50,13 +55,15 @@ namespace TourismSmartTransportation.Business.Hubs
                                 IUnitOfWork unitOfWork,
                                 IDriverManagementService driverService,
                                 IOrderHelpersService orderHelpersService,
-                                IBookingService bookingService)
+                                IBookingService bookingService,
+                                IConfiguration configuration)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _driverService = driverService;
             _orderHelperService = orderHelpersService;
             _bookingService = bookingService;
+            _configuration = configuration;
         }
 
         private bool CompareTime(DateTime date, Time time = Time.Day)
@@ -80,7 +87,7 @@ namespace TourismSmartTransportation.Business.Hubs
             return false;
         }
 
-        public Expression<Func<CustomerTrip, bool>> CompareTime(Time time = Time.Day)
+        private Expression<Func<CustomerTrip, bool>> CompareTime(Time time = Time.Day)
         {
             var day = DateTime.UtcNow.Day;
             var month = DateTime.UtcNow.Month;
@@ -95,7 +102,240 @@ namespace TourismSmartTransportation.Business.Hubs
             return x => start.CompareTo(x.CreatedDate) <= 0 && x.CreatedDate.CompareTo(end) < 0;
         }
 
-        public async Task FindDriver(string json, string isClient = "true")
+        public async Task<Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>>> AutoCanceledBookingRequestAfterSpecificTime()
+        {
+            _logger.LogInformation("----------- BEGIN AutoCanceledBookingRequestAfterSpecificTime HUB FUNCTION ---------------");
+            _logger.LogInformation("===========================================================================================");
+            _logger.LogInformation("===========================================================================================");
+            _logger.LogInformation("===========================================================================================");
+            _logger.LogInformation($"======================= {_intervalLoopList.GetItems().Keys.Count} ====================");
+            _logger.LogInformation("===========================================================================================");
+
+            dicStore.Clear();
+
+            // Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>> dic = new Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>>();
+
+            foreach (var item in _intervalLoopList.GetItems())
+            {
+                _logger.LogInformation("=========================== GOGOGOGAAABBBBABABABABABABABA  =========================================");
+                if (DateTime.UtcNow.CompareTo(item.Value.Item1) > 0) // Khách hàng hết thời gian đợi tìm kiếm tài xế
+                {
+                    _logger.LogInformation("----------- CUSTOMER TIMEOUT FOR SEARCHING DRIVER ---------------");
+                    _logger.LogInformation("===========================================================================================");
+                    _logger.LogInformation("===========================================================================================");
+
+                    _intervalLoopList.Remove(item.Key);
+
+                    TransferHubModel t = new TransferHubModel()
+                    {
+                        Method = "BookingResponse",
+                        StatusCode = 404,
+                        Customer = "",
+                        Type = "Booking",
+                        Driver = "",
+                        Message = "Không tìm thấy tài xế"
+                    };
+
+                    dicStore.Add(item.Key, Tuple.Create(t, _connections.DictionaryConnections()));
+
+                    // foreach (var connectionId in _connections.GetConnections(item.Key))
+                    // {
+                    //     await Clients.Client(connectionId).SendAsync("BookingResponse", new
+                    //     {
+                    //         StatusCode = 404,
+                    //         Customer = "",
+                    //         Type = "Booking",
+                    //         Driver = "",
+                    //         Message = "Không tìm thấy tài xế"
+                    //     });
+                    // }
+
+                }
+                else // còn trong thời gian tìm kiếm 
+                {
+                    _logger.LogInformation("=========================== còn trong thời gian tìm kiếm   =========================================");
+                    if (DateTime.UtcNow.CompareTo(item.Value.Item3) > 0)
+                    {
+                        _logger.LogInformation("----------- DRIVER TIMEOUT FOR ACCEPTING/REJECTING THE REQUEST ---------------");
+                        _logger.LogInformation("===========================================================================================");
+                        _logger.LogInformation("===========================================================================================");
+
+                        var driversList = _searchMapping.GetValues(item.Key);
+                        if (driversList != null && driversList.Count > 0) // Xóa tài xế trong danh sách có thể matching vì tài xế này ko có phản hồi với khách hàng
+                        {
+                            _logger.LogInformation($"================== DRIVERS LIST ::: COUNT = {driversList.Count} ===============");
+                            var driver = driversList[0];
+                            driver.Status = (int)DriverStatus.OnBusy;
+                            _dataMapping.Add(driver.Id, driver, User.Driver);
+                            // var driverResponse = await _driverService.UpdateDriverStatus(driver.Id, (int)DriverStatus.Off); // cập nhật status driver xuống db
+                            // if (driverResponse.StatusCode != 201)
+                            // {
+                            //     _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                            // }
+                            // Thread t = new Thread(() =>
+                            //     {
+                            //         foreach (var connectionId in _connections.GetConnections(driver.Id))
+                            //         {
+                            //             Task.FromResult(Clients.Client(connectionId).SendAsync("DriverNotResponse", new
+                            //             {
+                            //                 StatusCode = 404,
+                            //                 Customer = "",
+                            //                 Type = "Booking",
+                            //                 Driver = "",
+                            //                 Message = "Tài xế không phản hồi"
+                            //             }));
+                            //         }
+                            //     });
+                            // t.Start();
+                            TransferHubModel t = new TransferHubModel()
+                            {
+                                Method = "DriverNotResponse",
+                                StatusCode = 404,
+                                Customer = "",
+                                Type = "Booking",
+                                Driver = "",
+                                Message = "Tài xế không phản hồi"
+                            };
+
+                            dicStore.Add(driver.Id, Tuple.Create(t, _connections.DictionaryConnections()));
+                            driversList.RemoveAt(0);
+                            _searchMapping.UpdateDictionaryValue(item.Key, driversList);
+                        }
+
+                        if (driversList == null || driversList.Count == 0)
+                        {
+                            // _logger.LogInformation($"================== GOGOGOG DRIVERS LIST ::: COUNT = {driversList.Count} ===============");
+                            var customer = _dataMapping.GetValue(item.Key, User.Customer);
+                            if (customer.IntervalLoopIndex == DISTANCES.Count - 1)
+                            {
+                                _logger.LogInformation("----------- NOT FOUND DRIVER ---------------");
+                                _logger.LogInformation("==============================================");
+                                _logger.LogInformation("==============================================");
+
+                                // Thread t = new Thread(() =>
+                                // {
+                                //     foreach (var connectionId in _connections.GetConnections(item.Key))
+                                //     {
+                                //         Task.FromResult(Clients.Client(connectionId).SendAsync("BookingResponse", new
+                                //         {
+                                //             StatusCode = 404,
+                                //             Customer = "",
+                                //             Type = "Booking",
+                                //             Driver = "",
+                                //             Message = "Không tìm thấy tài xế"
+                                //         }));
+                                //     }
+                                // });
+                                // t.Start();
+                                TransferHubModel t = new TransferHubModel()
+                                {
+                                    Method = "BookingResponse",
+                                    StatusCode = 404,
+                                    Customer = "",
+                                    Type = "Booking",
+                                    Driver = "",
+                                    Message = "Không tìm thấy tài xế"
+                                };
+
+                                dicStore.Add(item.Key, Tuple.Create(t, _connections.DictionaryConnections()));
+                                _intervalLoopList.Remove(item.Key);
+                            }
+                            else
+                            {
+                                _logger.LogInformation("----------- Tiếp tục tìm kiếm ---------------");
+                                _logger.LogInformation("==============================================");
+                                _logger.LogInformation("==============================================");
+                                customer.IntervalLoopIndex += 1;
+                                _dataMapping.Add(customer.Id, customer, User.Customer);
+                                LocationModel model = new LocationModel();
+                                model.Id = customer.Id;
+                                model.Longitude = customer.Longitude;
+                                model.Latitude = customer.Latitude;
+                                model.Seats = customer.Seats;
+                                model.Distance = customer.Distance;
+                                model.Price = customer.Price;
+                                model.PriceBookingId = customer.PriceBookingId;
+
+                                _intervalLoopList.Remove(item.Key);
+
+                                string jsonLocationModel = Newtonsoft.Json.JsonConvert.SerializeObject(model); // parse object to json
+                                await FindDriver(jsonLocationModel, "false", "true");
+
+                                // TransferHubModel t = new TransferHubModel()
+                                // {
+                                //     Method = "BookingResponse",
+                                //     StatusCode = 404,
+                                //     Customer = "",
+                                //     Type = "Booking",
+                                //     Driver = "",
+                                //     Message = "Không tìm thấy tài xế"
+                                // };
+
+                                // dic.Add(item.Key, Tuple.Create(t, _connections.DictionaryConnections()));
+                                // _intervalLoopList.Remove(item.Key);
+                            }
+                        }
+                        // else
+                        // {
+                        //     _logger.LogInformation("----------- Lấy driver tiếp theo trong list matching ---------------");
+                        //     _logger.LogInformation("==============================================");
+                        //     _logger.LogInformation("==============================================");
+                        //     _searchMapping.UpdateDictionaryValue(item.Key, driversList);
+                        //     var driver = driversList[0];
+                        //     driver.Status = (int)DriverStatus.OnBusy;
+                        //     _dataMapping.Add(driver.Id, driver, User.Driver);
+                        //     // var driverResponse = await _driverService.UpdateDriverStatus(driver.Id, (int)DriverStatus.OnBusy); // cập nhật status driver xuống db
+                        //     // if (driverResponse.StatusCode != 201)
+                        //     // {
+                        //     //     _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                        //     // }
+
+                        //     var customer = _dataMapping.GetValue(item.Key, User.Customer);
+
+                        //     // foreach (var cId in _connections.GetConnections(driver.Id))
+                        //     // {
+                        //     //     await Clients.Client(cId).SendAsync("BookingRequest", new
+                        //     //     {
+                        //     //         StatusCode = 200,
+                        //     //         Driver = driver,
+                        //     //         Customer = customer,
+                        //     //         Type = "Booking",
+                        //     //         Message = "Bạn nhận được yêu cầu đặt xe từ khách hàng.",
+                        //     //     });
+
+                        //     //     _logger.LogInformation("----------- Already sent booking request to driver -------------");
+                        //     //     _logger.LogInformation("===========================================================================================");
+                        //     //     _logger.LogInformation("===========================================================================================");
+                        //     // }
+
+                        //     TransferHubModel t = new TransferHubModel()
+                        //     {
+                        //         Method = "BookingRequest",
+                        //         StatusCode = 200,
+                        //         Driver = driver,
+                        //         Customer = customer,
+                        //         Type = "Booking",
+                        //         Message = "Bạn nhận được yêu cầu đặt xe từ khách hàng.",
+                        //     };
+
+                        //     dicStore.Add(driver.Id, Tuple.Create(t, _connections.DictionaryConnections()));
+
+                        //     _intervalLoopList.Add(item.Key, Tuple.Create(DateTime.UtcNow.AddMinutes(Int32.Parse(_configuration["CustomerBookingTimeOut"])),
+                        //                                             driver.Id, DateTime.UtcNow.AddSeconds(Int32.Parse(_configuration["DriverReceiveRequestTimeOut"]))));
+                        // }
+                    }
+                }
+            }
+
+            _logger.LogInformation("----------- END AutoCanceledBookingRequestAfterSpecificTime HUB FUNCTION ---------------");
+            _logger.LogInformation("===========================================================================================");
+            _logger.LogInformation("===========================================================================================");
+            _logger.LogInformation("===========================================================================================");
+
+            return dicStore;
+        }
+
+        public async Task FindDriver(string json, string isClient = "true", string isBackgroudService = "false")
         {
             _logger.LogInformation("---------------- Begin FindDriver Hub Function ------------------");
             _logger.LogInformation($"---------------- JSON FINDDRIVER {json} ------------------");
@@ -110,7 +350,8 @@ namespace TourismSmartTransportation.Business.Hubs
                 customer.Price = model.Price;
                 customer.Distance = model.Distance;
                 customer.Seats = model.Seats;
-                customer.IntervalLoopIndex = isClient == "true" ? 0 : customer.IntervalLoopIndex >= DISTANCES.Count - 1 ? 0 : customer.IntervalLoopIndex;
+                // customer.IntervalLoopIndex = isClient == "true" ? 0 : customer.IntervalLoopIndex >= DISTANCES.Count - 1 ? 0 : customer.IntervalLoopIndex;
+                customer.IntervalLoopIndex = isClient == "true" ? 0 : customer.IntervalLoopIndex;
                 customer.Status = isClient == "true" ? (int)CustomerStatus.Normal : customer.Status;
                 _dataMapping.Add(model.Id, customer, User.Customer);
             }
@@ -192,9 +433,15 @@ namespace TourismSmartTransportation.Business.Hubs
                             Address = item.Value.Address,
                             Longitude = lng,
                             Latitude = lat,
-                            DistanceBetween = distanceBetween
+                            DistanceBetween = distanceBetween,
+                            VehicleName = vehicle.Name,
+                            LicensePlates = vehicle.LicensePlates
                         };
+
+                        // if (!_storeMatchingDriver.Contains(driverId))
+                        // {
                         _searchMapping.Add(model.Id, searchingDriver); // thêm những driver thỏa mãn điều kiện vào danh sách có thể phù hợp với yêu cầu từ khách hàng
+                        // }
 
                         _logger.LogInformation($"---------- Add success _searchMapping ---------------");
                     }
@@ -245,7 +492,7 @@ namespace TourismSmartTransportation.Business.Hubs
                                                             VehicleId = x.cusTripVeh.vehicle.VehicleId,
                                                             PartnerId = x.driver.PartnerId,
                                                             ServiceTypeId = y.ServiceTypeId,
-                                                            CreatedDate = x.cusTripVeh.customerTrip.CreatedDate
+                                                            CreatedDate = x.cusTripVeh.customerTrip.CreatedDate,
                                                         }
                                                     )
                                                     .Where(x => x.ServiceTypeId.ToString() == ServiceTypeDefaultData.BOOK_SERVICE_ID)
@@ -268,6 +515,9 @@ namespace TourismSmartTransportation.Business.Hubs
 
                     // tính điểm driver
                     driverItem.Point = 10 - (5.0 / (driverRateAvg == 0 ? 10 : driverRateAvg)) - (amountTripsOfDriver / 10) - (amountTripsOfPartner / 100);
+
+                    // Lưu feedback của driver
+                    driverItem.FeedbackPoint = driverRateAvg;
                 }
 
 
@@ -276,12 +526,33 @@ namespace TourismSmartTransportation.Business.Hubs
                 // var index = rand.Next(0, driversList.Count - 1);
                 // var driver = driversList[index];
 
+                foreach (var item1 in driversList)
+                {
+                    _logger.LogInformation($"========== BEEEREREGFIRERERERE {item1.LastName}");
+                }
+
                 driversList.Sort(delegate (DataHubModel x, DataHubModel y)
                 {
                     return x.Point.CompareTo(y.Point);
                 });
-                _searchMapping.UpdateDictionaryValue(model.Id, driversList); // cập nhật lại danh sách tài xế có thể matching với yều cầu của khách hàng
 
+                foreach (var item2 in driversList)
+                {
+                    _logger.LogInformation($"========== AFFAFFTEERRTG {item2.LastName}");
+                }
+
+                _logger.LogInformation($"============ driversListdriversListdriversList ::: count {driversList.Count}");
+
+
+
+                for (int j = 1; j < driversList.Count; j++)
+                {
+                    driversList.RemoveAt(j);
+                }
+
+                _logger.LogInformation($"============ REMORERMOEMROEMROEMROE ::: count {driversList.Count}");
+
+                _searchMapping.UpdateDictionaryValue(model.Id, driversList); // cập nhật lại danh sách tài xế có thể matching với yều cầu của khách hàng
 
                 if (driversList.Count == 0)
                 {
@@ -291,6 +562,8 @@ namespace TourismSmartTransportation.Business.Hubs
                 var driver = driversList[0];
                 driver.Status = (int)DriverStatus.OnBusy;
                 _dataMapping.Add(driver.Id, driver, User.Driver);
+                // _storeMatchingDriver.Add(driver.Id);
+
                 var driverResponse = await _driverService.UpdateDriverStatus(driver.Id, (int)DriverStatus.OnBusy); // cập nhật status driver xuống db
                 if (driverResponse.StatusCode != 201)
                 {
@@ -300,19 +573,46 @@ namespace TourismSmartTransportation.Business.Hubs
                 isFoundDriver = true;
                 // driver.IntervalLoopIndex = i;
 
-                foreach (var cId in _connections.GetConnections(driver.Id))
+                if (isBackgroudService == "true")
                 {
-                    await Clients.Client(cId).SendAsync("BookingRequest", new
+                    TransferHubModel t = new TransferHubModel()
                     {
+                        Method = "BookingRequest",
                         StatusCode = 200,
                         Driver = driver,
                         Customer = customer,
                         Type = "Booking",
-                        Message = "Bạn nhận được yêu cầu đặt xe từ khách hàng."
-                    });
+                        Message = "Bạn nhận được yêu cầu đặt xe từ khách hàng.",
+                    };
 
-                    _logger.LogInformation("----------- Already sent booking request to driver -------------");
+                    dicStore.Add(driver.Id, Tuple.Create(t, _connections.DictionaryConnections()));
                 }
+                else
+                {
+                    foreach (var cId in _connections.GetConnections(driver.Id))
+                    {
+                        try
+                        {
+                            await Clients.Client(cId).SendAsync("BookingRequest", new
+                            {
+                                StatusCode = 200,
+                                Driver = driver,
+                                Customer = customer,
+                                Type = "Booking",
+                                Message = "Bạn nhận được yêu cầu đặt xe từ khách hàng."
+                            });
+                            _logger.LogInformation("----------- Already sent booking request to driver -------------");
+                        }
+                        catch (System.Exception)
+                        {
+                            _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                        }
+                    }
+                }
+
+                // Thêm vào danh sách interval để kiểm tra xem tài xế có click chấp nhận hay từ chối
+                _intervalLoopList.Add(customer.Id, Tuple.Create(DateTime.UtcNow.AddMinutes(Int32.Parse(_configuration["CustomerBookingTimeOut"])),
+                                                                    driver.Id, DateTime.UtcNow.AddSeconds(Int32.Parse(_configuration["DriverReceiveRequestTimeOut"]))));
 
                 break; // đã tìm thấy thì không tìm ở những khoảng cách xa hơn
             }
@@ -327,18 +627,41 @@ namespace TourismSmartTransportation.Business.Hubs
                 customer.Status = (int)CustomerStatus.NotFound; // customer ko tìm thấy driver và không tìm lại
                 _dataMapping.Add(customer.Id, customer, User.Customer);
 
-                foreach (var connectionId in _connections.GetConnections(model.Id))
+                if (isBackgroudService == "true")
                 {
-                    await Clients.Client(connectionId).SendAsync("BookingResponse", new
+                    TransferHubModel t = new TransferHubModel()
                     {
+                        Method = "BookingResponse",
                         StatusCode = 404,
+                        Driver = "",
                         Customer = "",
                         Type = "Booking",
-                        Driver = "",
                         Message = "Không tìm thấy tài xế"
-                    });
-                }
+                    };
 
+                    dicStore.Add(model.Id, Tuple.Create(t, _connections.DictionaryConnections()));
+                }
+                else
+                {
+                    foreach (string connectionId in _connections.GetConnections(model.Id))
+                    {
+                        try
+                        {
+                            await Clients.Client(connectionId).SendAsync("BookingResponse", new
+                            {
+                                StatusCode = 404,
+                                Customer = "",
+                                Type = "Booking",
+                                Driver = "",
+                                Message = "Không tìm thấy tài xế"
+                            });
+                        }
+                        catch (System.Exception)
+                        {
+                            _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                        }
+                    }
+                }
             }
 
             _logger.LogInformation("---------------- End FindDriver Hub Function ------------------");
@@ -360,6 +683,10 @@ namespace TourismSmartTransportation.Business.Hubs
             List<object> list = null;
             foreach (var item in _dataMapping.GetDrivers(DriverStatus.On).GetItems())
             {
+                // if (_driverDeclineList.CheckExistedValue(item.Key))
+                // {
+                //     continue;
+                // }
 
                 if (list == null)
                 {
@@ -408,6 +735,11 @@ namespace TourismSmartTransportation.Business.Hubs
             if (status == "1")
             {
                 _logger.LogInformation("---------------- Driver Accepted The Booking Request ------------------");
+
+                // xóa khỏi danh sách loop interval
+                _intervalLoopList.Remove(response.Customer.Id);
+
+                // _storeMatchingDriver.Remove(response.Driver.Id);
 
                 // Lấy thông tin phương tiện thông qua driver
                 var driver = await _unitOfWork.DriverRepository.GetById(Guid.Parse(response.Driver.Id));
@@ -476,12 +808,19 @@ namespace TourismSmartTransportation.Business.Hubs
                 // Gửi thông báo đến cho khách hàng 
                 foreach (var connectionId in _connections.GetConnections(response.Customer.Id))
                 {
-                    await Clients.Client(connectionId).SendAsync("BookingResponse", new
+                    try
                     {
-                        StatusCode = 200,
-                        Driver = response.Driver,
-                        Message = "Yêu cầu đặt xe của bạn đã thành công"
-                    });
+                        await Clients.Client(connectionId).SendAsync("BookingResponse", new
+                        {
+                            StatusCode = 200,
+                            Driver = response.Driver,
+                            Message = "Yêu cầu đặt xe của bạn đã thành công"
+                        });
+                    }
+                    catch (System.Exception)
+                    {
+                        _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                    }
                 }
 
                 // khách hàng đã đặt dc xe, reset lại d sách decline driver
@@ -491,10 +830,13 @@ namespace TourismSmartTransportation.Business.Hubs
                 _roomMapping.Add(response.Customer.Id, response.Driver.Id);
                 _roomMapping.Add(response.Driver.Id, response.Customer.Id);
 
+
                 return true;
             }
             else // Tài xế từ chối yêu cầu 
             {
+
+                _logger.LogInformation("========== REJECT THE REQUEST FROM CUSTOMER");
                 // lưu thông tin driver từ chối yêu cầu từ customer nào
                 _driverDeclineList.Add(response.Customer.Id, response.Driver.Id);
 
@@ -510,47 +852,52 @@ namespace TourismSmartTransportation.Business.Hubs
                 _logger.LogInformation("---------------- Driver Rejected The Booking Request ------------------");
 
                 // Xóa tài xế ra khỏi danh sách matching
-                var driversList = _searchMapping.GetValues(response.Customer.Id);
-                driversList.RemoveAt(0);
+                // var driversList = _searchMapping.GetValues(response.Customer.Id);
+                // driversList.RemoveAt(0);
 
-                if (driversList.Count == 0) // không tìm thấy driver trong list có thể matching với customer thì duyệt ở độ dài khác
+                _searchMapping.Remove(response.Customer.Id);
+                // _storeMatchingDriver.Remove(response.Driver.Id);
+
+                // if (driversList.Count == 0) // không tìm thấy driver trong list có thể matching với customer thì duyệt ở độ dài khác
+                // {
+                _logger.LogInformation("---------------- Call FindDriver Function to extend distance range ------------------");
+
+                if (response.Customer.IntervalLoopIndex < DISTANCES.Count)
                 {
-                    _logger.LogInformation("---------------- Call FindDriver Function to extend distance range ------------------");
-
-                    if (response.Customer.IntervalLoopIndex < DISTANCES.Count && response.Customer.Status == (int)CustomerStatus.Normal)
+                    DataHubModel customer = _dataMapping.GetValue(response.Customer.Id, User.Customer);
+                    if (customer.IntervalLoopIndex >= DISTANCES.Count - 1)
                     {
-                        DataHubModel customer = _dataMapping.GetValue(response.Customer.Id, User.Customer);
-                        if (customer.IntervalLoopIndex >= DISTANCES.Count - 1)
-                        {
-                            customer.IntervalLoopIndex = 0;
-                        }
-                        else
-                        {
-                            customer.IntervalLoopIndex += 1;
-                        }
-
-                        _dataMapping.Add(response.Customer.Id, customer, User.Customer); // cập nhật lại customer trong danh sách _datamapping
-
-                        // xóa driver khỏi danh sách nhưng tài xế phù hợp với yêu cầu của khách hàng
-                        // driversList.RemoveAt(response.Driver.ItemIndex);
-                        // _searchMapping.UpdateDictionaryValue(response.Customer.Id, driversList); // cập nhật lại danh sách tài xế có thể matching với yều cầu của khách hàng
-
-                        LocationModel model = new LocationModel();
-                        model.Id = customer.Id;
-                        model.Longitude = customer.Longitude;
-                        model.Latitude = customer.Latitude;
-                        model.Seats = customer.Seats;
-                        model.Distance = customer.Distance;
-                        model.Price = customer.Price;
-                        model.PriceBookingId = customer.PriceBookingId;
-
-                        string jsonLocationModel = Newtonsoft.Json.JsonConvert.SerializeObject(model); // parse object to json
-                        await FindDriver(jsonLocationModel, "false");
+                        customer.IntervalLoopIndex = 0;
                     }
                     else
                     {
-                        _logger.LogInformation("-------------- DRIVER NOT FOUND -----------------");
-                        foreach (var connectionId in _connections.GetConnections(response.Customer.Id))
+                        customer.IntervalLoopIndex += 1;
+                    }
+
+                    _dataMapping.Add(response.Customer.Id, customer, User.Customer); // cập nhật lại customer trong danh sách _datamapping
+
+                    // xóa driver khỏi danh sách nhưng tài xế phù hợp với yêu cầu của khách hàng
+                    // driversList.RemoveAt(response.Driver.ItemIndex);
+                    // _searchMapping.UpdateDictionaryValue(response.Customer.Id, driversList); // cập nhật lại danh sách tài xế có thể matching với yều cầu của khách hàng
+
+                    LocationModel model = new LocationModel();
+                    model.Id = customer.Id;
+                    model.Longitude = customer.Longitude;
+                    model.Latitude = customer.Latitude;
+                    model.Seats = customer.Seats;
+                    model.Distance = customer.Distance;
+                    model.Price = customer.Price;
+                    model.PriceBookingId = customer.PriceBookingId;
+
+                    string jsonLocationModel = Newtonsoft.Json.JsonConvert.SerializeObject(model); // parse object to json
+                    await FindDriver(jsonLocationModel, "false");
+                }
+                else
+                {
+                    _logger.LogInformation("-------------- DRIVER NOT FOUND -----------------");
+                    foreach (var connectionId in _connections.GetConnections(response.Customer.Id))
+                    {
+                        try
                         {
                             await Clients.Client(connectionId).SendAsync("BookingResponse", new
                             {
@@ -558,35 +905,44 @@ namespace TourismSmartTransportation.Business.Hubs
                                 Message = "Không tìm thấy tài xế"
                             });
                         }
-
-                    }
-                }
-                else
-                {
-                    _logger.LogInformation("---------------- FOUNDED OTHER DRIVER ------------------");
-                    var driver = driversList[0];
-                    driver.Status = (int)DriverStatus.OnBusy;
-                    _dataMapping.Add(driver.Id, driver, User.Driver);
-                    var drp = await _driverService.UpdateDriverStatus(driver.Id, (int)DriverStatus.OnBusy); // cập nhật status driver xuống db
-                    if (drp.StatusCode != 201)
-                    {
-                        _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
-                    }
-
-                    foreach (var cId in _connections.GetConnections(driver.Id))
-                    {
-                        await Clients.Client(cId).SendAsync("BookingRequest", new
+                        catch (System.Exception)
                         {
-                            StatusCode = 200,
-                            Driver = driver,
-                            Customer = response.Customer,
-                            Type = "Booking",
-                            Message = "Bạn nhận được yêu cầu đặt xe từ khách hàng."
-                        });
-
-                        _logger.LogInformation("----------- Already sent booking request to driver -------------");
+                            _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                        }
                     }
+
                 }
+                // }
+                // else
+                // {
+                //     _logger.LogInformation("---------------- FOUNDED OTHER DRIVER ------------------");
+                //     var driver = driversList[0];
+                //     driver.Status = (int)DriverStatus.OnBusy;
+                //     _dataMapping.Add(driver.Id, driver, User.Driver);
+                //     var drp = await _driverService.UpdateDriverStatus(driver.Id, (int)DriverStatus.OnBusy); // cập nhật status driver xuống db
+                //     if (drp.StatusCode != 201)
+                //     {
+                //         _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                //     }
+
+                //     foreach (var cId in _connections.GetConnections(driver.Id))
+                //     {
+                //         await Clients.Client(cId).SendAsync("BookingRequest", new
+                //         {
+                //             StatusCode = 200,
+                //             Driver = driver,
+                //             Customer = response.Customer,
+                //             Type = "Booking",
+                //             Message = "Bạn nhận được yêu cầu đặt xe từ khách hàng."
+                //         });
+
+                //         _logger.LogInformation("----------- Already sent booking request to driver -------------");
+                //     }
+                // }
+
+                // xóa khỏi danh sách loop interval
+                _intervalLoopList.Remove(response.Customer.Id);
+
             }
 
             _logger.LogInformation("---------------- End CheckAcceptedRequest Hub Function ------------------");
@@ -609,11 +965,15 @@ namespace TourismSmartTransportation.Business.Hubs
                 _logger.LogInformation($"----------- KHOẢNG CÁCH HIỆN TẠI GIỮA CUSTOMER AND DRIVER:  {distanceBetween}-----------------");
                 _logger.LogInformation($"----------- KHOẢNG CÁCH LÚC ĐẦU GIỮA CUSTOMER AND DRIVER:  {driver.DistanceBetween}-----------------");
 
+                string message = "100";
                 var refundPrice = 0M;
-                if (driver.DistanceBetween > 2000 && ((double)driver.DistanceBetween - distanceBetween) >= ((double)driver.DistanceBetween * 0.6))
+                if (driver.DistanceBetween > double.Parse(_configuration["DistanceOver"]) &&
+                        ((double)driver.DistanceBetween - distanceBetween) >= ((double)driver.DistanceBetween * double.Parse(_configuration["PercentDistance"]))
+                    )
                 {
                     _logger.LogInformation("---------------- Refund a part total price of order  ------------------");
-                    refundPrice = customer.Price - customer.Price * 0.3M; // tính phí vi phạm
+                    refundPrice = customer.Price - customer.Price * decimal.Parse(_configuration["BookingFee"]); // tính phí vi phạm
+                    message = ((1 - decimal.Parse(_configuration["BookingFee"])) * 100).ToString();
                 }
                 else
                 {
@@ -703,7 +1063,7 @@ namespace TourismSmartTransportation.Business.Hubs
 
                 await _unitOfWork.SaveChangesAsync();
 
-                await _bookingService.RefundBooking((double)refundPrice, Guid.Parse(customerId));
+                await _bookingService.RefundBooking((double)refundPrice, Guid.Parse(customerId), message);
 
                 // cập nhật status customer
                 customer.Status = (int)CustomerStatus.Normal;
@@ -725,11 +1085,18 @@ namespace TourismSmartTransportation.Business.Hubs
 
                 foreach (var connectionId in _connections.GetConnections(driverId))
                 {
-                    await Clients.Client(connectionId).SendAsync("CanceledBooking", new
+                    try
                     {
-                        StatusCode = 200,
-                        Message = "Khách hàng đã hủy cuốc xe"
-                    });
+                        await Clients.Client(connectionId).SendAsync("CanceledBooking", new
+                        {
+                            StatusCode = 200,
+                            Message = "Khách hàng đã hủy cuốc xe"
+                        });
+                    }
+                    catch (System.Exception)
+                    {
+                        _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                    }
                 }
 
                 _logger.LogInformation("---------------- End cancel booking hub function  ------------------");
@@ -747,11 +1114,18 @@ namespace TourismSmartTransportation.Business.Hubs
             var customerId = _roomMapping.GetValue(driverId);
             foreach (var connectionId in _connections.GetConnections(customerId))
             {
-                await Clients.Client(connectionId).SendAsync("DriverArrived", new
+                try
                 {
-                    StatusCode = 200,
-                    Message = "Tài xế đã đến điểm đón"
-                });
+                    await Clients.Client(connectionId).SendAsync("DriverArrived", new
+                    {
+                        StatusCode = 200,
+                        Message = "Tài xế đã đến điểm đón"
+                    });
+                }
+                catch (System.Exception)
+                {
+                    _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                }
             }
 
             // cập nhật trạng thái của driver sau khi đã đến điểm đón
@@ -792,11 +1166,18 @@ namespace TourismSmartTransportation.Business.Hubs
 
             foreach (var connectionId in _connections.GetConnections(customerId))
             {
-                await Clients.Client(connectionId).SendAsync("DriverPickedUp", new
+                try
                 {
-                    StatusCode = 200,
-                    Message = "Bạn đã lên xe!"
-                });
+                    await Clients.Client(connectionId).SendAsync("DriverPickedUp", new
+                    {
+                        StatusCode = 200,
+                        Message = "Bạn đã lên xe!"
+                    });
+                }
+                catch (System.Exception)
+                {
+                    _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                }
             }
 
             // cập nhật trạng thái của customer
@@ -849,11 +1230,19 @@ namespace TourismSmartTransportation.Business.Hubs
 
             foreach (var connectionId in _connections.GetConnections(customerId))
             {
-                await Clients.Client(connectionId).SendAsync("CompletedBooking", new
+                try
                 {
-                    StatusCode = 200,
-                    Message = "Cảm ơn quý khách đã đặt xe."
-                });
+                    await Clients.Client(connectionId).SendAsync("CompletedBooking", new
+                    {
+                        StatusCode = 200,
+                        Message = "Cảm ơn quý khách đã đặt xe.",
+                        CustomerTripId = customerTrip.CustomerTripId
+                    });
+                }
+                catch (System.Exception)
+                {
+                    _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                }
             }
 
             // xóa customer and driver khỏi danh sách kết nối (room)
@@ -865,12 +1254,27 @@ namespace TourismSmartTransportation.Business.Hubs
             driverDataHubModel.Status = (int)DriverStatus.On;
             _dataMapping.Add(driverId, driverDataHubModel, User.Driver);
 
+            try
+            {
+                var driverResponse = await _driverService.UpdateDriverStatus(driverDataHubModel.Id, (int)DriverStatus.On); // cập nhật status driver xuống db
+                if (driverResponse.StatusCode != 201)
+                {
+                    _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                }
+            }
+            catch (System.Exception)
+            {
+                _logger.LogInformation("======== SERVER ERROR ========");
+            }
+
             var customerDataHubModel = _dataMapping.GetValue(customerId, User.Customer);
             customerDataHubModel.Status = (int)CustomerStatus.Normal;
             _dataMapping.Add(customerId, customerDataHubModel, User.Customer);
 
             // Xóa khỏi danh sách tìm kiếm 
             _searchMapping.Remove(customerId);
+
+            _driverDeclineList.Remove(driverDataHubModel.Id);
 
             _logger.LogInformation("---------------- BEGIN Completed Booking Hub Function  ------------------");
         }
@@ -888,45 +1292,61 @@ namespace TourismSmartTransportation.Business.Hubs
                 _dataMapping.Add(customerId, customerDataHubModel, User.Customer);
             }
 
-            //
-            var tempdata = _dataMapping.GetValue(customerId, User.Customer);
+            // DataHubModel tempdata = _dataMapping.GetValue(customerId, User.Customer);
 
             var driversList = _searchMapping.GetValues(customerId); // lấy danh sách driver có thể phù hợp với khách hàng
-            _logger.LogInformation($"---------------  SỐ LƯỢNG DRIVERS TRONG SEARCHING LIST WITH CUSTOMER::: {driversList.Count} --------------");
+            // _logger.LogInformation($"---------------  SỐ LƯỢNG DRIVERS TRONG SEARCHING LIST WITH CUSTOMER::: {driversList.Count} --------------");
             if (driversList != null && driversList.Count > 0)
             {
-                foreach (var driverItem in driversList)
+                foreach (DataHubModel driverItem in driversList)
                 {
+                    _logger.LogInformation($"======== AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ::: COUNT - {driversList.Count} ========");
                     // reset lại toàn bộ status của driver về ban đầu khi dc assign vào list matching với customer
-                    var driverDataHubModel = _dataMapping.GetValue(driverItem.Id, User.Driver);
+                    DataHubModel driverDataHubModel = _dataMapping.GetValue(driverItem.Id, User.Driver);
                     if (driverDataHubModel != null)
                     {
                         driverDataHubModel.Status = (int)DriverStatus.On;
-                        _dataMapping.Add(driverItem.Id, driverDataHubModel, User.Driver);
-                        var driverResponse = await _driverService.UpdateDriverStatus(driverDataHubModel.Id, (int)DriverStatus.On); // cập nhật status driver xuống db
-                        if (driverResponse.StatusCode != 201)
+                        _dataMapping.Add(driverDataHubModel.Id, driverDataHubModel, User.Driver);
+                        try
                         {
-                            _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                            var driverResponse = await _driverService.UpdateDriverStatus(driverDataHubModel.Id, (int)DriverStatus.On); // cập nhật status driver xuống db
+                            if (driverResponse.StatusCode != 201)
+                            {
+                                _logger.LogError("------------ ON OPEN DRIVER - Update Driver Status Failed to Database -----------");
+                            }
                         }
-                    }
-
-                    foreach (var connectionId in _connections.GetConnections(driverItem.Id))
-                    {
-                        Task.WaitAll(Clients.Client(connectionId).SendAsync("FindingOut", new
+                        catch (System.Exception)
                         {
-                            StatusCode = 210,
-                            Message = "Khách hàng đã thoát ứng dụng"
-                        }));
+                            _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                        }
+
+                        foreach (string cid in _connections.GetConnections(driverDataHubModel.Id))
+                        {
+                            try
+                            {
+                                await Clients.Client(cid).SendAsync("FindingOut", new
+                                {
+                                    StatusCode = 210,
+                                    Message = "Khách hàng đã thoát ứng dụng"
+                                });
+                            }
+                            catch (System.Exception)
+                            {
+                                _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                            }
+                        }
+
+                        _driverDeclineList.Remove(driverDataHubModel.Id);
                     }
 
-                    _driverDeclineList.Remove(driverItem.Id);
+                    // _storeMatchingDriver.Remove(driverItem.Id);
                 }
 
-                _searchMapping.Remove(customerId); // reset lại danh sách matching giữa customer và driver
+                _searchMapping.Remove(customerDataHubModel.Id); // reset lại danh sách matching giữa customer và driver
 
             }
             _logger.LogInformation("---------------- END Canceled Finding Driver Hub Function  ------------------");
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            // await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
         public async Task<bool> OpenDriver(string json) // hàm được gọi khi tài xế bật chế độ nhận yêu cầu đặt xe từ khách hàng
@@ -1011,14 +1431,19 @@ namespace TourismSmartTransportation.Business.Hubs
 
             _driverDeclineList.Remove(driverId);
 
+            // _storeMatchingDriver.Remove(driverId);
+
             _logger.LogInformation("------------ End CloseDriver Hub Function -----------");
             return true;
         }
 
-        private async Task LoadVehiclesList()
+        public async Task LoadVehiclesList()
         {
+            _logger.LogInformation("---------- BEGIN Load Vehicles List ----------");
+
             if (_vehicleStore.VehiclesList.Count > 0)
             {
+                _logger.LogInformation("---------- CLEAR OLD VEHICLES LIST ----------");
                 _vehicleStore.VehiclesList.Clear();
             }
 
@@ -1027,6 +1452,9 @@ namespace TourismSmartTransportation.Business.Hubs
                             .Where(x => x.ServiceTypeId.ToString() == ServiceTypeDefaultData.BOOK_SERVICE_ID)
                             .Select(x => x.AsVehicleViewModel())
                             .ToDictionaryAsync(x => x.Id.ToString());
+
+            _logger.LogInformation($"---------- NEW VEHICLES LIST HAVE BEEN UPDATED ::: COUNT - {_vehicleStore.VehiclesList.Count} ----------");
+            _logger.LogInformation("---------- END Load Vehicles List ----------");
         }
 
         public Task<string> GetDriverByCustomer(string customerId)
@@ -1264,6 +1692,8 @@ namespace TourismSmartTransportation.Business.Hubs
                     Task.WaitAll(_driverService.UpdateDriverStatus(id, (int)DriverStatus.Off)); // cập nhật status driver xuống db
                 }
 
+                // _storeMatchingDriver.Remove(id);
+
                 _dataMapping.Add(id, driverHubModel, User.Driver);
 
                 _logger.LogInformation("------------------------ Driver is updated Status --------------------------");
@@ -1281,6 +1711,7 @@ namespace TourismSmartTransportation.Business.Hubs
                 {
                     customerHubModel.Status = (int)CustomerStatus.Normal;
                     _dataMapping.Add(id, customerHubModel, User.Customer);
+                    // _intervalLoopList.Remove(id);
                 }
                 else if (customerHubModel.Status == (int)CustomerStatus.Finding)
                 {
@@ -1289,20 +1720,29 @@ namespace TourismSmartTransportation.Business.Hubs
 
                     var driversList = _searchMapping.GetValues(id);
 
-                    foreach (var driverItem in driversList)
+                    if (driversList != null && driversList.Count > 0)
                     {
-                        string driverId = $"{driverItem.Id}";
-                        foreach (var connectionId in _connections.GetConnections(driverId))
+                        foreach (var driverItem in driversList)
                         {
-                            Task.WaitAll(Clients.Client(connectionId).SendAsync("FindingOut", new
+                            string driverId = $"{driverItem.Id}";
+                            foreach (var connectionId in _connections.GetConnections(driverId))
                             {
-                                StatusCode = 200,
-                                Message = "Khách hàng đã thoát ứng dụng"
-                            }));
+                                try
+                                {
+                                    Task.WaitAll(Clients.Client(connectionId).SendAsync("FindingOut", new
+                                    {
+                                        StatusCode = 200,
+                                        Message = "Khách hàng đã thoát ứng dụng"
+                                    }));
+                                }
+                                catch (System.Exception)
+                                {
+                                    _logger.LogInformation("======== ERROR SendAsync Function to CLIENT ========");
+                                }
+                            }
                         }
                     }
                 }
-
             }
 
             _driverDeclineList.Remove(id);

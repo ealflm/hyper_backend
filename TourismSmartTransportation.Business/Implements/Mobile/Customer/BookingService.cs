@@ -34,30 +34,30 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             _notificationCollection = notificationCollection;
         }
 
-       /* public static string DecryptString(string cipherText)
-        {
-            string key = "b14pa58l8aee4133bhce2ea2315b1916";
-            byte[] iv = new byte[16];
-            byte[] buffer = Convert.FromBase64String(cipherText);
+        /* public static string DecryptString(string cipherText)
+         {
+             string key = "b14pa58l8aee4133bhce2ea2315b1916";
+             byte[] iv = new byte[16];
+             byte[] buffer = Convert.FromBase64String(cipherText);
 
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = Encoding.UTF8.GetBytes(key);
-                aes.IV = iv;
-                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+             using (Aes aes = Aes.Create())
+             {
+                 aes.Key = Encoding.UTF8.GetBytes(key);
+                 aes.IV = iv;
+                 ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
-                using (MemoryStream memoryStream = new MemoryStream(buffer))
-                {
-                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
-                        {
-                            return streamReader.ReadToEnd();
-                        }
-                    }
-                }
-            }
-        }*/
+                 using (MemoryStream memoryStream = new MemoryStream(buffer))
+                 {
+                     using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
+                     {
+                         using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
+                         {
+                             return streamReader.ReadToEnd();
+                         }
+                     }
+                 }
+             }
+         }*/
 
         public async Task<PriceBookingViewModel> GetPrice(decimal distance, int seat)
         {
@@ -65,7 +65,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             distance = distance / 1000;
             PriceBookingViewModel result = new PriceBookingViewModel();
             result.TotalPrice = 0;
-            foreach(VehicleType vehicleType in vehicleTypes)
+            foreach (VehicleType vehicleType in vehicleTypes)
             {
                 decimal priceTmp = 0;
                 var price = await _unitOfWork.PriceOfBookingServiceRepository.Query().Where(x => x.VehicleTypeId.Equals(vehicleType.VehicleTypeId)).FirstOrDefaultAsync();
@@ -78,7 +78,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 {
                     priceTmp += price.FixedPrice;
                 }
-                if(priceTmp> result.TotalPrice)
+                if (priceTmp > result.TotalPrice)
                 {
                     result = price.AsPriceBookingViewModel();
                     result.TotalPrice = priceTmp;
@@ -88,11 +88,11 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             return result;
         }
 
-        public async Task<Response> RefundBooking(double amount, Guid customerId)
+        public async Task<Response> RefundBooking(double amount, Guid customerId, string message = "")
         {
             var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
             CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-            string mes = string.Format(elGR, "Quý khách được hoàn tiền đặt xe {0:N0} VNĐ 70% hóa đơn", amount);
+            string mes = string.Format(elGR, "Quý khách được hoàn {0}% tiền đặt xe {1:N0} VNĐ ", message, amount);
             await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn tiền đặt xe", mes);
             SaveNotificationModel noti = new SaveNotificationModel()
             {

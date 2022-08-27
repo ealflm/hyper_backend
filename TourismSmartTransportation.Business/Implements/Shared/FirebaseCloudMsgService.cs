@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using FirebaseAdmin.Messaging;
+using Microsoft.Extensions.Logging;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Interfaces.Shared;
 using TourismSmartTransportation.Business.SearchModel.Shared;
@@ -12,8 +13,10 @@ namespace TourismSmartTransportation.Business.Implements.Shared
 {
     public class FirebaseCloudMsgService : BaseService, IFirebaseCloudMsgService
     {
-        public FirebaseCloudMsgService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient) : base(unitOfWork, blobServiceClient)
+        private ILogger<FirebaseCloudMsgService> _logger;
+        public FirebaseCloudMsgService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, ILogger<FirebaseCloudMsgService> logger) : base(unitOfWork, blobServiceClient)
         {
+            _logger = logger;
         }
 
         /// <summary>
@@ -91,19 +94,26 @@ namespace TourismSmartTransportation.Business.Implements.Shared
 
         public async Task SendNotificationForRentingService(string clientToken, string title, string content)
         {
-            var message = new Message()
+            try
             {
-                Token = clientToken,
-                Notification = new Notification()
+                var message = new Message()
                 {
-                    Title = title,
-                    Body = content
-                },
-            };
+                    Token = clientToken,
+                    Notification = new Notification()
+                    {
+                        Title = title,
+                        Body = content
+                    },
+                };
 
-            //Send message to device correspond 
-            var response =
-                await FirebaseMessaging.DefaultInstance.SendAsync(message);
+                //Send message to device correspond 
+                var response =
+                    await FirebaseMessaging.DefaultInstance.SendAsync(message);
+            }
+            catch (System.Exception)
+            {
+                _logger.LogInformation("============ ERROR FIREBASE CLOUD MESSAGING SERVICE ==============");
+            }
         }
     }
 }

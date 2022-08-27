@@ -62,6 +62,8 @@ namespace TourismSmartTransportation.API
         {
             services.AddHostedService<HyperBackgroundService>();
             services.AddHostedService<HyperBackgroundService1>();
+            services.AddHostedService<HyperBackgroundService2>();
+            services.AddHostedService<HyperBackgroundService3>();
 
             services.AddDbContext<tourismsmarttransportationContext>(
                options => options.UseSqlServer(Configuration.GetConnectionString("TourismSmartTransportation")));
@@ -224,6 +226,8 @@ namespace TourismSmartTransportation.API
             services.AddScoped<IBookingService, BookingService>();
             services.AddScoped<IFeedbackForDriverService, FeedbackForDriverService>();
             services.AddScoped<IFeedbackForVehicleService, FeedbackForVehicleService>();
+            services.AddScoped<INotificationHub, NotificationHub>();
+
             //Azure AD
             services.AddScoped(_ =>
             {

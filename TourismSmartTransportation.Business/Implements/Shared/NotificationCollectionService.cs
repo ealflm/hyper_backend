@@ -84,7 +84,8 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 Message = noti.Message,
                 Type = noti.Type,
                 CreatedDateTimeStamp = (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds,
-                ModifiedDateTimeStamp = (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds
+                ModifiedDateTimeStamp = (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds,
+                Status = noti.Status
             };
 
             await _notificationService.InsertOneAsync(model);
