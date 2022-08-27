@@ -37,19 +37,15 @@ namespace TourismSmartTransportation.API
                         // // Inject service
                         // var notificationHubScopeService = scope.ServiceProvider.GetRequiredService<INotificationHub>();
 
-                        // Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>> dic = new Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>>();
                         // // Processing
+                        // Dictionary<string, Tuple<TransferHubModel, string>> dic = new Dictionary<string, Tuple<TransferHubModel, string>>();
                         // dic = await notificationHubScopeService.AutoCanceledBookingRequestAfterSpecificTime();
 
                         // foreach (var dicItem in dic)
                         // {
                         //     if (dic.GetValueOrDefault(dicItem.Key) != null)
                         //     {
-                        //         foreach (var dicValue in dic.GetValueOrDefault(dicItem.Key).Item2)
-                        //         {
-                        //             foreach (var hashSetValue in dicValue.Value)
-                        //             {
-                        //                 await _hubcontext.Clients.Client(hashSetValue).SendAsync(dicItem.Value.Item1.Method,
+                        //         await _hubcontext.Clients.Client(dicItem.Value.Item2).SendAsync(dicItem.Value.Item1.Method,
                         //                     new
                         //                     {
                         //                         StatusCode = dicItem.Value.Item1.StatusCode,
@@ -59,8 +55,6 @@ namespace TourismSmartTransportation.API
                         //                         Customer = dicItem.Value.Item1.Customer
                         //                     }
                         //                 );
-                        //             }
-                        //         }
                         //     }
                         // }
 

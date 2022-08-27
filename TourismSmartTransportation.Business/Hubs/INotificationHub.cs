@@ -21,6 +21,6 @@ namespace TourismSmartTransportation.Business.Hubs
         Task<string> GetDriverStatus(string driverId);
         Task<string> GetCustomerStatus(string customerId);
         Task LoadVehiclesList();
-        Task<Dictionary<string, Tuple<TransferHubModel, Dictionary<string, HashSet<string>>>>> AutoCanceledBookingRequestAfterSpecificTime();
+        Task<Dictionary<string, Tuple<TransferHubModel, string>>> AutoCanceledBookingRequestAfterSpecificTime();
     }
 }

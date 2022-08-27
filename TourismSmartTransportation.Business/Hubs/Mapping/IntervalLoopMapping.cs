@@ -5,6 +5,7 @@ namespace TourismSmartTransportation.Business.Hubs.Mapping
 {
     public class IntervalLoopMapping
     {
+        // CustomerId | CustomerTime | DriverId | DriverTime
         private readonly Dictionary<string, Tuple<DateTime, string, DateTime>> _maps =
             new Dictionary<string, Tuple<DateTime, string, DateTime>>();
 
