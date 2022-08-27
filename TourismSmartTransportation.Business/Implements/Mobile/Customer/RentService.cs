@@ -385,7 +385,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         Message = "Yêu cầu trả phương tiện thất bại"
                     };
                 }
-                customerTrip.ReturnVehicleStationId = ;
+                customerTrip.ReturnVehicleStationId = rentStationId;
                 _unitOfWork.CustomerTripRepository.Update(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
             }
