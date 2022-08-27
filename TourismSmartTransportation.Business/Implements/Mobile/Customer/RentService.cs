@@ -374,7 +374,18 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             if (customerTrip.Status == (int)CustomerTripStatus.Renting)
             {
                 customerTrip.Status = (int)CustomerTripStatus.Requesting;
-                customerTrip.ReturnVehicleStationId = new Guid(DecryptString(model.RentStationId));
+                Guid rentStationId = new Guid(DecryptString(model.RentStationId));
+                var rentStation = await _unitOfWork.RentStationRepository.GetById(rentStationId);
+                var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
+                if (!rentStation.PartnerId.Equals(vehicle.PartnerId))
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Yêu cầu trả phương tiện thất bại"
+                    };
+                }
+                customerTrip.ReturnVehicleStationId = ;
                 _unitOfWork.CustomerTripRepository.Update(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
             }

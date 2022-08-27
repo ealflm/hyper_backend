@@ -544,9 +544,21 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             lastRoute.StationList.Add(customerStartPoint.AsStationViewModel());
                             resultPath.Add(lastRoute);
                             result.Add(resultPath);
+                            if (result.Count >= 2)
+                            {
+                                break;
+                            }
                         }
                     }
+                    if (result.Count >= 2)
+                    {
+                        break;
+                    }
                     Debug.WriteLine("truy vet " + DateTime.Now);
+                }
+                if (result.Count >= 2)
+                {
+                    break;
                 }
             }
 
@@ -562,7 +574,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var today = DateTime.UtcNow.AddHours(7);
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId.Value) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
             var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME)).FirstOrDefaultAsync();
-            if (oldCustomerTrip != null && DateTime.UtcNow.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < 60)
+            if (oldCustomerTrip != null && DateTime.UtcNow.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < double.Parse(_configuration["TripTimeOut"]))
             {
                 var location = oldCustomerTrip.Coordinates.Split(';');
                 decimal startLongitude = decimal.Parse(location[0]);
@@ -856,9 +868,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 await _firebaseCloud.SendNotificationForRentingService(driver.RegistrationToken, "Thông báo lên xe", mes);
                 SaveNotificationModel noti = new SaveNotificationModel()
                 {
-                    CustomerId = customer.CustomerId.ToString(),
-                    CustomerFirstName = customer.FirstName,
-                    CustomerLastName = customer.LastName,
+                    CustomerId = driver.DriverId.ToString(),
+                    CustomerFirstName = driver.FirstName,
+                    CustomerLastName = driver.LastName,
                     Title = "Thông báo lên xe",
                     Message = mes,
                     Type = "Busing",
@@ -883,7 +895,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
             var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
             var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME)).FirstOrDefaultAsync();
-            if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < 60)
+            if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < double.Parse(_configuration["TripTimeOut"]))
             {
                 var location = oldCustomerTrip.Coordinates.Split(';');
                 decimal startLongitude = decimal.Parse(location[0]);
@@ -1180,9 +1192,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 await _firebaseCloud.SendNotificationForRentingService(driver.RegistrationToken, "Thông báo lên xe", mes);
                 SaveNotificationModel noti = new SaveNotificationModel()
                 {
-                    CustomerId = customer.CustomerId.ToString(),
-                    CustomerFirstName = customer.FirstName,
-                    CustomerLastName = customer.LastName,
+                    CustomerId = driver.DriverId.ToString(),
+                    CustomerFirstName = driver.FirstName,
+                    CustomerLastName = driver.LastName,
                     Title = "Thông báo lên xe",
                     Message = mes,
                     Type = "Busing",
