@@ -176,7 +176,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                                     .Where(x => model.TripName == null || x.TripName.Contains(model.TripName))
                                     .Where(x => model.Week == null || x.Week.Equals(model.Week))
                                      .Where(x => model.RouteId == null || x.RouteId.Equals(model.RouteId.Value))
-                                     .Where(x => model.DayOfWeek == null || x.DayOfWeek==model.DayOfWeek.Value)
+                                     .Where(x => model.DayOfWeek == null || x.DayOfWeek == model.DayOfWeek.Value)
                                     .Join(_unitOfWork.RouteRepository.Query(),
                                         trip => trip.RouteId,
                                         route => route.RouteId,
@@ -206,7 +206,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                                             DayOfWeek = tripRouteVehicle.tripRoute.trip.DayOfWeek,
                                             TimeStart = tripRouteVehicle.tripRoute.trip.TimeStart,
                                             TimeEnd = tripRouteVehicle.tripRoute.trip.TimeEnd,
-                                            Week= tripRouteVehicle.tripRoute.trip.Week,
+                                            Week = tripRouteVehicle.tripRoute.trip.Week,
                                             Status = tripRouteVehicle.tripRoute.trip.Status
                                         }
                                     )
@@ -256,16 +256,27 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                     model.RouteId == null &&
                     model.VehicleId == null &&
                     model.DayOfWeek == null &&
+                    model.Week == null &&
                     model.TimeStart == null &&
                     model.TimeEnd == null
                 )
                 ||
                 (
-                    model.RouteId.Value == entity.RouteId &&
-                    model.VehicleId.Value == entity.VehicleId &&
+                    // model.RouteId.Value == entity.RouteId &&
+                    // model.VehicleId.Value == entity.VehicleId &&
                     model.DayOfWeek.Value == entity.DayOfWeek &&
+                    model.Week == entity.Week &&
                     model.TimeStart == entity.TimeStart &&
                     model.TimeEnd == entity.TimeEnd
+                )
+                ||
+                (
+                    // model.RouteId.Value == entity.RouteId &&
+                    // model.VehicleId.Value == entity.VehicleId &&
+                    model.DayOfWeek.Value == entity.DayOfWeek &&
+                    model.Week == entity.Week &&
+                    (model.TimeStart != entity.TimeStart ||
+                    model.TimeEnd != entity.TimeEnd)
                 )
             )
             {
@@ -281,6 +292,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                             x => x.RouteId == (model.RouteId != null ? model.RouteId.Value : entity.RouteId) && // Cùng tuyến đường
                             x.VehicleId == (model.VehicleId != null ? model.VehicleId.Value : entity.VehicleId) && // Cùng phương tiện
                             x.DayOfWeek == (model.DayOfWeek != null ? model.DayOfWeek.Value : entity.DayOfWeek) && // Cùng ngày trong tuần
+                            x.Week == (model.Week != null ? model.Week : entity.Week) && // Cùng tuần
                             (
                                 (
                                     x.TimeEnd.CompareTo(model.TimeStart) == 0 // Trường hợp thời gian bắt đầu bằng với thời gian kết thúc của trip đã tồn tại
