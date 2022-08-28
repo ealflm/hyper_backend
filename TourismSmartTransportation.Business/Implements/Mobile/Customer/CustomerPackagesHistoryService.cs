@@ -45,7 +45,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         PackageName = package.Name,
                         TimeStart = order.CreatedDate,
                         TimeEnd = timeEnd,
-                        Status = order.Status != (int)OrderStatus.NotUse ? DateTime.Now.CompareTo(timeEnd) > 0 ? 0 : 1 : order.Status
+                        Status = order.Status != (int)OrderStatus.NotUse ? DateTime.Now.CompareTo(timeEnd) > 0 ? 0 : 1 : 0
                     };
                     cusPacHisList.Add(packageHistoryItem);
                 }
