@@ -13,6 +13,7 @@ using Azure.Storage.Blobs;
 using GeoCoordinatePortable;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using TourismSmartTransportation.Business.CommonModel;
 using TourismSmartTransportation.Business.Extensions;
@@ -40,14 +41,18 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
         private IPackageService _packageService;
+        private ILogger<BusTripService> _logger;
         private static IConfiguration _configuration;
-        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IOrderHelpersService orderHelpers, IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection, IPackageService packageService, IConfiguration configuration) : base(unitOfWork, blobServiceClient)
+        public BusTripService(IUnitOfWork unitOfWork, BlobServiceClient blobServiceClient, IOrderHelpersService orderHelpers,
+                                    IFirebaseCloudMsgService firebaseCloud, INotificationCollectionService notificationCollection,
+                                    IPackageService packageService, IConfiguration configuration, ILogger<BusTripService> logger) : base(unitOfWork, blobServiceClient)
         {
             orderheplper = orderHelpers;
             _firebaseCloud = firebaseCloud;
             _notificationCollection = notificationCollection;
             _packageService = packageService;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<List<List<RouteViewModel>>> FindBusTrip(BusTripSearchModel model)
@@ -68,20 +73,20 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             IDictionary<Guid, double> disEnd = new Dictionary<Guid, double>();
             HttpClient client = new HttpClient();
 
-            Debug.WriteLine("Start " + DateTime.Now);
+            Debug.WriteLine("Start " + DateTime.UtcNow);
             //đo dduong chim bay
-            for (int i=0; i<stationList.Length;i++)
+            for (int i = 0; i < stationList.Length; i++)
             {
                 var fromLocation = new GeoCoordinate((double)model.StartLatitude, (double)model.StartLongitude);
-                var toLocation = new GeoCoordinate((double)stationList[i].Latitude,(double) stationList[i].Longitude);
-                disStart.Add(stationList[i].StationId ,fromLocation.GetDistanceTo(toLocation));
+                var toLocation = new GeoCoordinate((double)stationList[i].Latitude, (double)stationList[i].Longitude);
+                disStart.Add(stationList[i].StationId, fromLocation.GetDistanceTo(toLocation));
             }
             disStart.Values.CopyTo(distances, 0);
             Array.Sort(distances, stationList);
             string startUri = mapboxUri;
             for (int i = 0; i < 5; i++)
             {
-                startUri += model.StartLongitude + "," + model.StartLatitude+";"+ stationList[i].Longitude + "," + stationList[i].Latitude+";";
+                startUri += model.StartLongitude + "," + model.StartLatitude + ";" + stationList[i].Longitude + "," + stationList[i].Latitude + ";";
             }
             startUri = startUri.TrimEnd(';') + endMapboxUri;
             var request = new HttpRequestMessage
@@ -118,7 +123,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             string endUri = mapboxUri;
             for (int i = 0; i < 5; i++)
             {
-                endUri += model.EndLongitude + "," + model.EndLatitude + ";" + stationList[i].Longitude + "," + stationList[i].Latitude+";";
+                endUri += model.EndLongitude + "," + model.EndLatitude + ";" + stationList[i].Longitude + "," + stationList[i].Latitude + ";";
             }
             endUri = endUri.TrimEnd(';') + endMapboxUri;
             request = new HttpRequestMessage
@@ -144,43 +149,43 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
 
 
-            
+
             startList.Add(startStation);
             int linkStationCount = 0;
             var linkStartStationList = await _unitOfWork.LinkStationRepository.Query().Where(x => x.FirstStationId.Equals(startStation.StationId)).ToListAsync();
-            foreach(var x in linkStartStationList)
+            foreach (var x in linkStartStationList)
             {
                 var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(x.SecondStationId)).ToListAsync();
-                foreach(var y in stationRoutesTmp)
+                foreach (var y in stationRoutesTmp)
                 {
                     var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
-                    if(nextStation != null)
+                    if (nextStation != null)
                     {
 
-                            linkStationCount++;
-                            startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                            break;
-                        
+                        linkStationCount++;
+                        startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                        break;
+
                     }
                 }
             }
             linkStartStationList = await _unitOfWork.LinkStationRepository.Query().Where(x => x.SecondStationId.Equals(startStation.StationId)).ToListAsync();
-                foreach (var x in linkStartStationList)
+            foreach (var x in linkStartStationList)
+            {
+                var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(x.FirstStationId)).ToListAsync();
+                foreach (var y in stationRoutesTmp)
                 {
-                    var stationRoutesTmp = await _unitOfWork.StationRouteRepository.Query().Where(y => y.StationId.Equals(x.FirstStationId)).ToListAsync();
-                    foreach (var y in stationRoutesTmp)
+                    var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
+                    if (nextStation != null)
                     {
-                        var nextStation = await _unitOfWork.StationRouteRepository.Query().Where(z => z.RouteId.Equals(y.RouteId) && z.OrderNumber == y.OrderNumber + 1).FirstOrDefaultAsync();
-                        if (nextStation != null)
-                        {
 
-                                linkStationCount++;
-                                startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                                break;
-                            
-                        }
+                        linkStationCount++;
+                        startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                        break;
+
                     }
                 }
+            }
             if (linkStationCount == 0)
             {
                 for (int i = 0; i < stationList.Length; i++)
@@ -196,9 +201,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             if (nextStation != null)
                             {
 
-                                    startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                                    break;
-                                
+                                startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                                break;
+
                             }
                         }
                     }
@@ -216,10 +221,10 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     if (nextStation != null)
                     {
 
-                            linkStationCount++;
-                            endList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                            break;
-                        
+                        linkStationCount++;
+                        endList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                        break;
+
                     }
                 }
             }
@@ -234,10 +239,10 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     if (nextStation != null)
                     {
 
-                            linkStationCount++;
-                            endList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                            break;
-                        
+                        linkStationCount++;
+                        endList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                        break;
+
                     }
                 }
             }
@@ -257,9 +262,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                             if (nextStation != null)
                             {
 
-                                    startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
-                                    break;
-                                
+                                startList.Add(await _unitOfWork.StationRepository.GetById(y.StationId));
+                                break;
+
                             }
                         }
                     }
@@ -267,10 +272,10 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
 
             IDictionary<string, Node> resultPathList = new Dictionary<string, Node>();
-            Debug.WriteLine("Perpart " + DateTime.Now);
+            Debug.WriteLine("Perpart " + DateTime.UtcNow);
             int LinkRouteCount = await _unitOfWork.LinkRouteRepository.Query().CountAsync();
             int routeCount = await _unitOfWork.RouteRepository.Query().CountAsync();
-            int minCountRoute = int.MaxValue-2;
+            int minCountRoute = int.MaxValue - 2;
             HashSet<string> checkAlreadyRoute = new HashSet<string>();
             foreach (Station start in startList)
             {
@@ -399,16 +404,16 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     }
                 }
             }
-                    var customerStartPoint = new Station()
-                    {
-                        Longitude = model.StartLongitude,
-                        Latitude = model.StartLatitude
-                    };
-                    var customerEndPoint = new Station()
-                    {
-                        Longitude = model.EndLongitude,
-                        Latitude = model.EndLatitude
-                    };
+            var customerStartPoint = new Station()
+            {
+                Longitude = model.StartLongitude,
+                Latitude = model.StartLatitude
+            };
+            var customerEndPoint = new Station()
+            {
+                Longitude = model.EndLongitude,
+                Latitude = model.EndLatitude
+            };
 
             int minResult = int.MaxValue;
             foreach (var x in resultPathList.Values)
@@ -431,183 +436,183 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
 
 
-            Debug.WriteLine("Done " + DateTime.Now);
-                    foreach (var elemnet in resultPathList)
-                    {
+            Debug.WriteLine("Done " + DateTime.UtcNow);
+            foreach (var elemnet in resultPathList)
+            {
                 var node = elemnet.Value;
-                        var checkSet = new HashSet<Guid>();
-                        var tmpNode = node;
-                        var resultPath = new List<RouteViewModel>();
-                        var firstRoute = new RouteViewModel()
-                        {
-                            StationList = new List<StationViewModel>(),
-                            Name = "Đi bộ",
-                            Distance = (decimal)minDisEnd
-                        };
-                Guid startId =new Guid( elemnet.Key.Substring(0, 36));
+                var checkSet = new HashSet<Guid>();
+                var tmpNode = node;
+                var resultPath = new List<RouteViewModel>();
+                var firstRoute = new RouteViewModel()
+                {
+                    StationList = new List<StationViewModel>(),
+                    Name = "Đi bộ",
+                    Distance = (decimal)minDisEnd
+                };
+                Guid startId = new Guid(elemnet.Key.Substring(0, 36));
                 Guid endId = new Guid(elemnet.Key.Substring(37, 36));
                 var start = await _unitOfWork.StationRepository.GetById(startId);
                 var end = await _unitOfWork.StationRepository.GetById(endId);
-                        firstRoute.StationList.Add(customerEndPoint.AsStationViewModel());
-                        firstRoute.StationList.Add(end.AsStationViewModel());
-                        resultPath.Add(firstRoute);
-                        var currentStation = end;
-                        bool check = true;
-                        while (tmpNode != null)
+                firstRoute.StationList.Add(customerEndPoint.AsStationViewModel());
+                firstRoute.StationList.Add(end.AsStationViewModel());
+                resultPath.Add(firstRoute);
+                var currentStation = end;
+                bool check = true;
+                while (tmpNode != null)
+                {
+                    if (!checkSet.Add(tmpNode.Value))
+                    {
+                        check = false;
+                        break;
+                    }
+                    else
+                    {
+                        LinkRoute path = null;
+                        try
                         {
-                            if (!checkSet.Add(tmpNode.Value))
+                            path = await _unitOfWork.LinkRouteRepository.Query().Where(x => (x.FirstRouteId.Equals(tmpNode.Value) && x.SecondRouteId.Equals(tmpNode.Parent.Value)) || (x.SecondRouteId.Equals(tmpNode.Value) && x.FirstRouteId.Equals(tmpNode.Parent.Value))).FirstOrDefaultAsync();
+                        }
+                        catch
+                        {
+                            path = new LinkRoute()
+                            {
+                                StationId = start.StationId
+                            };
+                        }
+                        var stationListOfRoute = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value)).OrderBy(x => x.OrderNumber).ToListAsync();
+                        var route = (await _unitOfWork.RouteRepository.GetById(tmpNode.Value)).AsRouteViewModel();
+                        route.StationList = new List<StationViewModel>();
+                        if (path.LinkStationId == null)
+                        {
+                            var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(path.StationId)).FirstOrDefaultAsync();
+                            var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
+                            if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
+                            {
+                                int j = 0;
+                                for (int i = stationRouteOld.OrderNumber; i != stationRouteNew.OrderNumber - 1; i--)
+                                {
+                                    var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
+                                    route.StationList.Add(station.AsStationViewModel());
+                                    j++;
+                                }
+                                if (j == 1)
+                                {
+                                    check = false;
+                                }
+                                route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
+                                resultPath.Add(route);
+                                currentStation = await _unitOfWork.StationRepository.GetById(path.StationId.Value);
+                            }
+                            else
                             {
                                 check = false;
                                 break;
                             }
-                            else
+                        }
+                        else
+                        {
+                            var linkStation = await _unitOfWork.LinkStationRepository.GetById(path.LinkStationId.Value);
+                            var firstStation = await _unitOfWork.StationRepository.GetById(linkStation.FirstStationId);
+                            var secondStation = await _unitOfWork.StationRepository.GetById(linkStation.SecondStationId);
+                            var checkFirstStation = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
+                            if (checkFirstStation != null)
                             {
-                                LinkRoute path = null;
-                                try
+                                var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
+                                var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
+                                if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
                                 {
-                                    path = await _unitOfWork.LinkRouteRepository.Query().Where(x => (x.FirstRouteId.Equals(tmpNode.Value) && x.SecondRouteId.Equals(tmpNode.Parent.Value)) || (x.SecondRouteId.Equals(tmpNode.Value) && x.FirstRouteId.Equals(tmpNode.Parent.Value))).FirstOrDefaultAsync();
-                                }
-                                catch
-                                {
-                                    path = new LinkRoute()
+                                    for (int i = stationRouteOld.OrderNumber; i != stationRouteNew.OrderNumber - 1; i--)
                                     {
-                                        StationId = start.StationId
+                                        var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
+                                        route.StationList.Add(station.AsStationViewModel());
+
+                                    }
+                                    //route.StationList.Add(secondStation.AsStationViewModel());
+                                    route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
+                                    resultPath.Add(route);
+                                    var midRoute = new RouteViewModel()
+                                    {
+                                        StationList = new List<StationViewModel>(),
+                                        Name = "Đi bộ",
+                                        Distance = linkStation.Distance
                                     };
-                                }
-                                var stationListOfRoute = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value)).OrderBy(x => x.OrderNumber).ToListAsync();
-                                var route = (await _unitOfWork.RouteRepository.GetById(tmpNode.Value)).AsRouteViewModel();
-                                route.StationList = new List<StationViewModel>();
-                                if (path.LinkStationId == null)
-                                {
-                                    var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(path.StationId)).FirstOrDefaultAsync();
-                                    var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
-                                    if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
-                                    {
-                                        int j = 0;
-                                        for (int i = stationRouteOld.OrderNumber; i != stationRouteNew.OrderNumber - 1; i--)
-                                        {
-                                            var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                            route.StationList.Add(station.AsStationViewModel());
-                                            j++;
-                                        }
-                                        if (j == 1)
-                                        {
-                                            check = false;
-                                        }
-                                        route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
-                                        resultPath.Add(route);
-                                        currentStation = await _unitOfWork.StationRepository.GetById(path.StationId.Value);
-                                    }
-                                    else
-                                    {
-                                        check = false;
-                                        break;
-                                    }
+                                    midRoute.StationList.Add(firstStation.AsStationViewModel());
+                                    midRoute.StationList.Add(secondStation.AsStationViewModel());
+                                    resultPath.Add(midRoute);
+                                    currentStation = secondStation;
                                 }
                                 else
                                 {
-                                    var linkStation = await _unitOfWork.LinkStationRepository.GetById(path.LinkStationId.Value);
-                                    var firstStation = await _unitOfWork.StationRepository.GetById(linkStation.FirstStationId);
-                                    var secondStation = await _unitOfWork.StationRepository.GetById(linkStation.SecondStationId);
-                                    var checkFirstStation= await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
-                                    if (checkFirstStation!=null)
-                                    {
-                                        var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(firstStation.StationId)).FirstOrDefaultAsync();
-                                        var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
-                                        if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
-                                        {
-                                            for (int i = stationRouteOld.OrderNumber ; i != stationRouteNew.OrderNumber - 1; i--)
-                                            {
-                                                var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                                route.StationList.Add(station.AsStationViewModel());
-
-                                            }
-                                            //route.StationList.Add(secondStation.AsStationViewModel());
-                                            route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
-                                            resultPath.Add(route);
-                                            var midRoute = new RouteViewModel()
-                                            {
-                                                StationList = new List<StationViewModel>(),
-                                                Name = "Đi bộ",
-                                                Distance = linkStation.Distance
-                                            };
-                                            midRoute.StationList.Add(firstStation.AsStationViewModel());
-                                            midRoute.StationList.Add(secondStation.AsStationViewModel());
-                                            resultPath.Add(midRoute);
-                                            currentStation = secondStation;
-                                        }
-                                        else
-                                        {
-                                            check = false;
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(secondStation.StationId)).FirstOrDefaultAsync();
-                                        var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
-                                      //  int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
-                                        if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
-                                        {
-                                            for (int i = stationRouteOld.OrderNumber ; i != stationRouteNew.OrderNumber -1; i --)
-                                            {
-                                                var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
-                                                route.StationList.Add(station.AsStationViewModel());
-                                            }
-                                            //route.StationList.Add(firstStation.AsStationViewModel());
-                                            route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
-                                            resultPath.Add(route);
-                                            var midRoute = new RouteViewModel()
-                                            {
-                                                StationList = new List<StationViewModel>(),
-                                                Name = "Đi bộ",
-                                                Distance = linkStation.Distance
-                                            };
-                                            midRoute.StationList.Add(secondStation.AsStationViewModel());
-                                            midRoute.StationList.Add(firstStation.AsStationViewModel());
-                                            resultPath.Add(midRoute);
-                                            currentStation = firstStation;
-                                        }
-                                        else
-                                        {
-                                            check = false;
-                                            break;
-                                        }
-                                    }
+                                    check = false;
+                                    break;
                                 }
-                                tmpNode = tmpNode.Parent;
+                            }
+                            else
+                            {
+                                var stationRouteNew = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(secondStation.StationId)).FirstOrDefaultAsync();
+                                var stationRouteOld = await _unitOfWork.StationRouteRepository.Query().Where(x => x.RouteId.Equals(tmpNode.Value) && x.StationId.Equals(currentStation.StationId)).FirstOrDefaultAsync();
+                                //  int step = stationRouteOld.OrderNumber < stationRouteNew.OrderNumber ? 1 : -1;
+                                if (stationRouteOld.OrderNumber > stationRouteNew.OrderNumber)
+                                {
+                                    for (int i = stationRouteOld.OrderNumber; i != stationRouteNew.OrderNumber - 1; i--)
+                                    {
+                                        var station = await _unitOfWork.StationRepository.GetById(stationListOfRoute[i].StationId);
+                                        route.StationList.Add(station.AsStationViewModel());
+                                    }
+                                    //route.StationList.Add(firstStation.AsStationViewModel());
+                                    route.Distance = Math.Abs(stationRouteOld.Distance - stationRouteNew.Distance);
+                                    resultPath.Add(route);
+                                    var midRoute = new RouteViewModel()
+                                    {
+                                        StationList = new List<StationViewModel>(),
+                                        Name = "Đi bộ",
+                                        Distance = linkStation.Distance
+                                    };
+                                    midRoute.StationList.Add(secondStation.AsStationViewModel());
+                                    midRoute.StationList.Add(firstStation.AsStationViewModel());
+                                    resultPath.Add(midRoute);
+                                    currentStation = firstStation;
+                                }
+                                else
+                                {
+                                    check = false;
+                                    break;
+                                }
                             }
                         }
-                        if (check)
-                        {
-                            var lastRoute = new RouteViewModel()
-                            {
-                                StationList = new List<StationViewModel>(),
-                                Name = "Đi bộ",
-                                Distance = (decimal)minDisStart
-                            };
-                            lastRoute.StationList.Add(currentStation.AsStationViewModel());
-                            lastRoute.StationList.Add(customerStartPoint.AsStationViewModel());
-                            resultPath.Add(lastRoute);
-                            result.Add(resultPath);
-                           /* if (result.Count >= 2)
-                            {
-                                break;
-                            }*/
-                        }
+                        tmpNode = tmpNode.Parent;
                     }
-                    /*if (result.Count >= 2)
-                    {
-                        break;
-                    }
-                    Debug.WriteLine("truy vet " + DateTime.Now);*/
-                
-               /* if (result.Count >= 2)
+                }
+                if (check)
                 {
-                    break;
-                }*/
-            
-            
+                    var lastRoute = new RouteViewModel()
+                    {
+                        StationList = new List<StationViewModel>(),
+                        Name = "Đi bộ",
+                        Distance = (decimal)minDisStart
+                    };
+                    lastRoute.StationList.Add(currentStation.AsStationViewModel());
+                    lastRoute.StationList.Add(customerStartPoint.AsStationViewModel());
+                    resultPath.Add(lastRoute);
+                    result.Add(resultPath);
+                    /* if (result.Count >= 2)
+                     {
+                         break;
+                     }*/
+                }
+            }
+            /*if (result.Count >= 2)
+            {
+                break;
+            }
+            Debug.WriteLine("truy vet " + DateTime.UtcNow);*/
+
+            /* if (result.Count >= 2)
+             {
+                 break;
+             }*/
+
+
             return result;
         }
 
@@ -618,7 +623,13 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var customer = await _unitOfWork.CustomerRepository.GetById(customerId.Value);
             var vehicle = await _unitOfWork.VehicleRepository.GetById(model.VehicleId);
             var today = DateTime.UtcNow.AddHours(7);
-            var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId.Value) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
+            var oldCustomerTrip = await _unitOfWork.CustomerTripRepository
+                                    .Query()
+                                    .Where(x => x.CustomerId.Equals(customerId.Value) &&
+                                                (x.Status == (int)CustomerTripStatus.New || x.Status == (int)CustomerTripStatus.OutRangeNew) &&
+                                                x.VehicleId.Equals(vehicle.VehicleId))
+                                    .OrderByDescending(x => x.CreatedDate)
+                                    .FirstOrDefaultAsync();
             var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME)).FirstOrDefaultAsync();
             if (oldCustomerTrip != null && DateTime.UtcNow.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < double.Parse(_configuration["TripTimeOut"]))
             {
@@ -680,7 +691,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.OrderRepository.Update(order);
 
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
-                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    if (oldCustomerTrip.Status == (int)CustomerTripStatus.OutRangeNew)
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.OutRangeDone;
+                    }
+                    else
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    }
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customerId)).FirstOrDefaultAsync();
@@ -689,7 +707,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         WalletId = wallet.WalletId,
                         Amount = refundPrice,
                         Content = "Hoàn trả tiền dư từ dịch vụ xe buýt",
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         OrderId = order.OrderId,
                         Status = 1,
                         TransactionId = Guid.NewGuid()
@@ -707,9 +725,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     var partnerTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Đối tác gửi lại "+(decimal.Parse(_configuration["Partner"])*100)+"% tiền thừa",
+                        Content = $"Đối tác gửi lại " + (decimal.Parse(_configuration["Partner"]) * 100) + "% tiền thừa",
                         OrderId = order.OrderId,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         Amount = -(refundPrice * decimal.Parse(_configuration["Partner"])),
                         Status = 1,
                         WalletId = partnerWallet.WalletId
@@ -729,7 +747,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         TransactionId = Guid.NewGuid(),
                         Content = $"Hệ Thống Gửi lại " + (decimal.Parse(_configuration["Admin"]) * 100) + "% tiền thừa",
                         OrderId = order.OrderId,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         Amount = -(refundPrice * decimal.Parse(_configuration["Admin"])),
                         Status = 1,
                         WalletId = adminWallet.WalletId
@@ -738,12 +756,19 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     await _unitOfWork.TransactionRepository.Add(adminTransaction);
                     _unitOfWork.WalletRepository.Update(adminWallet);
 
-                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    if (oldCustomerTrip.Status == (int)CustomerTripStatus.OutRangeNew)
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.OutRangeDone;
+                    }
+                    else
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    }
                     oldCustomerTrip.Distance = distance;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
                     CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-                    var mesReturnPrice = string.Format(elGR,"Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
+                    var mesReturnPrice = string.Format(elGR, "Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn phí dịch vụ xe buýt", mesReturnPrice);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
@@ -766,7 +791,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     // cập nhật lại trạng thái của order -> hoàn thành
                     order.Status = (int)OrderStatus.Done;
                     _unitOfWork.OrderRepository.Update(order);
-                    
+
 
                     // Lấy full giá của trip
                     var route = await _unitOfWork.RouteRepository.GetById(tripEntity.RouteId);
@@ -786,7 +811,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         TransactionId = Guid.NewGuid(),
                         Content = $"Đối tác gửi tiền hoa hồng lại cho hệ thống",
                         OrderId = order.OrderId,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         Amount = -priceAfterRefunding * decimal.Parse(_configuration["Admin"]), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = partnerWallet.WalletId
@@ -806,7 +831,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         TransactionId = Guid.NewGuid(),
                         Content = $"Hệ thống nhận tiền hoa hồng từ đối tác",
                         OrderId = order.OrderId,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         Amount = priceAfterRefunding * decimal.Parse(_configuration["Admin"]),
                         Status = 1,
                         WalletId = adminWallet.WalletId
@@ -817,13 +842,20 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                     // cập nhật thêm vị trí xuống trạm và trạng thái -> hoàn thành của customer trip
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
-                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    if (oldCustomerTrip.Status == (int)CustomerTripStatus.OutRangeNew)
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.OutRangeDone;
+                    }
+                    else
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    }
                     oldCustomerTrip.Distance = distance;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     await _unitOfWork.SaveChangesAsync();
                     CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-                    var mesReturnPrice = string.Format(elGR,"Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance/1000);
+                    var mesReturnPrice = string.Format(elGR, "Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance / 1000);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo gói dịch vụ", mesReturnPrice);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
@@ -849,7 +881,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             }
             else
             {
-                
+
                 var trip = await _unitOfWork.TripRepository.Query().Where(x => x.VehicleId.Equals(model.VehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek - 1) % 7 && today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0).FirstOrDefaultAsync();
 
 
@@ -865,7 +897,6 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 {
                     var packageTmp = await _unitOfWork.PackageRepository.GetById(package.PackageId);
                     quantityPeople = packageTmp.PeopleQuantity;
-                    
                 }
 
                 OrderDetailsInfo orderDetails = new OrderDetailsInfo()
@@ -898,20 +929,26 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 var customerTrip = new CustomerTrip()
                 {
                     CustomerTripId = Guid.NewGuid(),
-                    CreatedDate = DateTime.Now,
-                    ModifiedDate = DateTime.Now,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
                     CustomerId = customerId.Value,
                     TripId = trip.TripId,
                     VehicleId = model.VehicleId,
                     Distance = route.Distance,
                     Coordinates = model.Longitude + ";" + model.Latitude,
-                    Status = 1
+                    Status = (int)CustomerTripStatus.New
                 };
+
+                if (package != null && route.Distance > (package.LimitDistances - package.CurrentDistances))
+                {
+                    customerTrip.Status = (int)CustomerTripStatus.OutRangeNew;
+                }
+
                 await _unitOfWork.CustomerTripRepository.Add(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
                 var driver = await _unitOfWork.DriverRepository.GetById(trip.DriverId);
-                
-                var mes = string.Format("Khách hàng {0} vừa lên xe. Số người lên xe {1} người", customer.FirstName+" "+customer.LastName , quantityPeople);
+
+                var mes = string.Format("Khách hàng {0} vừa lên xe. Số người lên xe {1} người", customer.FirstName + " " + customer.LastName, quantityPeople);
                 await _firebaseCloud.SendNotificationForRentingService(driver.RegistrationToken, "Thông báo lên xe", mes);
                 SaveNotificationModel noti = new SaveNotificationModel()
                 {
@@ -940,9 +977,15 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             var today = DateTime.UtcNow.AddHours(7);
             var customer = await _unitOfWork.CustomerRepository.GetById(model.CustomerId);
 
-            var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
+            var oldCustomerTrip = await _unitOfWork.CustomerTripRepository
+                                    .Query()
+                                    .Where(x => x.CustomerId.Equals(model.CustomerId) &&
+                                                (x.Status == (int)CustomerTripStatus.New || x.Status == (int)CustomerTripStatus.OutRangeNew) &&
+                                                x.VehicleId.Equals(vehicle.VehicleId))
+                                    .OrderByDescending(x => x.CreatedDate)
+                                    .FirstOrDefaultAsync();
             var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Contains(ServiceTypeDefaultData.BUS_SERVICE_NAME)).FirstOrDefaultAsync();
-            if (oldCustomerTrip != null && DateTime.Now.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < double.Parse(_configuration["TripTimeOut"]))
+            if (oldCustomerTrip != null && DateTime.UtcNow.TimeOfDay.TotalMinutes - oldCustomerTrip.CreatedDate.TimeOfDay.TotalMinutes < double.Parse(_configuration["TripTimeOut"]))
             {
                 var location = oldCustomerTrip.Coordinates.Split(';');
                 decimal startLongitude = decimal.Parse(location[0]);
@@ -994,7 +1037,30 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
                 var order = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId) && x.ServiceTypeId.Equals(serviceType.ServiceTypeId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
                 refundPrice = order.TotalPrice - refundPrice;
-                if (refundPrice > 0)
+
+                //
+                bool isNormalFLow = true;
+                // decimal tempPriceSpecialCase = 0M;
+
+                // if (oldCustomerTrip.Status == (int)CustomerTripStatus.OutRangeNew)
+                // {
+                //     var package = await _packageService.GetCurrentPackageIsUsed(customer.CustomerId);
+                //     if (package != null && distance < (package.LimitDistances - package.CurrentDistances))
+                //     {
+                //         tempPriceSpecialCase = order.TotalPrice;
+                //         order.TotalPrice = 0;
+                //         order.Status = (int)OrderStatus.Done;
+                //         _unitOfWork.OrderRepository.Update(order);
+
+
+                //         oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+
+                //         isNormalFLow = false;
+                //     }
+                // }
+
+
+                if (refundPrice > 0 && isNormalFLow)
                 {
 
                     order.TotalPrice = order.TotalPrice - refundPrice;
@@ -1002,8 +1068,6 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     _unitOfWork.OrderRepository.Update(order);
 
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
-                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
-                    _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
                     var transaction = new Transaction()
@@ -1011,7 +1075,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         WalletId = wallet.WalletId,
                         Amount = refundPrice,
                         Content = "Hoàn trả tiền dư",
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         OrderId = order.OrderId,
                         Status = 1,
                         TransactionId = Guid.NewGuid()
@@ -1031,7 +1095,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         TransactionId = Guid.NewGuid(),
                         Content = $"Đối tác gửi lại " + (decimal.Parse(_configuration["Partner"]) * 100) + "% tiền thừa",
                         OrderId = order.OrderId,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         Amount = -(refundPrice * decimal.Parse(_configuration["Partner"])), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = partnerWallet.WalletId
@@ -1051,7 +1115,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         TransactionId = Guid.NewGuid(),
                         Content = $"Hệ Thống Gửi lại " + (decimal.Parse(_configuration["Admin"]) * 100) + "% tiền thừa",
                         OrderId = order.OrderId,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         Amount = -(refundPrice * decimal.Parse(_configuration["Admin"])), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = adminWallet.WalletId
@@ -1060,12 +1124,19 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     await _unitOfWork.TransactionRepository.Add(adminTransaction);
                     _unitOfWork.WalletRepository.Update(adminWallet);
 
-                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    if (oldCustomerTrip.Status == (int)CustomerTripStatus.OutRangeNew)
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.OutRangeDone;
+                    }
+                    else
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    }
                     oldCustomerTrip.Distance = distance;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
                     await _unitOfWork.SaveChangesAsync();
                     CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-                    var mesReturnPrice = string.Format(elGR,"Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
+                    var mesReturnPrice = string.Format(elGR, "Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", refundPrice);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn phí dịch vụ xe buýt", mesReturnPrice);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
@@ -1082,14 +1153,14 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
                 // trường hợp order có total price = 0 là xài gói dịch vụ, 
                 // tránh trường hợp order có total price != 0 và refundPrice < 0
-                else if (order.TotalPrice == 0)
+                else if (order.TotalPrice == 0 && isNormalFLow)
                 {
-                    
+
                     // cập nhật lại trạng thái của order -> hoàn thành
                     order.Status = (int)OrderStatus.Done;
                     _unitOfWork.OrderRepository.Update(order);
 
-                    
+
 
                     // Lấy full giá của trip
                     var route = await _unitOfWork.RouteRepository.GetById(tripEntity.RouteId);
@@ -1109,7 +1180,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         TransactionId = Guid.NewGuid(),
                         Content = $"Đối tác gửi tiền hoa hồng lại cho hệ thống",
                         OrderId = order.OrderId,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         Amount = -priceAfterRefunding * decimal.Parse(_configuration["Admin"]), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = partnerWallet.WalletId
@@ -1129,7 +1200,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                         TransactionId = Guid.NewGuid(),
                         Content = $"Hệ thống nhận tiền hoa hồng từ đối tác",
                         OrderId = order.OrderId,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.UtcNow,
                         Amount = priceAfterRefunding * decimal.Parse(_configuration["Admin"]),
                         Status = 1,
                         WalletId = adminWallet.WalletId
@@ -1140,13 +1211,20 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
                     // cập nhật thêm vị trí xuống trạm và trạng thái -> hoàn thành của customer trip
                     oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
-                    oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    if (oldCustomerTrip.Status == (int)CustomerTripStatus.OutRangeNew)
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.OutRangeDone;
+                    }
+                    else
+                    {
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                    }
                     oldCustomerTrip.Distance = distance;
                     _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
 
                     await _unitOfWork.SaveChangesAsync();
                     CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-                    var mesReturnPrice = string.Format(elGR,"Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance/1000);
+                    var mesReturnPrice = string.Format(elGR, "Quý khách vừa sử dụng dịch vụ xe buýt hết {0:N0} Km", distance / 1000);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Thông báo gói dịch vụ", mesReturnPrice);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
@@ -1222,20 +1300,27 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 var customerTrip = new CustomerTrip()
                 {
                     CustomerTripId = Guid.NewGuid(),
-                    CreatedDate = DateTime.Now,
-                    ModifiedDate = DateTime.Now,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
                     CustomerId = model.CustomerId,
                     TripId = trip.TripId,
                     VehicleId = vehicleId,
                     Distance = route.Distance,
                     Coordinates = model.Longitude + ";" + model.Latitude,
-                    Status = 1
+                    Status = (int)CustomerTripStatus.New
                 };
+
+
+                if (package != null && route.Distance > (package.LimitDistances - package.CurrentDistances))
+                {
+                    customerTrip.Status = (int)CustomerTripStatus.OutRangeNew;
+                }
+
                 await _unitOfWork.CustomerTripRepository.Add(customerTrip);
                 await _unitOfWork.SaveChangesAsync();
 
                 var driver = await _unitOfWork.DriverRepository.GetById(trip.DriverId);
-                
+
                 var mes = string.Format("Khách hàng {0} vừa lên xe. Số người lên xe {1} người", customer.FirstName + " " + customer.LastName, quantityPeople);
                 await _firebaseCloud.SendNotificationForRentingService(driver.RegistrationToken, "Thông báo lên xe", mes);
                 SaveNotificationModel noti = new SaveNotificationModel()
@@ -1291,7 +1376,13 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
 
             var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
-            var oldCustomerTrip = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.CustomerId.Equals(customerId) && x.Status == 1 && x.VehicleId.Equals(vehicle.VehicleId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
+            var oldCustomerTrip = await _unitOfWork.CustomerTripRepository
+                                    .Query()
+                                    .Where(x => x.CustomerId.Equals(customerId) &&
+                                                (x.Status == (int)CustomerTripStatus.New || x.Status == (int)CustomerTripStatus.OutRangeNew) &&
+                                                x.VehicleId.Equals(vehicle.VehicleId))
+                                    .OrderByDescending(x => x.CreatedDate)
+                                    .FirstOrDefaultAsync();
             if (oldCustomerTrip != null)
             {
                 return null;
