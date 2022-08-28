@@ -251,6 +251,8 @@ namespace TourismSmartTransportation.Business.Hubs
                                 model.Id = customer.Id;
                                 model.Longitude = customer.Longitude;
                                 model.Latitude = customer.Latitude;
+                                model.EndLongitude = customer.EndLongitude;
+                                model.EndLatitude = customer.EndLatitude;
                                 model.Seats = customer.Seats;
                                 model.Distance = customer.Distance;
                                 model.Price = customer.Price;
@@ -348,6 +350,8 @@ namespace TourismSmartTransportation.Business.Hubs
                 {
                     customer.Longitude = model.Longitude;
                     customer.Latitude = model.Latitude;
+                    customer.EndLongitude = model.EndLongitude;
+                    customer.EndLatitude = model.EndLatitude;
                     customer.PriceBookingId = model.PriceBookingId;
                     customer.Price = model.Price;
                     customer.Distance = model.Distance;
@@ -893,6 +897,8 @@ namespace TourismSmartTransportation.Business.Hubs
                         model.Id = customer.Id;
                         model.Longitude = customer.Longitude;
                         model.Latitude = customer.Latitude;
+                        model.EndLongitude = customer.EndLongitude;
+                        model.EndLatitude = customer.EndLatitude;
                         model.Seats = customer.Seats;
                         model.Distance = customer.Distance;
                         model.Price = customer.Price;

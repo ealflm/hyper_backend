@@ -12,6 +12,8 @@ namespace TourismSmartTransportation.Business.Hubs.Models
         public int Status { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }
+        public double EndLongitude { get; set; }
+        public double EndLatitude { get; set; }
         public string PlaceName { get; set; }
         public string Address { get; set; }
 
