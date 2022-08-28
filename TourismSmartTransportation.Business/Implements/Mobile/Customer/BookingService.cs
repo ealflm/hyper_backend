@@ -88,18 +88,18 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
             }
             var package = await _packageService.GetCurrentPackageIsUsed(customerId);
-            if(package != null)
+            if (package != null)
             {
                 result.PriceAfterDiscount = result.TotalPrice * package.DiscountValueTrip;
             }
             return result;
         }
 
-        public async Task<Response> RefundBooking(double amount, Guid customerId, string message = "")
+        public async Task<Response> RefundBooking(double amount, double refundPrice, Guid customerId, string message = "")
         {
             var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
             CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-            string mes = string.Format(elGR, "Quý khách được hoàn {0}% tiền đặt xe {1:N0} VNĐ ", message, amount);
+            string mes = string.Format(elGR, "Hóa đơn đặt xe của quý khách là {0:N0} VNĐ và được hoàn tiền {1:N0} VNĐ đã khấu trừ {2}% phí hủy cuốc ", amount, message);
             await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn tiền đặt xe", mes);
             SaveNotificationModel noti = new SaveNotificationModel()
             {

@@ -74,6 +74,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
 
             string content = "";
             bool isUsingService = true;
+            OrderDetailOfBookingService tempOrderDetailOfBooking = null;
 
             foreach (OrderDetailsInfo x in order.OrderDetailsInfos)
             {
@@ -125,7 +126,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     }
                     else if (serviceType.Name.Contains(ServiceTypeDefaultData.BOOK_SERVICE_NAME))
                     {
-                        var orderDetail = new OrderDetailOfBookingService()
+                        tempOrderDetailOfBooking = new OrderDetailOfBookingService()
                         {
                             OrderId = newOrder.OrderId,
                             PriceOfBookingServiceId = x.PriceOfBookingServiceId.Value,
@@ -134,7 +135,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                             Quantity = x.Quantity,
                             Status = 1
                         };
-                        await _unitOfWork.OrderDetailOfBookingServiceRepository.Add(orderDetail);
+                        // await _unitOfWork.OrderDetailOfBookingServiceRepository.Add(orderDetail);
                         content = $"Sử dụng {ServiceTypeDefaultData.BOOK_SERVICE_CONTENT}";
                         newOrder.Status = (int)OrderStatus.Paid; // Cập nhật lại trạng thái order đổi với service 'đặt xe' 
                         // await _unitOfWork.OrderRepository.Add(newOrder);
@@ -233,11 +234,19 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                                 newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BOOK_SERVICE_ID) &&
                                 numberOfTripsNow <= currentPackageIsUsed.LimitNumberOfTrips)
                     {
-                        orderPrice = newOrder.TotalPrice * currentPackageIsUsed.DiscountValueTrip;
+                        orderPrice = newOrder.TotalPrice - newOrder.TotalPrice * (currentPackageIsUsed.DiscountValueTrip * 0.01M);
                         newOrder.TotalPrice = orderPrice;
                         isUsingPackage = true;
+                        tempOrderDetailOfBooking.Price = orderPrice;
+                        newOrderTotalPrice = orderPrice;
                     }
                 }
+            }
+
+            // cập nhật order detail cho dịch vụ booking xuông db.
+            if (tempOrderDetailOfBooking != null)
+            {
+                await _unitOfWork.OrderDetailOfBookingServiceRepository.Add(tempOrderDetailOfBooking);
             }
 
 
@@ -366,7 +375,10 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 else
                 {
                     currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(newOrder.CustomerId);
-                    mes += string.Format(" với gói dịch vụ giảm {0:N0}%.", (currentPackageIsUsed.DiscountValueTrip));
+                    mes = string.Format(elGR, content + " có áp dụng gói dịch vụ giảm {0:N0}% và hóa đơn thanh toán là {1:N0} VNĐ",
+                                                currentPackageIsUsed.DiscountValueTrip,
+                                                tempOrderDetailOfBooking.Price);
+                    // mes += string.Format(" .", (currentPackageIsUsed.DiscountValueTrip));
                 }
 
             }
