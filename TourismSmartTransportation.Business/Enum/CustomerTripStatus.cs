@@ -9,4 +9,6 @@ public enum CustomerTripStatus
     Done = 6, // Customer trip hoàn thành -> all service
     Requesting = 7, // Yêu cầu trả xe
     Arrived = 8, // đã đến
+    OutRangeNew = 9,
+    OutRangeDone = 10,
 }

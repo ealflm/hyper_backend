@@ -66,7 +66,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 CustomerId = order.CustomerId,
                 ServiceTypeId = order.ServiceTypeId != null ? order.ServiceTypeId.Value : null,
                 DiscountId = order.DiscountId != null ? order.DiscountId.Value : null,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 TotalPrice = order.TotalPrice,
                 PartnerId = order.PartnerId,
                 Status = (int)OrderStatus.WrongStatus,
@@ -200,7 +200,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             if (isUsingService) // kiểm tra có sử dụng package hay không
             {
                 currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(newOrder.CustomerId);
-                if (currentPackageIsUsed != null && order.Distance != null)
+                if (currentPackageIsUsed != null && order.Distance != null && order.Distance < (currentPackageIsUsed.LimitDistances - currentPackageIsUsed.CurrentDistances))
                 {
                     dynamic distancesNow = null;
                     dynamic cardSwipesNow = null;
@@ -304,7 +304,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     TransactionId = Guid.NewGuid(),
                     Content = $"Đối tác nhận " + (decimal.Parse(_configuration["Partner"]) * 100) + "% hóa đơn",
                     OrderId = newOrder.OrderId,
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = DateTime.UtcNow,
                     Amount = newOrder.TotalPrice * decimal.Parse(_configuration["Partner"]),
                     Status = 1,
                     WalletId = partnerWallet.WalletId
@@ -334,7 +334,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                 TransactionId = Guid.NewGuid(),
                 Content = $"Hệ thống nhận " + (decimal.Parse(_configuration["Admin"]) * 100) + "% hóa đơn",
                 OrderId = newOrder.OrderId,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 Amount = newOrder.TotalPrice * decimal.Parse(_configuration["Admin"]),
                 Status = 1,
                 WalletId = adminWallet.WalletId

@@ -276,12 +276,13 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                                     .ToListAsync();
 
                     var timeEnd = order.CreatedDate.AddDays((double)currentPackages[0].Package.Duration);
-                    if (DateTime.Now.CompareTo(timeEnd) < 0) // Gói dịch vụ còn hạn sử dụng
+                    if (DateTime.UtcNow.CompareTo(timeEnd) < 0) // Gói dịch vụ còn hạn sử dụng
                     {
                         var customerTrips = await _unitOfWork.CustomerTripRepository
                                             .Query()
                                             .Where(x => x.CustomerId == customerId)
                                             .Where(x => x.CreatedDate.CompareTo(order.CreatedDate) >= 0 && x.CreatedDate.CompareTo(timeEnd) <= 0)
+                                            .Where(x => x.Status != (int)CustomerTripStatus.OutRangeNew && x.Status != (int)CustomerTripStatus.OutRangeDone)
                                             .Join(_unitOfWork.VehicleRepository.Query(),
                                                 customerTrip => customerTrip.VehicleId,
                                                 vehicle => vehicle.VehicleId,
