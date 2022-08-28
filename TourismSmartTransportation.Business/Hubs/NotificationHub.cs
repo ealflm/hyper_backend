@@ -535,7 +535,7 @@ namespace TourismSmartTransportation.Business.Hubs
 
                     driversList.Sort(delegate (DataHubModel x, DataHubModel y)
                     {
-                        return x.Point.CompareTo(y.Point);
+                        return y.Point.CompareTo(x.Point);
                     });
 
                     foreach (var item2 in driversList)
@@ -1047,10 +1047,10 @@ namespace TourismSmartTransportation.Business.Hubs
                     var partnerTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Đối tác gửi lại 90% tiền thừa",
+                        Content = $"Đối tác gửi lại {decimal.Parse(_configuration["Partner"]) * 100}% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.9M), // xét dấu âm cho giao dịch trừ tiền
+                        Amount = -(refundPrice * decimal.Parse(_configuration["Partner"])), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = partnerWallet.WalletId
                     };
@@ -1067,10 +1067,10 @@ namespace TourismSmartTransportation.Business.Hubs
                     var adminTransaction = new Transaction()
                     {
                         TransactionId = Guid.NewGuid(),
-                        Content = $"Hệ Thống Gửi lại 10% tiền thừa",
+                        Content = $"Hệ Thống Gửi lại {decimal.Parse(_configuration["Admin"]) * 100}% tiền thừa",
                         OrderId = order.OrderId,
                         CreatedDate = DateTime.Now,
-                        Amount = -(refundPrice * 0.1M), // xét dấu âm cho giao dịch trừ tiền
+                        Amount = -(refundPrice * decimal.Parse(_configuration["Admin"])), // xét dấu âm cho giao dịch trừ tiền
                         Status = 1,
                         WalletId = adminWallet.WalletId
                     };
@@ -1080,7 +1080,7 @@ namespace TourismSmartTransportation.Business.Hubs
 
                     await _unitOfWork.SaveChangesAsync();
 
-                    await _bookingService.RefundBooking((double)refundPrice, Guid.Parse(customerId), message);
+                    await _bookingService.RefundBooking((double)customer.Price, (double)refundPrice, Guid.Parse(customerId), message);
 
                     // cập nhật status customer
                     customer.Status = (int)CustomerStatus.Normal;
