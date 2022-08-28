@@ -865,14 +865,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 {
                     var packageTmp = await _unitOfWork.PackageRepository.GetById(package.PackageId);
                     quantityPeople = packageTmp.PeopleQuantity;
-                    if (package.LimitDistances-package.CurrentDistances < route.Distance && package.CurrentCardSwipes<=package.LimitCardSwipes)
-                    {
-                        return new()
-                        {
-                            StatusCode = 400,
-                            Message = "Thanh toán thất bại khoảng cách còn lại trong gói dịch vụ không đủ"
-                        };
-                    }
+                    
                 }
 
                 OrderDetailsInfo orderDetails = new OrderDetailsInfo()
@@ -1197,14 +1190,6 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 {
                     var packageTmp = await _unitOfWork.PackageRepository.GetById(package.PackageId);
                     quantityPeople = packageTmp.PeopleQuantity;
-                    if (package.LimitDistances - package.CurrentDistances < route.Distance && package.CurrentCardSwipes <= package.LimitCardSwipes)
-                    {
-                        return new()
-                        {
-                            StatusCode = 400,
-                            Message = "Thanh toán thất bại khoảng cách còn lại trong gói dịch vụ không đủ"
-                        };
-                    }
                 }
 
                 OrderDetailsInfo orderDetails = new OrderDetailsInfo()
