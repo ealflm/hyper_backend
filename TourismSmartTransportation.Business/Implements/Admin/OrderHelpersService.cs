@@ -310,7 +310,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     WalletId = partnerWallet.WalletId
                 };
 
-                if (isUsingPackage)
+                if (isUsingPackage && tempOrderDetailOfBooking == null)
                 {
                     // nhận toàn bộ tiền trip từ khách hàng trước và sẽ đưa phần trăm lại cho admin sau khi mà customer hoàn thành trip
                     partnerTransaction.Amount = orderPrice;
@@ -350,8 +350,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             // Cập nhật lại ví của admin
             adminWallet.AccountBalance += adminTransaction.Amount;
 
-            // Cập nhật lại ví trong trường hợp khách hàng có sử dụng dịch vụ
-            if (isUsingPackage)
+            // Cập nhật lại ví trong trường hợp khách hàng có sử dụng dịch vụ xe buýt
+            if (isUsingPackage && tempOrderDetailOfBooking == null)
             {
                 // chuyển toàn bộ tiền của trip cho đối tác trước và nhận refund price từ đối tác lại sau khi customer hoàn thành trip
                 adminTransaction.Amount = -orderPrice;
