@@ -988,7 +988,7 @@ namespace TourismSmartTransportation.Business.Hubs
                     _logger.LogInformation($"----------- KHOẢNG CÁCH HIỆN TẠI GIỮA CUSTOMER AND DRIVER:  {distanceBetween}-----------------");
                     _logger.LogInformation($"----------- KHOẢNG CÁCH LÚC ĐẦU GIỮA CUSTOMER AND DRIVER:  {driver.DistanceBetween}-----------------");
 
-                    string message = "100";
+                    string message = "";
                     var refundPrice = 0M;
                     if (driver.DistanceBetween > double.Parse(_configuration["DistanceOver"]) &&
                             ((double)driver.DistanceBetween - distanceBetween) >= ((double)driver.DistanceBetween * double.Parse(_configuration["PercentDistance"]))
@@ -996,12 +996,13 @@ namespace TourismSmartTransportation.Business.Hubs
                     {
                         _logger.LogInformation("---------------- Refund a part total price of order  ------------------");
                         refundPrice = customer.Price - customer.Price * decimal.Parse(_configuration["BookingFee"]); // tính phí vi phạm
-                        message = ((1 - decimal.Parse(_configuration["BookingFee"])) * 100).ToString();
+                        message = $"đã khấu trừ {((1 - decimal.Parse(_configuration["BookingFee"])) * 100).ToString()}% phí hủy cuốc ";
                     }
                     else
                     {
                         _logger.LogInformation("---------------- Refund all total price of order  ------------------");
                         refundPrice = customer.Price; // trả lại toàn bộ tiền cho khách
+                        message = "và không phát sinh thêm bất kì phí nào khác";
                     }
 
                     var order = await _unitOfWork.OrderRepository
@@ -1106,7 +1107,7 @@ namespace TourismSmartTransportation.Business.Hubs
 
                     //Thông báo tới driver là khách hàng đã hủy booking
 
-                    foreach (var connectionId in _connections.GetConnections(driverId))
+                    foreach (var connectionId in _connections.GetConnections(driver.Id))
                     {
                         try
                         {
