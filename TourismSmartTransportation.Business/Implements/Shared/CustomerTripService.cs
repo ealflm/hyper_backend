@@ -57,6 +57,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 x.LicensePlates = vehicle.LicensePlates;
                 x.ServiceTypeName = serviceType.Name;
                 x.CustomerName = customer.FirstName + " " + customer.LastName;
+                x.customerPhone = customer.Phone;
                 if (!vehicle.PartnerId.Equals(partnerId))
                 {
                     customerTrips.Remove(x);
