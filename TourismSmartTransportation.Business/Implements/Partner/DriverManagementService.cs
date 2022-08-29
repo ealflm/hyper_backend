@@ -118,54 +118,13 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             }
             else
             {
-                string dayOfWeek = DateTime.UtcNow.DayOfWeek.ToString();
-                int dow = -1;
+                DateTime today = DateTime.UtcNow;
                 string week = DateTime.UtcNow.Date.ToString("dd/MM/yyyy");
-
-                switch (dayOfWeek)
-                {
-                    case "Monday":
-                        {
-                            dow = (int)HyperDayOfWeek.Monday;
-                            break;
-                        }
-                    case "Tuesday":
-                        {
-                            dow = (int)HyperDayOfWeek.Tuesday;
-                            break;
-                        }
-                    case "Wednesday":
-                        {
-                            dow = (int)HyperDayOfWeek.Wednesday;
-                            break;
-                        }
-                    case "Thursday":
-                        {
-                            dow = (int)HyperDayOfWeek.Thursday;
-                            break;
-                        }
-                    case "Friday":
-                        {
-                            dow = (int)HyperDayOfWeek.Friday;
-                            break;
-                        }
-                    case "Saturday":
-                        {
-                            dow = (int)HyperDayOfWeek.Saturday;
-                            break;
-                        }
-                    case "Sunday":
-                        {
-                            dow = (int)HyperDayOfWeek.Sunday;
-                            break;
-                        }
-                    default: break;
-                }
 
                 var trips = await _unitOfWork.TripRepository
                                 .Query()
                                 .Where(y => y.DriverId == model.Id)
-                                .Where(y => y.DayOfWeek == dow)
+                                .Where(y => ((int)today.DayOfWeek % 7) == ((y.DayOfWeek - 1) % 7))
                                 .ToListAsync();
 
                 List<Trip> tripsList = new List<Trip>();
@@ -233,54 +192,13 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 }
                 else
                 {
-                    string dayOfWeek = DateTime.UtcNow.DayOfWeek.ToString();
-                    int dow = -1;
+                    DateTime today = DateTime.UtcNow;
                     string week = DateTime.UtcNow.Date.ToString("dd/MM/yyyy");
-
-                    switch (dayOfWeek)
-                    {
-                        case "Monday":
-                            {
-                                dow = (int)HyperDayOfWeek.Monday;
-                                break;
-                            }
-                        case "Tuesday":
-                            {
-                                dow = (int)HyperDayOfWeek.Tuesday;
-                                break;
-                            }
-                        case "Wednesday":
-                            {
-                                dow = (int)HyperDayOfWeek.Wednesday;
-                                break;
-                            }
-                        case "Thursday":
-                            {
-                                dow = (int)HyperDayOfWeek.Thursday;
-                                break;
-                            }
-                        case "Friday":
-                            {
-                                dow = (int)HyperDayOfWeek.Friday;
-                                break;
-                            }
-                        case "Saturday":
-                            {
-                                dow = (int)HyperDayOfWeek.Saturday;
-                                break;
-                            }
-                        case "Sunday":
-                            {
-                                dow = (int)HyperDayOfWeek.Sunday;
-                                break;
-                            }
-                        default: break;
-                    }
 
                     var trips = await _unitOfWork.TripRepository
                                     .Query()
                                     .Where(y => y.DriverId == x.Id)
-                                    .Where(y => y.DayOfWeek == dow)
+                                    .Where(y => ((int)today.DayOfWeek % 7) == ((y.DayOfWeek - 1) % 7))
                                     .ToListAsync();
 
                     List<Trip> tripsList = new List<Trip>();
