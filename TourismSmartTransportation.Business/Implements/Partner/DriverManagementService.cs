@@ -116,6 +116,85 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                 model.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(vehicle.ServiceTypeId)).Name;
                 model.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
             }
+            else
+            {
+                string dayOfWeek = DateTime.UtcNow.DayOfWeek.ToString();
+                int dow = -1;
+                string week = DateTime.UtcNow.Date.ToString("dd/MM/yyyy");
+
+                switch (dayOfWeek)
+                {
+                    case "Monday":
+                        {
+                            dow = (int)HyperDayOfWeek.Monday;
+                            break;
+                        }
+                    case "Tuesday":
+                        {
+                            dow = (int)HyperDayOfWeek.Tuesday;
+                            break;
+                        }
+                    case "Wednesday":
+                        {
+                            dow = (int)HyperDayOfWeek.Wednesday;
+                            break;
+                        }
+                    case "Thursday":
+                        {
+                            dow = (int)HyperDayOfWeek.Thursday;
+                            break;
+                        }
+                    case "Friday":
+                        {
+                            dow = (int)HyperDayOfWeek.Friday;
+                            break;
+                        }
+                    case "Saturday":
+                        {
+                            dow = (int)HyperDayOfWeek.Saturday;
+                            break;
+                        }
+                    case "Sunday":
+                        {
+                            dow = (int)HyperDayOfWeek.Sunday;
+                            break;
+                        }
+                    default: break;
+                }
+
+                var trips = await _unitOfWork.TripRepository
+                                .Query()
+                                .Where(y => y.DriverId == model.Id)
+                                .Where(y => y.DayOfWeek == dow)
+                                .ToListAsync();
+
+                List<Trip> tripsList = new List<Trip>();
+
+                foreach (var dri in trips)
+                {
+                    string[] weeks = dri.Week.Split('-');
+
+                    DateTime weekStart = DateTime.ParseExact(weeks[0], "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                    DateTime weekEnd = DateTime.ParseExact(weeks[1], "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                    DateTime currentWeek = DateTime.ParseExact(week, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+                    if (weekStart.CompareTo(currentWeek) <= 0 && currentWeek.CompareTo(weekEnd) <= 0)
+                    {
+                        tripsList.Add(dri);
+                    }
+                }
+
+                if (tripsList.Count > 0)
+                {
+                    var vehicle = await _unitOfWork.VehicleRepository.GetById(tripsList[0].VehicleId);
+                    model.LicensePlates = vehicle.LicensePlates;
+                    model.VehicleName = vehicle.Name;
+                    model.VehicleId = vehicle.VehicleId;
+                    model.VehicleTypeLabel = (await _unitOfWork.VehicleTypeRepository.GetById(vehicle.VehicleTypeId)).Label;
+                    model.ServiceTypeName = (await _unitOfWork.ServiceTypeRepository.GetById(vehicle.ServiceTypeId)).Name;
+                }
+            }
+
             var rate = await _unitOfWork.FeedbackForDriverRepository
                         .Query()
                         .Where(d => d.DriverId == model.Id)
