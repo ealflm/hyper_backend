@@ -25,5 +25,8 @@ namespace ApiVer1Url
 
         // save registration token (firebase service)
         public const string Firebase = BaseApiUrl + "/firebase";
+
+        // Notification
+        public const string Notification = BaseApiUrl + "/notification";
     }
 }
