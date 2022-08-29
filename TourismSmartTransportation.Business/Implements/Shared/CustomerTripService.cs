@@ -68,8 +68,8 @@ namespace TourismSmartTransportation.Business.Implements.Shared
         public async Task<List<CustomerTripViewModel>> GetCustomerTripsForDriver(Guid driverId)
         {
             var driver = await _unitOfWork.DriverRepository.GetById(driverId);
-            var customerTrips = await _unitOfWork.CustomerTripRepository.Query().Where(x=> x.VehicleId.Equals(driver.VehicleId)).OrderByDescending(x => x.CreatedDate).Select(x => x.AsCustomerTripViewModel()).ToListAsync();
-          
+            var customerTrips = await _unitOfWork.CustomerTripRepository.Query().Where(x => x.VehicleId.Equals(driver.VehicleId)).OrderByDescending(x => x.CreatedDate).Select(x => x.AsCustomerTripViewModel()).ToListAsync();
+
             foreach (CustomerTripViewModel x in customerTrips)
             {
                 var vehicle = await _unitOfWork.VehicleRepository.GetById(x.VehicleId);
@@ -140,31 +140,36 @@ namespace TourismSmartTransportation.Business.Implements.Shared
         public async Task<Response> ReturnVehicle(Guid customerTripId)
         {
             var customerTrip = await _unitOfWork.CustomerTripRepository.GetById(customerTripId);
+            var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
+            var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Equals("Thuê xe")).FirstOrDefaultAsync();
+            var orderRentList = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(customerTrip.CustomerId) && x.PartnerId.Equals(vehicle.PartnerId) && x.ServiceTypeId.Equals(serviceType.ServiceTypeId)).OrderByDescending(x => x.CreatedDate).ToListAsync();
+            List<OrderDetailOfRentingService> orderDetailList = new List<OrderDetailOfRentingService>();
+            Order oldOrder = null;
+            foreach (Order order in orderRentList)
+            {
+                orderDetailList = await _unitOfWork.OrderDetailOfRentingServiceRepository.Query().Where(x => x.OrderId.Equals(order.OrderId) && x.LicensePlates.Equals(vehicle.LicensePlates)).ToListAsync();
+                if (orderDetailList.Count != 0)
+                {
+                    oldOrder = order;
+                    break;
+                }
+            }
+
             if (customerTrip.Status == (int)CustomerTripStatus.Overdue)
             {
                 customerTrip.Status = (int)CustomerTripStatus.Done;
                 _unitOfWork.CustomerTripRepository.Update(customerTrip);
-                var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
+                //var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
                 vehicle.Status = (int)VehicleStatus.Ready;
                 _unitOfWork.VehicleRepository.Update(vehicle);
+                oldOrder.Status = (int)OrderStatus.Done;
+                _unitOfWork.OrderRepository.Update(oldOrder);
                 await _unitOfWork.SaveChangesAsync();
             }
             else
             {
-                var vehicle = await _unitOfWork.VehicleRepository.GetById(customerTrip.VehicleId);
-                var serviceType = await _unitOfWork.ServiceTypeRepository.Query().Where(x => x.Name.Equals("Thuê xe")).FirstOrDefaultAsync();
-                var orderRentList = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(customerTrip.CustomerId) && x.PartnerId.Equals(vehicle.PartnerId) && x.ServiceTypeId.Equals(serviceType.ServiceTypeId)).OrderByDescending(x => x.CreatedDate).ToListAsync();
-                List<OrderDetailOfRentingService> orderDetailList = new List<OrderDetailOfRentingService>();
-                Order oldOrder = null;
-                foreach (Order order in orderRentList)
-                {
-                    orderDetailList = await _unitOfWork.OrderDetailOfRentingServiceRepository.Query().Where(x => x.OrderId.Equals(order.OrderId) && x.LicensePlates.Equals(vehicle.LicensePlates)).ToListAsync();
-                    if (orderDetailList.Count != 0)
-                    {
-                        oldOrder = order;
-                        break;
-                    }
-                }
+
+
                 decimal returnPrice = orderDetailList[0].PriceOfRentingServiceId != null ? orderDetailList[1].Price : orderDetailList[0].Price;
                 decimal bonusPrice = oldOrder.TotalPrice - returnPrice;
                 bonusPrice = bonusPrice * decimal.Parse(_configuration["Admin"]);
@@ -245,7 +250,7 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                     };
                     wallet.AccountBalance += bonusPrice;
                     await _unitOfWork.TransactionRepository.Add(bonusTransaction);
-                    var mesBonusPrice = string.Format(elGR,"Quý khách được thưởng thêm phí hoàn trả phương tiện đúng trạm {0:N0} VNĐ 10% hóa đơn thuê phương tiện không tín phí thu hồi", bonusPrice);
+                    var mesBonusPrice = string.Format(elGR, "Quý khách được thưởng thêm phí hoàn trả phương tiện đúng trạm {0:N0} VNĐ 10% hóa đơn thuê phương tiện không tín phí thu hồi", bonusPrice);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Phần thưởng", mesBonusPrice);
                     SaveNotificationModel notiBonus = new SaveNotificationModel()
                     {
@@ -265,9 +270,11 @@ namespace TourismSmartTransportation.Business.Implements.Shared
                 customerTrip.Status = (int)CustomerTripStatus.Done;
                 _unitOfWork.VehicleRepository.Update(vehicle);
                 _unitOfWork.CustomerTripRepository.Update(customerTrip);
+                oldOrder.Status = (int)OrderStatus.Done;
+                _unitOfWork.OrderRepository.Update(oldOrder);
                 await _unitOfWork.SaveChangesAsync();
-                var mesReturnPrice = string.Format(elGR,"Quý khách vừa được hoàn {0:N0} VNĐ phí thu hồi phương tiện", returnPrice);
-                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken,"Hoàn phí thu hồi phương tiện" , mesReturnPrice);
+                var mesReturnPrice = string.Format(elGR, "Quý khách vừa được hoàn {0:N0} VNĐ phí thu hồi phương tiện", returnPrice);
+                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn phí thu hồi phương tiện", mesReturnPrice);
                 SaveNotificationModel noti = new SaveNotificationModel()
                 {
                     CustomerId = customer.CustomerId.ToString(),
