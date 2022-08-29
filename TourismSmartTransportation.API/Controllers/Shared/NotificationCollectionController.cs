@@ -24,6 +24,13 @@ namespace TourismSmartTransportation.API.Controllers.Shared
             return SendResponse(await _service.GetNotificationsByCustomer(customerId, type, isGetAll));
         }
 
+        [HttpGet]
+        [Route(ApiVer1Url.Driver.Notification + "/{driverId}")]
+        public async Task<ActionResult<NotificationCollection>> GetNotificationsByDriver(string driverId, string type, bool isGetAll = false)
+        {
+            return SendResponse(await _service.GetNotificationsByCustomer(driverId, type, isGetAll));
+        }
+
         [HttpPut]
         [Route(ApiVer1Url.Customer.Notification + "/{customerId}")]
         public async Task<ActionResult<NotificationCollection>> DisabledNotificationStatus(string customerId, string type)
