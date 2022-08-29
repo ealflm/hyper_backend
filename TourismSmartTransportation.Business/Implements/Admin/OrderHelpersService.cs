@@ -151,7 +151,7 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                         var orderDetail = new OrderDetailOfRentingService()
                         {
                             OrderId = newOrder.OrderId,
-                            PriceOfRentingServiceId = x.PriceOfRentingServiceId.Value,
+                            PriceOfRentingServiceId = x.PriceOfBookingServiceId != null ? x.PriceOfRentingServiceId.Value : null,
                             Price = x.Price,
                             Content = x.Content,
                             Quantity = x.Quantity,
