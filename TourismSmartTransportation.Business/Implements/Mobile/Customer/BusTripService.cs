@@ -683,7 +683,143 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
                 var order = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(customerId) && x.ServiceTypeId.Equals(serviceType.ServiceTypeId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
                 refundPrice = order.TotalPrice - refundPrice;
-                if (refundPrice > 0)
+
+                // Special case when using package
+                bool isNormalFLow = true;
+                decimal tempPriceSpecialCase = 0M;
+
+                if (oldCustomerTrip.Status == (int)CustomerTripStatus.OutRangeNew)
+                {
+                    var package = await _packageService.GetCurrentPackageIsUsed(customer.CustomerId);
+                    if (package != null && distance < (package.LimitDistances - package.CurrentDistances))
+                    {
+                        var route = await _unitOfWork.RouteRepository.GetById(tripEntity.RouteId);
+                        var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
+                        var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
+                        var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
+                        priceBusing = await _unitOfWork.PriceOfBusServiceRepository.Query().Where(x => x.BasePriceId.Equals(basePrice.BasePriceOfBusServiceId)).OrderByDescending(x => x.MaxStation).FirstOrDefaultAsync();
+
+
+                        tempPriceSpecialCase = order.TotalPrice;
+                        order.TotalPrice = 0;
+                        order.Status = (int)OrderStatus.Done;
+                        _unitOfWork.OrderRepository.Update(order);
+
+                        // Nhận tiền lại từ hệ thống khi được sử dụng gói dịch vụ
+                        var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(customer.CustomerId)).FirstOrDefaultAsync();
+                        var transaction = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            WalletId = wallet.WalletId,
+                            Amount = tempPriceSpecialCase,
+                            Content = "Nhận tiền lại từ hệ thống khi đủ điều kiện sử dụng dịch vụ",
+                            CreatedDate = DateTime.UtcNow,
+                            OrderId = order.OrderId,
+                            Status = 1,
+                        };
+                        wallet.AccountBalance += tempPriceSpecialCase;
+                        _unitOfWork.WalletRepository.Update(wallet);
+                        await _unitOfWork.TransactionRepository.Add(transaction);
+
+
+                        // Thu hồi tiền trước đó khi không được sử dụng dịch vụ và trừ tiền từ ví, sau đó thì đi ít hơn số km của package
+                        var adminWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == null && x.CustomerId == null)
+                                        .FirstOrDefaultAsync();
+
+                        var adminTransaction = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            Content = $"Hoàn tiền lại từ hệ thống",
+                            OrderId = order.OrderId,
+                            CreatedDate = DateTime.UtcNow,
+                            Amount = -(tempPriceSpecialCase * decimal.Parse(_configuration["Admin"])), // xét dấu âm cho giao dịch trừ tiền
+                            Status = 1,
+                            WalletId = adminWallet.WalletId
+                        };
+                        adminWallet.AccountBalance = adminWallet.AccountBalance - (-adminTransaction.Amount); // trừ tiền từ transaction
+                        await _unitOfWork.TransactionRepository.Add(adminTransaction);
+
+                        // Admin chuyển tiền sử dụng gói dịch vụ cho partner
+                        var adminTransactionToPar = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            Content = $"Hệ thống chuyển tiền cho đối tác",
+                            OrderId = order.OrderId,
+                            CreatedDate = DateTime.UtcNow,
+                            Amount = -(basePrice.Price * decimal.Parse(_configuration["Partner"])), // xét dấu âm cho giao dịch trừ tiền
+                            Status = 1,
+                            WalletId = adminWallet.WalletId
+                        };
+                        adminWallet.AccountBalance = adminWallet.AccountBalance - (-adminTransactionToPar.Amount); // trừ tiền từ transaction
+                        await _unitOfWork.TransactionRepository.Add(adminTransactionToPar);
+
+
+                        _unitOfWork.WalletRepository.Update(adminWallet);
+
+                        var partnerWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == order.PartnerId)
+                                        .FirstOrDefaultAsync();
+
+                        var partnerTransaction = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            Content = $"Đối tác hoàn lại tiền",
+                            OrderId = order.OrderId,
+                            CreatedDate = DateTime.UtcNow,
+                            Amount = -(tempPriceSpecialCase * decimal.Parse(_configuration["Partner"])), // xét dấu âm cho giao dịch trừ tiền
+                            Status = 1,
+                            WalletId = partnerWallet.WalletId
+                        };
+                        partnerWallet.AccountBalance = partnerWallet.AccountBalance - (-partnerTransaction.Amount); // trừ tiền từ transaction
+                        await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+
+                        // partner nhận tiền từ hệ thống khi customer sử dụng gói dịch vụ
+                        var partnerTransactionFromHyper = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            Content = $"Đối tác nhận tiền từ hệ thống khi khách hàng sử dụng dịch vụ",
+                            OrderId = order.OrderId,
+                            CreatedDate = DateTime.UtcNow,
+                            Amount = basePrice.Price * decimal.Parse(_configuration["Partner"]),
+                            Status = 1,
+                            WalletId = partnerWallet.WalletId
+                        };
+                        partnerWallet.AccountBalance += partnerTransactionFromHyper.Amount; // cộng tiền cho partner
+                        await _unitOfWork.TransactionRepository.Add(partnerTransactionFromHyper);
+
+                        _unitOfWork.WalletRepository.Update(partnerWallet);
+
+
+                        oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                        oldCustomerTrip.Distance = distance;
+                        _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
+
+                        await _unitOfWork.SaveChangesAsync();
+
+                        CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+                        var mesReturnPrice = string.Format(elGR, "Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", tempPriceSpecialCase);
+                        await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn phí dịch vụ xe buýt", mesReturnPrice);
+                        SaveNotificationModel noti = new SaveNotificationModel()
+                        {
+                            CustomerId = customer.CustomerId.ToString(),
+                            CustomerFirstName = customer.FirstName,
+                            CustomerLastName = customer.LastName,
+                            Title = "Hoàn phí dịch vụ xe buýt",
+                            Message = mesReturnPrice,
+                            Type = "Refund",
+                            Status = (int)NotificationStatus.Active
+                        };
+                        await _notificationCollection.SaveNotification(noti);
+                        isNormalFLow = false;
+                    }
+                }
+
+
+                if (refundPrice > 0 && isNormalFLow)
                 {
 
                     order.TotalPrice = order.TotalPrice - refundPrice;
@@ -785,7 +921,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
                 // trường hợp order có total price = 0 là xài gói dịch vụ, 
                 // tránh trường hợp order có total price != 0 và refundPrice < 0
-                else if (order.TotalPrice == 0)
+                else if (order.TotalPrice == 0 && isNormalFLow)
                 {
 
                     // cập nhật lại trạng thái của order -> hoàn thành
@@ -1038,26 +1174,139 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 var order = await _unitOfWork.OrderRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId) && x.ServiceTypeId.Equals(serviceType.ServiceTypeId)).OrderByDescending(x => x.CreatedDate).FirstOrDefaultAsync();
                 refundPrice = order.TotalPrice - refundPrice;
 
-                //
+                // Special case when using package
                 bool isNormalFLow = true;
-                // decimal tempPriceSpecialCase = 0M;
+                decimal tempPriceSpecialCase = 0M;
 
-                // if (oldCustomerTrip.Status == (int)CustomerTripStatus.OutRangeNew)
-                // {
-                //     var package = await _packageService.GetCurrentPackageIsUsed(customer.CustomerId);
-                //     if (package != null && distance < (package.LimitDistances - package.CurrentDistances))
-                //     {
-                //         tempPriceSpecialCase = order.TotalPrice;
-                //         order.TotalPrice = 0;
-                //         order.Status = (int)OrderStatus.Done;
-                //         _unitOfWork.OrderRepository.Update(order);
+                if (oldCustomerTrip.Status == (int)CustomerTripStatus.OutRangeNew)
+                {
+                    var package = await _packageService.GetCurrentPackageIsUsed(customer.CustomerId);
+                    if (package != null && distance < (package.LimitDistances - package.CurrentDistances))
+                    {
+                        var route = await _unitOfWork.RouteRepository.GetById(tripEntity.RouteId);
+                        var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
+                        var priceBusing = await _unitOfWork.PriceOfBusServiceRepository.GetById(routePriceBusing.PriceBusingId);
+                        var basePrice = await _unitOfWork.BasePriceOfBusServiceRepository.GetById(priceBusing.BasePriceId);
+                        priceBusing = await _unitOfWork.PriceOfBusServiceRepository.Query().Where(x => x.BasePriceId.Equals(basePrice.BasePriceOfBusServiceId)).OrderByDescending(x => x.MaxStation).FirstOrDefaultAsync();
 
 
-                //         oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                        tempPriceSpecialCase = order.TotalPrice;
+                        order.TotalPrice = 0;
+                        order.Status = (int)OrderStatus.Done;
+                        _unitOfWork.OrderRepository.Update(order);
 
-                //         isNormalFLow = false;
-                //     }
-                // }
+                        // Nhận tiền lại từ hệ thống khi được sử dụng gói dịch vụ
+                        var wallet = await _unitOfWork.WalletRepository.Query().Where(x => x.CustomerId.Equals(model.CustomerId)).FirstOrDefaultAsync();
+                        var transaction = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            WalletId = wallet.WalletId,
+                            Amount = tempPriceSpecialCase,
+                            Content = "Nhận tiền lại từ hệ thống khi đủ điều kiện sử dụng dịch vụ",
+                            CreatedDate = DateTime.UtcNow,
+                            OrderId = order.OrderId,
+                            Status = 1,
+                        };
+                        wallet.AccountBalance += tempPriceSpecialCase;
+                        _unitOfWork.WalletRepository.Update(wallet);
+                        await _unitOfWork.TransactionRepository.Add(transaction);
+
+
+                        // Thu hồi tiền trước đó khi không được sử dụng dịch vụ và trừ tiền từ ví, sau đó thì đi ít hơn số km của package
+                        var adminWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == null && x.CustomerId == null)
+                                        .FirstOrDefaultAsync();
+
+                        var adminTransaction = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            Content = $"Hoàn tiền lại từ hệ thống",
+                            OrderId = order.OrderId,
+                            CreatedDate = DateTime.UtcNow,
+                            Amount = -(tempPriceSpecialCase * decimal.Parse(_configuration["Admin"])), // xét dấu âm cho giao dịch trừ tiền
+                            Status = 1,
+                            WalletId = adminWallet.WalletId
+                        };
+                        adminWallet.AccountBalance = adminWallet.AccountBalance - (-adminTransaction.Amount); // trừ tiền từ transaction
+                        await _unitOfWork.TransactionRepository.Add(adminTransaction);
+
+                        // Admin chuyển tiền sử dụng gói dịch vụ cho partner
+                        var adminTransactionToPar = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            Content = $"Hệ thống chuyển tiền cho đối tác",
+                            OrderId = order.OrderId,
+                            CreatedDate = DateTime.UtcNow,
+                            Amount = -(basePrice.Price * decimal.Parse(_configuration["Partner"])), // xét dấu âm cho giao dịch trừ tiền
+                            Status = 1,
+                            WalletId = adminWallet.WalletId
+                        };
+                        adminWallet.AccountBalance = adminWallet.AccountBalance - (-adminTransactionToPar.Amount); // trừ tiền từ transaction
+                        await _unitOfWork.TransactionRepository.Add(adminTransactionToPar);
+
+
+                        _unitOfWork.WalletRepository.Update(adminWallet);
+
+                        var partnerWallet = await _unitOfWork.WalletRepository
+                                        .Query()
+                                        .Where(x => x.PartnerId == order.PartnerId)
+                                        .FirstOrDefaultAsync();
+
+                        var partnerTransaction = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            Content = $"Đối tác hoàn lại tiền",
+                            OrderId = order.OrderId,
+                            CreatedDate = DateTime.UtcNow,
+                            Amount = -(tempPriceSpecialCase * decimal.Parse(_configuration["Partner"])), // xét dấu âm cho giao dịch trừ tiền
+                            Status = 1,
+                            WalletId = partnerWallet.WalletId
+                        };
+                        partnerWallet.AccountBalance = partnerWallet.AccountBalance - (-partnerTransaction.Amount); // trừ tiền từ transaction
+                        await _unitOfWork.TransactionRepository.Add(partnerTransaction);
+
+                        // partner nhận tiền từ hệ thống khi customer sử dụng gói dịch vụ
+                        var partnerTransactionFromHyper = new Transaction()
+                        {
+                            TransactionId = Guid.NewGuid(),
+                            Content = $"Đối tác nhận tiền từ hệ thống khi khách hàng sử dụng dịch vụ",
+                            OrderId = order.OrderId,
+                            CreatedDate = DateTime.UtcNow,
+                            Amount = basePrice.Price * decimal.Parse(_configuration["Partner"]),
+                            Status = 1,
+                            WalletId = partnerWallet.WalletId
+                        };
+                        partnerWallet.AccountBalance += partnerTransactionFromHyper.Amount; // cộng tiền cho partner
+                        await _unitOfWork.TransactionRepository.Add(partnerTransactionFromHyper);
+
+                        _unitOfWork.WalletRepository.Update(partnerWallet);
+
+
+                        oldCustomerTrip.Coordinates = oldCustomerTrip.Coordinates + "&" + model.Longitude + ";" + model.Latitude;
+                        oldCustomerTrip.Status = (int)CustomerTripStatus.Done;
+                        oldCustomerTrip.Distance = distance;
+                        _unitOfWork.CustomerTripRepository.Update(oldCustomerTrip);
+
+                        await _unitOfWork.SaveChangesAsync();
+
+                        CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
+                        var mesReturnPrice = string.Format(elGR, "Quý khách vừa được hoàn {0:N0} VNĐ từ hệ thống cho dịch vụ xe buýt", tempPriceSpecialCase);
+                        await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn phí dịch vụ xe buýt", mesReturnPrice);
+                        SaveNotificationModel noti = new SaveNotificationModel()
+                        {
+                            CustomerId = customer.CustomerId.ToString(),
+                            CustomerFirstName = customer.FirstName,
+                            CustomerLastName = customer.LastName,
+                            Title = "Hoàn phí dịch vụ xe buýt",
+                            Message = mesReturnPrice,
+                            Type = "Refund",
+                            Status = (int)NotificationStatus.Active
+                        };
+                        await _notificationCollection.SaveNotification(noti);
+                        isNormalFLow = false;
+                    }
+                }
 
 
                 if (refundPrice > 0 && isNormalFLow)

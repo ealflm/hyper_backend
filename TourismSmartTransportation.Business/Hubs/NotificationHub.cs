@@ -761,7 +761,7 @@ namespace TourismSmartTransportation.Business.Hubs
                     // Tạo order cho yêu cầu đặt xe này
                     OrderDetailsInfo orderDetails = new OrderDetailsInfo()
                     {
-                        Content = ServiceTypeDefaultData.BUS_SERVICE_CONTENT,
+                        Content = ServiceTypeDefaultData.BOOK_SERVICE_CONTENT,
                         Price = response.Customer.Price,
                         Quantity = 1,
                         PriceOfBookingServiceId = Guid.Parse(response.Customer.PriceBookingId)
