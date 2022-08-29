@@ -98,7 +98,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
             };
             await _unitOfWork.TripRepository.Add(newTrip);
 
-            UpdateDriverModel updateDriver = new UpdateDriverModel() { VehicleId = newTrip.VehicleId };
+            UpdateDriverModel updateDriver = new UpdateDriverModel();
             var driverResponse = await _driverService.Update(
                                                             id: newTrip.DriverId,
                                                             model: updateDriver,
