@@ -7,6 +7,7 @@ namespace TourismSmartTransportation.Business.ViewModel.Mobile.Customer
         public Guid CustomerTripId { get; set; }
         public Guid CustomerId { get; set; }
         public string CustomerName { get; set; }
+        public string customerPhone { get; set; }
         public Guid? TripId { get; set; }
         public Guid VehicleId { get; set; }
         public decimal? Distance { get; set; }
