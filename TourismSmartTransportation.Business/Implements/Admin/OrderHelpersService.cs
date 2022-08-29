@@ -200,14 +200,15 @@ namespace TourismSmartTransportation.Business.Implements.Admin
             if (isUsingService) // kiểm tra có sử dụng package hay không
             {
                 currentPackageIsUsed = await _packageService.GetCurrentPackageIsUsed(newOrder.CustomerId);
-                if (currentPackageIsUsed != null && order.Distance != null && order.Distance < (currentPackageIsUsed.LimitDistances - currentPackageIsUsed.CurrentDistances))
+                if (currentPackageIsUsed != null && order.Distance != null)
                 {
                     dynamic distancesNow = null;
                     dynamic cardSwipesNow = null;
                     dynamic numberOfTripsNow = null;
 
                     if (newOrder.ServiceTypeId != null &&
-                        newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID))
+                        newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID) &&
+                        order.Distance < (currentPackageIsUsed.LimitDistances - currentPackageIsUsed.CurrentDistances))
                     {
                         distancesNow = currentPackageIsUsed.CurrentDistances + order.Distance;
                         cardSwipesNow = currentPackageIsUsed.CurrentCardSwipes + 1;
@@ -223,7 +224,8 @@ namespace TourismSmartTransportation.Business.Implements.Admin
                     if (newOrder.ServiceTypeId != null &&
                         newOrder.ServiceTypeId.Value == Guid.Parse(ServiceTypeDefaultData.BUS_SERVICE_ID) &&
                         distancesNow <= currentPackageIsUsed.LimitDistances &&
-                        cardSwipesNow <= currentPackageIsUsed.LimitCardSwipes)
+                        cardSwipesNow <= currentPackageIsUsed.LimitCardSwipes &&
+                        order.Distance < (currentPackageIsUsed.LimitDistances - currentPackageIsUsed.CurrentDistances))
                     {
                         orderPrice = newOrder.TotalPrice;
                         newOrder.TotalPrice = 0;
