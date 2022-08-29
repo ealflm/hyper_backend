@@ -1018,7 +1018,36 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
             else
             {
 
-                var trip = await _unitOfWork.TripRepository.Query().Where(x => x.VehicleId.Equals(model.VehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek - 1) % 7 && today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0).FirstOrDefaultAsync();
+                var trips = await _unitOfWork.TripRepository
+                            .Query()
+                            .Where(x => x.VehicleId.Equals(model.VehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek - 1) % 7 &&
+                                    today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0)
+                            .ToListAsync();
+
+                string week = DateTime.UtcNow.Date.ToString("dd/MM/yyyy");
+                Trip trip = null;
+                foreach (var dri in trips)
+                {
+                    string[] weeks = dri.Week.Split('-');
+
+                    DateTime weekStart = DateTime.ParseExact(weeks[0], "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                    DateTime weekEnd = DateTime.ParseExact(weeks[1], "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                    DateTime currentWeek = DateTime.ParseExact(week, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+                    if (weekStart.CompareTo(currentWeek) <= 0 && currentWeek.CompareTo(weekEnd) <= 0)
+                    {
+                        trip = dri;
+                    }
+                }
+
+                if (trip == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Thanh toán thất bại"
+                    };
+                }
 
 
                 var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
@@ -1502,8 +1531,38 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
 
 
 
-                var trip = await _unitOfWork.TripRepository.Query().Where(x => x.VehicleId.Equals(vehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek - 1) % 7 && today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 && today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0).FirstOrDefaultAsync();
+                var trips = await _unitOfWork.TripRepository
+                                .Query()
+                                .Where(x => x.VehicleId.Equals(vehicleId) && ((int)today.DayOfWeek % 7) == (x.DayOfWeek - 1) % 7 &&
+                                            today.ToString("HH:mm").CompareTo(x.TimeStart) >= 0 &&
+                                            today.ToString("HH:mm").CompareTo(x.TimeEnd) <= 0)
+                                .ToListAsync();
 
+
+                string week = DateTime.UtcNow.Date.ToString("dd/MM/yyyy");
+                Trip trip = null;
+                foreach (var dri in trips)
+                {
+                    string[] weeks = dri.Week.Split('-');
+
+                    DateTime weekStart = DateTime.ParseExact(weeks[0], "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                    DateTime weekEnd = DateTime.ParseExact(weeks[1], "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                    DateTime currentWeek = DateTime.ParseExact(week, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+                    if (weekStart.CompareTo(currentWeek) <= 0 && currentWeek.CompareTo(weekEnd) <= 0)
+                    {
+                        trip = dri;
+                    }
+                }
+
+                if (trip == null)
+                {
+                    return new()
+                    {
+                        StatusCode = 400,
+                        Message = "Thanh toán thất bại"
+                    };
+                }
 
                 var route = await _unitOfWork.RouteRepository.GetById(trip.RouteId);
                 var routePriceBusing = await _unitOfWork.RoutePriceBusingRepository.Query().Where(x => x.RouteId.Equals(route.RouteId)).FirstOrDefaultAsync();
