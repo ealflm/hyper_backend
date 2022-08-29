@@ -44,6 +44,7 @@ namespace TourismSmartTransportation.Business.Implements.Partner
                                        // x => x.RouteId == model.RouteId.Value && // Cùng tuyến đường
                                 x => x.VehicleId == model.VehicleId.Value && // Cùng phương tiện
                                 x.DayOfWeek == model.DayOfWeek.Value && // Cùng ngày trong tuần
+                                x.Week == model.Week &&
                                 (
                                     (
                                         x.TimeEnd.CompareTo(model.TimeStart) == 0 // Trường hợp thời gian bắt đầu bằng với thời gian kết thúc của trip đã tồn tại

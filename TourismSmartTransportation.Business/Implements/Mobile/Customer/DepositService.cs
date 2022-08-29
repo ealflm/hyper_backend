@@ -27,7 +27,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
     {
         private readonly string titleMoMo = "Nạp tiền từ MoMo";
         private readonly string titlePayPal = "Nạp tiền từ PayPal";
-        private  string mesMoMo = "";
+        private string mesMoMo = "";
         private string mesPayPal = "";
         private IFirebaseCloudMsgService _firebaseCloud;
         private INotificationCollectionService _notificationCollection;
@@ -223,8 +223,8 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 _unitOfWork.WalletRepository.Update(wallet);
                 await _unitOfWork.SaveChangesAsync();
                 CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-                mesMoMo = string.Format(elGR,"Quý khách đã nạp thành công {0:N0} VNĐ từ MoMo", order.TotalPrice);
-                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, titleMoMo ,mesMoMo);
+                mesMoMo = string.Format(elGR, "Quý khách đã nạp thành công {0:N0} VNĐ từ MoMo", order.TotalPrice);
+                await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, titleMoMo, mesMoMo);
                 SaveNotificationModel noti = new SaveNotificationModel()
                 {
                     CustomerId = customer.CustomerId.ToString(),
@@ -311,7 +311,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                     await _unitOfWork.SaveChangesAsync();
                     var customer = await _unitOfWork.CustomerRepository.GetById(order.CustomerId);
                     CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-                    mesPayPal = string.Format(elGR,"Quý khách đã nạp thành công {0:N0} VNĐ từ PayPal", order.TotalPrice);
+                    mesPayPal = string.Format(elGR, "Quý khách đã nạp thành công {0:N0} VNĐ từ PayPal", order.TotalPrice);
                     await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, titlePayPal, mesPayPal);
                     SaveNotificationModel noti = new SaveNotificationModel()
                     {
