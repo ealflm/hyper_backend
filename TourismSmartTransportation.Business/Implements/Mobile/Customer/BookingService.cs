@@ -99,7 +99,7 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
         {
             var customer = await _unitOfWork.CustomerRepository.GetById(customerId);
             CultureInfo elGR = CultureInfo.CreateSpecificCulture("el-GR");
-            string mes = string.Format(elGR, "Hóa đơn đặt xe của quý khách là {0:N0} VNĐ và được hoàn tiền {1:N0} VNĐ đã khấu trừ {2}% phí hủy cuốc ", amount, message);
+            string mes = string.Format(elGR, "Hóa đơn đặt xe của quý khách là {0:N0} VNĐ và được hoàn tiền {1:N0} VNĐ {2}", amount, refundPrice, message);
             await _firebaseCloud.SendNotificationForRentingService(customer.RegistrationToken, "Hoàn tiền đặt xe", mes);
             SaveNotificationModel noti = new SaveNotificationModel()
             {
