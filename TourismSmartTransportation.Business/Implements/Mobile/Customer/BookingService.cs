@@ -88,9 +88,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 }
             }
             var package = await _packageService.GetCurrentPackageIsUsed(customerId);
-            if (package != null)
+            if (package != null && package.CurrentNumberOfTrips < package.LimitNumberOfTrips)
             {
-                result.PriceAfterDiscount = result.TotalPrice * package.DiscountValueTrip;
+                result.PriceAfterDiscount = result.TotalPrice - (result.TotalPrice * package.DiscountValueTrip * 0.01M);
             }
             return result;
         }

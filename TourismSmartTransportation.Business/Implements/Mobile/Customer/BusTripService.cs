@@ -1646,7 +1646,9 @@ namespace TourismSmartTransportation.Business.Implements.Mobile.Customer
                 Distance = route.Distance,
                 TotalStation = route.TotalStation,
                 Price = basePrice.Price,
-                IsUsePackage = currentPackageIsUsed.LimitDistances - currentPackageIsUsed.CurrentDistances <= route.Distance && currentPackageIsUsed.LimitCardSwipes > currentPackageIsUsed.CurrentCardSwipes
+                IsUsePackage = currentPackageIsUsed != null &&
+                                        (currentPackageIsUsed.LimitDistances - currentPackageIsUsed.CurrentDistances <= route.Distance) &&
+                                        currentPackageIsUsed.LimitCardSwipes >= currentPackageIsUsed.CurrentCardSwipes
             };
             return busPrice;
         }
